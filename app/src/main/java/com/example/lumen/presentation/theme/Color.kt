@@ -1,4 +1,4 @@
-package com.example.lumen.ui.theme
+package com.example.lumen.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
