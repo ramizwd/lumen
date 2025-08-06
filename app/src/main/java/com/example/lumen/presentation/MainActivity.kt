@@ -29,14 +29,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.presentation.theme.LumenTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val bluetoothManager by lazy {
@@ -64,7 +65,9 @@ class MainActivity : ComponentActivity() {
 
         val enableBluetoothLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
-        ) {}
+        ) {
+            Log.d("BLE_DBG", "$it")
+        }
 
         // Launcher to request Bluetooth permissions
         val permissionLauncher = registerForActivityResult(
@@ -90,25 +93,17 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LumenTheme {
-                val context = LocalContext.current
-                val vm: BleViewModel = viewModel(
-                    factory = BleViewModel.BluetoothViewModelFactory(context.applicationContext)
-                )
-
-                val scanResults by vm.scanResults.collectAsState()
+                val vm = hiltViewModel<BleViewModel>()
                 val isScanning by vm.isScanning.collectAsState()
+                val scanResults by vm.scanResults.collectAsState()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     DiscoverDeviceScreen(
                         innerPadding,
                         isScanning = isScanning,
                         scanResults = scanResults,
-                        onStartScanClick = {
-                            vm.startScan()
-                        },
-                        onStopScanClick = {
-                          vm.stopScan()
-                        },
+                        onStartScanClick = vm::startScan,
+                        onStopScanClick = vm::stopScan,
                     )
                 }
             }
@@ -158,7 +153,7 @@ fun DeviceItem(device: BleDevice) {
      modifier = Modifier
          .fillMaxSize()
          .padding(vertical = 4.dp)
-    ){
+    ) {
         Text("Name: ${device.name ?: "Unknown"}")
         Text("Address: ${device.address}")
     }
