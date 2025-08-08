@@ -1,4 +1,4 @@
-package com.example.lumen.presentation
+package com.example.lumen.presentation.ble
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,7 +13,9 @@ import javax.inject.Inject
  * [isScanning] Boolean for indicating if BLE is scanning
  */
 @HiltViewModel
-class BleViewModel @Inject constructor(private val bleController: BleController): ViewModel() {
+class BleViewModel @Inject constructor(
+    private val bleController: BleController
+): ViewModel() {
 
     val scanResults = bleController.scanResults
     val isScanning = bleController.isScanning
