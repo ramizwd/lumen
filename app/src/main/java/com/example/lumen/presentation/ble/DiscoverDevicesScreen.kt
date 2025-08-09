@@ -20,11 +20,12 @@ import com.example.lumen.presentation.theme.LumenTheme
 @Composable
 fun DiscoverDevicesScreen(
     innerPadding: PaddingValues,
-    isScanning: Boolean,
-    scanResults: List<BleDevice>,
+    state: BleUiState,
     onStartScanClick: () -> Unit,
     onStopScanClick: () -> Unit
 ) {
+    val isScanning = state.isScanning
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -42,7 +43,7 @@ fun DiscoverDevicesScreen(
         )
 
         DeviceList(
-            scanResults = scanResults,
+            scanResults = state.scanResults,
             onDeviceClick = {}
         )
     }
@@ -59,10 +60,14 @@ fun DiscoverDevicesScreenWithDevicesPreview() {
                 BleDevice(name = null, address = "FF:EE:DD:CC:BB:AA")
             )
 
+            val state = BleUiState(
+                scanResults = mockScanResults,
+                isScanning = true
+            )
+
             DiscoverDevicesScreen(
                 innerPadding = PaddingValues(),
-                isScanning = false,
-                scanResults = mockScanResults,
+                state = state,
                 onStartScanClick = {},
                 onStopScanClick = {},
             )
@@ -75,10 +80,14 @@ fun DiscoverDevicesScreenWithDevicesPreview() {
 fun DiscoverDevicesScreenWithoutDevicesPreview() {
     LumenTheme {
         Surface {
+            val state = BleUiState(
+                scanResults = emptyList(),
+                isScanning = false
+            )
+
             DiscoverDevicesScreen(
                 innerPadding = PaddingValues(),
-                isScanning = false,
-                scanResults = emptyList(),
+                state = state,
                 onStartScanClick = {},
                 onStopScanClick = {},
             )

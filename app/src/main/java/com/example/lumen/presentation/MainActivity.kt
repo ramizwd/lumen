@@ -83,14 +83,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             LumenTheme {
                 val vm = hiltViewModel<BleViewModel>()
-                val isScanning by vm.isScanning.collectAsState()
-                val scanResults by vm.scanResults.collectAsState()
+                val state by vm.state.collectAsState()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     DiscoverDevicesScreen(
                         innerPadding,
-                        isScanning = isScanning,
-                        scanResults = scanResults,
+                        state = state,
                         onStartScanClick = vm::startScan,
                         onStopScanClick = vm::stopScan,
                     )
