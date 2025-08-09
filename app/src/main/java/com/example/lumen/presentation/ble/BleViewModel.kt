@@ -2,7 +2,7 @@ package com.example.lumen.presentation.ble
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lumen.domain.ble.BleController
+import com.example.lumen.domain.ble.usecase.BleUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,14 +16,14 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class BleViewModel @Inject constructor(
-    private val bleController: BleController
+    private val bleUseCases: BleUseCases
 ): ViewModel() {
 
     private val _state = MutableStateFlow(BleUiState())
 
     val state = combine(
-        bleController.scanResults,
-        bleController.isScanning,
+        bleUseCases.observeScanResultsUseCase(),
+        bleUseCases.observeIsScanningUseCase(),
         _state
     ) { scanResults, isScanning, state ->
         state.copy(
@@ -38,18 +38,18 @@ class BleViewModel @Inject constructor(
 
     fun startScan() {
         viewModelScope.launch {
-            bleController.startScan()
+            bleUseCases.startScanUseCase()
         }
     }
 
     fun stopScan() {
         viewModelScope.launch {
-            bleController.stopScan()
+            bleUseCases.stopScanUseCase()
         }
     }
 
     override fun onCleared() {
         super.onCleared()
-        bleController.stopScan()
+        bleUseCases.stopScanUseCase()
     }
 }

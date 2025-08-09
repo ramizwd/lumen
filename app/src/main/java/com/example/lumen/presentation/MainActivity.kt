@@ -26,7 +26,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     companion object MainActivity {
-        const val LOG_TAG = "MainActivity"
+        private const val LOG_TAG = "MainActivity"
     }
 
     private val bluetoothManager by lazy {

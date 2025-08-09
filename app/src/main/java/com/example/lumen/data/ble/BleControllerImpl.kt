@@ -27,8 +27,8 @@ class BleControllerImpl(
 ): BleController {
 
     companion object BleControllerImpl {
-        const val LOG_TAG = "BleControllerImpl"
-        const val REPOT_DELAY: Long = 0
+        private const val LOG_TAG = "BleControllerImpl"
+        private const val REPOT_DELAY: Long = 0
     }
 
     private val bluetoothManager by lazy {
