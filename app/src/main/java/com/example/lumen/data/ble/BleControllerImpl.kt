@@ -12,10 +12,16 @@ import android.util.Log
 import com.example.lumen.data.mapper.toBleDevice
 import com.example.lumen.domain.ble.BleController
 import com.example.lumen.domain.ble.model.BleDevice
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * Class that implements [BleController] interface.
@@ -29,6 +35,7 @@ class BleControllerImpl(
     companion object BleControllerImpl {
         private const val LOG_TAG = "BleControllerImpl"
         private const val REPOT_DELAY: Long = 0
+        private const val SCAN_PERIOD_MILLIS: Long = 30_000 // Scan for 30 seconds
     }
 
     private val bluetoothManager by lazy {
@@ -43,6 +50,9 @@ class BleControllerImpl(
         bluetoothAdapter?.bluetoothLeScanner
     }
 
+    private var scanJob: Job? = null
+    private val bleScanScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
     private val _scanResults = MutableStateFlow<List<BleDevice>>(emptyList())
     override val scanResults: StateFlow<List<BleDevice>>
         get() = _scanResults.asStateFlow()
@@ -51,7 +61,7 @@ class BleControllerImpl(
     override val isScanning: StateFlow<Boolean>
         get() = _isScanning.asStateFlow()
 
-    override fun startScan() {
+    override suspend fun startScan() {
         if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
             Log.d(LOG_TAG, "BLUETOOTH_SCAN permission missing!")
             return
@@ -60,6 +70,10 @@ class BleControllerImpl(
         if (bluetoothLeScanner == null) {
             Log.d(LOG_TAG, "BLE Scanner not available.")
             return
+        }
+
+        if (_isScanning.value) {
+            stopScan()
         }
 
         // Clear prev results
@@ -74,6 +88,13 @@ class BleControllerImpl(
             bluetoothLeScanner?.startScan(null, settings, leScanCallBack)
             _isScanning.value = true
             Log.d(LOG_TAG, "BLE Scan started...")
+
+            // Start a coroutine to stop scanning after a period
+            scanJob = bleScanScope.launch {
+                delay(SCAN_PERIOD_MILLIS)
+                stopScan()
+                Log.d(LOG_TAG, "Ble scan stopped automatically")
+            }
         } catch (e: SecurityException) {
             Log.d(LOG_TAG, "SecurityException during scan start: ${e.message}")
             _isScanning.value = false
@@ -97,6 +118,8 @@ class BleControllerImpl(
         try {
             bluetoothLeScanner?.stopScan(leScanCallBack)
             _isScanning.value = false
+            scanJob?.cancel()
+            scanJob = null
             Log.d(LOG_TAG, "BLE Scan stopped...")
         } catch (e: SecurityException) {
             Log.d(LOG_TAG, "SecurityException during scan start: ${e.message}")
@@ -127,6 +150,8 @@ class BleControllerImpl(
             super.onScanFailed(errorCode)
             Log.d(LOG_TAG, "BLE Scan failed with error: $errorCode")
             _isScanning.value = false
+            scanJob?.cancel()
+            scanJob = null
         }
     }
 

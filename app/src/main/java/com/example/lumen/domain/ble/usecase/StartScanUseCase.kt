@@ -11,7 +11,7 @@ class StartScanUseCase @Inject constructor(
         private const val LOG_TAG = "StartScanUseCase"
     }
 
-    operator fun invoke() {
+    suspend operator fun invoke() {
         Log.d(LOG_TAG, "Start scan")
         bleController.startScan()
     }

@@ -10,6 +10,6 @@ interface BleController {
     val scanResults: StateFlow<List<BleDevice>>
     val isScanning: StateFlow<Boolean>
 
-    fun startScan()
+    suspend fun startScan()
     fun stopScan()
 }
