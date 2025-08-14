@@ -39,7 +39,9 @@ fun DiscoverDevicesScreen(
         Button(onClick = if (isScanning) onStopScanClick else onStartScanClick) {
             Text(text = if (isScanning) "Stop Scan" else "Start Scan")
         }
-        
+
+            Text(text = "Connected device: ${state.connectedDevice?.name}")
+
         Button(onClick = onDisconnectClick) {
             Text(text = "Disconnect")
         }

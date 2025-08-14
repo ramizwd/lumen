@@ -1,6 +1,7 @@
 package com.example.lumen.data.mapper
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
 import com.example.lumen.domain.ble.model.BleDevice
 
@@ -9,5 +10,13 @@ fun ScanResult.toBleDevice(): BleDevice {
     return BleDevice(
         name = device.name,
         address = device.address
+    )
+}
+
+@SuppressLint("MissingPermission")
+fun BluetoothDevice.toBleDevice(): BleDevice {
+    return BleDevice(
+        name = name,
+        address = address
     )
 }

@@ -25,12 +25,14 @@ class BleViewModel @Inject constructor(
         bleUseCases.observeScanResultsUseCase(),
         bleUseCases.observeIsScanningUseCase(),
         bleUseCases.observeConnectionUseCase(),
+        bleUseCases.observeConnectedDeviceUseCase(),
         _state
-    ) { scanResults, isScanning, connectionState, state ->
+    ) { scanResults, isScanning, connectionState, connectedDevice, state ->
         state.copy(
             scanResults = scanResults,
             isScanning = isScanning,
             connectionState = connectionState,
+            connectedDevice = connectedDevice,
         )
     }.stateIn(
         viewModelScope,

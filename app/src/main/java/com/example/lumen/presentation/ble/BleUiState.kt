@@ -13,4 +13,5 @@ data class BleUiState(
     val scanResults: List<BleDevice> = emptyList(),
     val isScanning: Boolean = false,
     val connectionState: ConnectionState = ConnectionState.DISCONNECTED,
+    val connectedDevice: BleDevice? = null,
 )

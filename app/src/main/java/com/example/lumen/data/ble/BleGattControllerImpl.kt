@@ -8,7 +8,9 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.util.Log
+import com.example.lumen.data.mapper.toBleDevice
 import com.example.lumen.domain.ble.BleGattController
+import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.utils.hasPermission
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,6 +44,10 @@ class BleGattControllerImpl(
     override val connectionState: StateFlow<ConnectionState>
         get() = _connectionState.asStateFlow()
 
+    private val _connectedDevice = MutableStateFlow<BleDevice?>(null)
+    override val connectedDevice: StateFlow<BleDevice?>
+        get() = _connectedDevice.asStateFlow()
+
     override fun connect(address: String) {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission missing!")
@@ -55,8 +61,22 @@ class BleGattControllerImpl(
                 bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
             } catch (e: IllegalArgumentException) {
                 Log.d(LOG_TAG, "Device not found")
+                close()
             }
         } ?: Log.d(LOG_TAG, "BluetoothAdapter not initialized.")
+    }
+
+    override fun disconnect() {
+        if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
+            Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission missing!")
+            return
+        }
+
+        if (_connectionState.value == ConnectionState.CONNECTED ||
+            _connectionState.value == ConnectionState.CONNECTING) {
+            bluetoothGatt?.disconnect()
+            Log.d(LOG_TAG, "Device disconnected")
+        }
     }
 
     // Object that handles GATT connection state
@@ -65,7 +85,7 @@ class BleGattControllerImpl(
             super.onConnectionStateChange(gatt, status, newState)
 
             if (status != BluetoothGatt.GATT_SUCCESS) {
-                gatt?.close()
+                close()
                 return
             }
 
@@ -77,6 +97,7 @@ class BleGattControllerImpl(
 
                 BluetoothProfile.STATE_CONNECTED -> {
                     Log.d(LOG_TAG, "GATT successfully connected")
+                    _connectedDevice.value = gatt?.device?.toBleDevice()
                     _connectionState.value = ConnectionState.CONNECTED
                 }
 
@@ -86,24 +107,17 @@ class BleGattControllerImpl(
                 }
 
                 BluetoothProfile.STATE_DISCONNECTED -> {
-                    gatt?.close()
-                    bluetoothGatt = null
-                    _connectionState.value = ConnectionState.DISCONNECTED
+                    close()
                     Log.d(LOG_TAG, "GATT disconnected")
                 }
             }
         }
     }
 
-    override fun disconnect() {
-        if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
-            Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission missing!")
-            return
-        }
-
-        if (_connectionState.value == ConnectionState.CONNECTED) {
-            bluetoothGatt?.disconnect()
-            Log.d(LOG_TAG, "Device disconnected")
-        }
+    private fun close() {
+        bluetoothGatt?.close()
+        bluetoothGatt = null
+        _connectedDevice.value = null
+        _connectionState.value = ConnectionState.DISCONNECTED
     }
 }
