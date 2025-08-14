@@ -20,6 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.lumen.presentation.ble.BleViewModel
 import com.example.lumen.presentation.ble.DiscoverDevicesScreen
 import com.example.lumen.presentation.theme.LumenTheme
+import com.example.lumen.utils.permissionArray
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -74,10 +75,7 @@ class MainActivity : ComponentActivity() {
         }
 
         permissionLauncher.launch(
-            arrayOf(
-                Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.BLUETOOTH_CONNECT,
-            )
+            permissionArray
         )
 
         setContent {
@@ -91,6 +89,8 @@ class MainActivity : ComponentActivity() {
                         state = state,
                         onStartScanClick = vm::startScan,
                         onStopScanClick = vm::stopScan,
+                        onConnectToDevice = vm::connectToDevice,
+                        onDisconnectClick = vm::disconnectFromDevice,
                     )
                 }
             }

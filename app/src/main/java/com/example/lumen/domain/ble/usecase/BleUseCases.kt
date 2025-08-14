@@ -9,5 +9,8 @@ data class BleUseCases @Inject constructor(
     val observeIsScanningUseCase: ObserveIsScanningUseCase,
     val observeScanResultsUseCase: ObserveScanResultsUseCase,
     val startScanUseCase: StartScanUseCase,
-    val stopScanUseCase: StopScanUseCase
+    val stopScanUseCase: StopScanUseCase,
+    val connectToDeviceUseCase: ConnectToDeviceUseCase,
+    val observeConnectionUseCase: ObserveConnectionUseCase,
+    val disconnectUseCase: DisconnectUseCase,
 )

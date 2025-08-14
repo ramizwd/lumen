@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.presentation.ble.components.DeviceList
 import com.example.lumen.presentation.theme.LumenTheme
 
@@ -22,7 +23,9 @@ fun DiscoverDevicesScreen(
     innerPadding: PaddingValues,
     state: BleUiState,
     onStartScanClick: () -> Unit,
-    onStopScanClick: () -> Unit
+    onStopScanClick: () -> Unit,
+    onConnectToDevice: (String) -> Unit,
+    onDisconnectClick: () -> Unit,
 ) {
     val isScanning = state.isScanning
 
@@ -36,15 +39,28 @@ fun DiscoverDevicesScreen(
         Button(onClick = if (isScanning) onStopScanClick else onStartScanClick) {
             Text(text = if (isScanning) "Stop Scan" else "Start Scan")
         }
-
+        
+        Button(onClick = onDisconnectClick) {
+            Text(text = "Disconnect")
+        }
+        
         Text(
             text = "Devices:",
             modifier = Modifier.padding(top = 16.dp)
         )
 
+        when (state.connectionState) {
+            ConnectionState.CONNECTING -> Text(text = "CONNECTING")
+            ConnectionState.CONNECTED -> Text(text = "CONNECTED")
+            ConnectionState.DISCONNECTING -> Text(text = "DISCONNECTING")
+            ConnectionState.DISCONNECTED -> Text(text = "DISCONNECTED")
+        }
+
         DeviceList(
             scanResults = state.scanResults,
-            onDeviceClick = {}
+            onDeviceClick = {
+                onConnectToDevice(it.address)
+            }
         )
     }
 }
@@ -62,7 +78,8 @@ fun DiscoverDevicesScreenWithDevicesPreview() {
 
             val state = BleUiState(
                 scanResults = mockScanResults,
-                isScanning = true
+                isScanning = true,
+                connectionState = ConnectionState.DISCONNECTED
             )
 
             DiscoverDevicesScreen(
@@ -70,6 +87,8 @@ fun DiscoverDevicesScreenWithDevicesPreview() {
                 state = state,
                 onStartScanClick = {},
                 onStopScanClick = {},
+                onConnectToDevice = {},
+                onDisconnectClick = {},
             )
         }
     }
@@ -82,7 +101,8 @@ fun DiscoverDevicesScreenWithoutDevicesPreview() {
         Surface {
             val state = BleUiState(
                 scanResults = emptyList(),
-                isScanning = false
+                isScanning = false,
+                connectionState = ConnectionState.CONNECTED
             )
 
             DiscoverDevicesScreen(
@@ -90,6 +110,8 @@ fun DiscoverDevicesScreenWithoutDevicesPreview() {
                 state = state,
                 onStartScanClick = {},
                 onStopScanClick = {},
+                onConnectToDevice = {},
+                onDisconnectClick = {}
             )
         }
     }

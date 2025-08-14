@@ -24,11 +24,13 @@ class BleViewModel @Inject constructor(
     val state = combine(
         bleUseCases.observeScanResultsUseCase(),
         bleUseCases.observeIsScanningUseCase(),
+        bleUseCases.observeConnectionUseCase(),
         _state
-    ) { scanResults, isScanning, state ->
+    ) { scanResults, isScanning, connectionState, state ->
         state.copy(
             scanResults = scanResults,
-            isScanning = isScanning
+            isScanning = isScanning,
+            connectionState = connectionState,
         )
     }.stateIn(
         viewModelScope,
@@ -48,8 +50,21 @@ class BleViewModel @Inject constructor(
         }
     }
 
+    fun connectToDevice(address: String) {
+        viewModelScope.launch {
+            bleUseCases.connectToDeviceUseCase(address)
+        }
+    }
+
+    fun disconnectFromDevice() {
+        viewModelScope.launch {
+            bleUseCases.disconnectUseCase()
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         bleUseCases.stopScanUseCase()
+        bleUseCases.disconnectUseCase()
     }
 }
