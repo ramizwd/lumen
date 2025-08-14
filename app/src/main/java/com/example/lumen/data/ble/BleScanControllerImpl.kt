@@ -7,11 +7,11 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
-import android.content.pm.PackageManager
 import android.util.Log
 import com.example.lumen.data.mapper.toBleDevice
-import com.example.lumen.domain.ble.BleController
+import com.example.lumen.domain.ble.BleScanController
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.utils.hasPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -24,17 +24,18 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * Class that implements [BleController] interface.
- * Handles the low-level Android Bluetooth API interactions
+ * Class that implements [BleScanController] interface.
+ * Handles the low-level Android Bluetooth API scan interactions
  */
 @SuppressLint("MissingPermission")
-class BleControllerImpl(
+class BleScanControllerImpl(
     private val context: Context
-): BleController {
+): BleScanController {
 
-    companion object BleControllerImpl {
+    companion object {
         private const val LOG_TAG = "BleControllerImpl"
-        private const val REPOT_DELAY: Long = 0
+
+        private const val REPOT_DELAY_MILLIS: Long = 0
         private const val SCAN_PERIOD_MILLIS: Long = 30_000 // Scan for 30 seconds
     }
 
@@ -62,13 +63,8 @@ class BleControllerImpl(
         get() = _isScanning.asStateFlow()
 
     override suspend fun startScan() {
-        if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
+        if (!context.hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
             Log.d(LOG_TAG, "BLUETOOTH_SCAN permission missing!")
-            return
-        }
-
-        if (bluetoothLeScanner == null) {
-            Log.d(LOG_TAG, "BLE Scanner not available.")
             return
         }
 
@@ -81,55 +77,58 @@ class BleControllerImpl(
 
         val settings = ScanSettings.Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-            .setReportDelay(REPOT_DELAY)
+            .setReportDelay(REPOT_DELAY_MILLIS)
             .build()
 
-        try {
-            bluetoothLeScanner?.startScan(null, settings, leScanCallBack)
-            _isScanning.value = true
-            Log.d(LOG_TAG, "BLE Scan started...")
+        bluetoothLeScanner?.let { scanner ->
+            try {
+                scanner.startScan(null, settings, leScanCallback)
+                _isScanning.value = true
+                Log.d(LOG_TAG, "BLE Scan started...")
 
-            // Start a coroutine to stop scanning after a period
-            scanJob = bleScanScope.launch {
-                delay(SCAN_PERIOD_MILLIS)
-                stopScan()
-                Log.d(LOG_TAG, "Ble scan stopped automatically")
+                // Start a coroutine to stop scanning after a period
+                scanJob = bleScanScope.launch {
+                    delay(SCAN_PERIOD_MILLIS)
+                    stopScan()
+                    Log.d(LOG_TAG, "Ble scan stopped automatically")
+                }
+            } catch (e: SecurityException) {
+                Log.d(LOG_TAG, "SecurityException during scan start: ${e.message}")
+                _isScanning.value = false
+            } catch (e: Exception) {
+                Log.d(LOG_TAG, "Exception during scan start: ${e.message}")
+                _isScanning.value = false
             }
-        } catch (e: SecurityException) {
-            Log.d(LOG_TAG, "SecurityException during scan start: ${e.message}")
-            _isScanning.value = false
-        } catch (e: Exception) {
-            Log.d(LOG_TAG, "Exception during scan start: ${e.message}")
-            _isScanning.value = false
-        }
+        } ?: Log.d(LOG_TAG, "BLE Scanner not initialized.")
     }
 
     override fun stopScan() {
-        if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
+        if (!context.hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
             Log.d(LOG_TAG, "BLUETOOTH_SCAN permission missing!")
             return
         }
 
-        if (bluetoothLeScanner == null) {
-            Log.d(LOG_TAG, "BLE Scanner not available.")
+        if (!_isScanning.value) {
             return
         }
 
-        try {
-            bluetoothLeScanner?.stopScan(leScanCallBack)
-            _isScanning.value = false
-            scanJob?.cancel()
-            scanJob = null
-            Log.d(LOG_TAG, "BLE Scan stopped...")
-        } catch (e: SecurityException) {
-            Log.d(LOG_TAG, "SecurityException during scan start: ${e.message}")
-        } catch (e: Exception) {
-            Log.d(LOG_TAG, "Exception during scan start: ${e.message}")
-        }
+        bluetoothLeScanner?.let { scanner ->
+            try {
+                scanner.stopScan(leScanCallback)
+                _isScanning.value = false
+                scanJob?.cancel()
+                scanJob = null
+                Log.d(LOG_TAG, "BLE Scan stopped...")
+            } catch (e: SecurityException) {
+                Log.d(LOG_TAG, "SecurityException during scan stop: ${e.message}")
+            } catch (e: Exception) {
+                Log.d(LOG_TAG, "Exception during scan stop: ${e.message}")
+            }
+        } ?: Log.d(LOG_TAG, "BLE Scanner not initialized.")
     }
 
     // Anonymous object for receiving and processing the scan results
-    private val leScanCallBack: ScanCallback = object : ScanCallback() {
+    private val leScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
 
@@ -153,10 +152,5 @@ class BleControllerImpl(
             scanJob?.cancel()
             scanJob = null
         }
-    }
-
-    // Helper function to check if permission is granted
-    private fun hasPermission(permission: String): Boolean {
-        return context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
     }
 }

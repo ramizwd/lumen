@@ -1,8 +1,10 @@
 package com.example.lumen.di
 
 import android.content.Context
-import com.example.lumen.data.ble.BleControllerImpl
-import com.example.lumen.domain.ble.BleController
+import com.example.lumen.data.ble.BleGattControllerImpl
+import com.example.lumen.data.ble.BleScanControllerImpl
+import com.example.lumen.domain.ble.BleGattController
+import com.example.lumen.domain.ble.BleScanController
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,7 +18,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideBleController(@ApplicationContext context: Context): BleController {
-        return BleControllerImpl(context)
+    fun provideBleScanController(@ApplicationContext context: Context): BleScanController {
+        return BleScanControllerImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBleGattController(@ApplicationContext context: Context): BleGattController {
+        return BleGattControllerImpl(context)
     }
 }

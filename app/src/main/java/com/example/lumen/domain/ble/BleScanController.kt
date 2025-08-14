@@ -4,9 +4,9 @@ import com.example.lumen.domain.ble.model.BleDevice
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * Interface for controlling BLE operations
+ * Interface for controlling BLE scan operations
  */
-interface BleController {
+interface BleScanController {
     val scanResults: StateFlow<List<BleDevice>>
     val isScanning: StateFlow<Boolean>
 
