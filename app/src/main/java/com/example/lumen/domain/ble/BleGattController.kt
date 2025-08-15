@@ -11,6 +11,6 @@ interface BleGattController {
     val connectionState: StateFlow<ConnectionState>
     val connectedDevice: StateFlow<BleDevice?>
 
-    fun connect(address: String)
+    fun connect(selectedDevice: BleDevice?)
     fun disconnect()
 }

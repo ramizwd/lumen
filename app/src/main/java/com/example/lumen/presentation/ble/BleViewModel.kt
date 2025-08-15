@@ -54,7 +54,10 @@ class BleViewModel @Inject constructor(
 
     fun connectToDevice(address: String) {
         viewModelScope.launch {
-            bleUseCases.connectToDeviceUseCase(address)
+            val selectedDevice = state.value.scanResults.find { it.address == address }
+            selectedDevice?.let {
+                bleUseCases.connectToDeviceUseCase(selectedDevice)
+            }
         }
     }
 

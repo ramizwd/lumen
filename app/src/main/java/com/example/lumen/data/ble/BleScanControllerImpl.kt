@@ -132,10 +132,12 @@ class BleScanControllerImpl(
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
 
-            // Convert the results to BleDevice model and update the result with new device
-            _scanResults.update { devices ->
-                val newDevice = result.toBleDevice()
-                if (newDevice in devices) devices else devices + newDevice
+            if (result.isConnectable) {
+                // Convert the results to BleDevice model and update the result with new device
+                _scanResults.update { devices ->
+                    val newDevice = result.toBleDevice()
+                    if (newDevice in devices) devices else devices + newDevice
+                }
             }
         }
 

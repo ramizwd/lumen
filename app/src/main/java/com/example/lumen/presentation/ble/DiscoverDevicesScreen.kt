@@ -40,21 +40,23 @@ fun DiscoverDevicesScreen(
             Text(text = if (isScanning) "Stop Scan" else "Start Scan")
         }
 
-            Text(text = "Connected device: ${state.connectedDevice?.name}")
-
-        Button(onClick = onDisconnectClick) {
-            Text(text = "Disconnect")
-        }
-        
         Text(
             text = "Devices:",
             modifier = Modifier.padding(top = 16.dp)
         )
 
         when (state.connectionState) {
-            ConnectionState.CONNECTING -> Text(text = "CONNECTING")
-            ConnectionState.CONNECTED -> Text(text = "CONNECTED")
-            ConnectionState.DISCONNECTING -> Text(text = "DISCONNECTING")
+            ConnectionState.CONNECTING -> {
+                Text(text = "CONNECTING to ${state.connectedDevice?.name}...")
+            }
+            ConnectionState.CONNECTED -> {
+                Text(text = "CONNECTED to ${state.connectedDevice?.name}")
+                Button(onClick = onDisconnectClick) {
+                    Text(text = "Disconnect")
+                }
+            }
+            ConnectionState.DISCONNECTING ->
+                Text(text = "DISCONNECTING from ${state.connectedDevice?.name}")
             ConnectionState.DISCONNECTED -> Text(text = "DISCONNECTED")
         }
 

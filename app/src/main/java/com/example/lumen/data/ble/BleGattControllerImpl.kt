@@ -8,7 +8,6 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.util.Log
-import com.example.lumen.data.mapper.toBleDevice
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.ConnectionState
@@ -48,18 +47,20 @@ class BleGattControllerImpl(
     override val connectedDevice: StateFlow<BleDevice?>
         get() = _connectedDevice.asStateFlow()
 
-    override fun connect(address: String) {
+    override fun connect(selectedDevice: BleDevice?) {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission missing!")
             return
         }
 
-        _connectionState.value = ConnectionState.CONNECTING
         bluetoothAdapter?.let { adapter ->
             try {
-                val device = adapter.getRemoteDevice(address)
+                _connectionState.value = ConnectionState.CONNECTING
+                _connectedDevice.value = selectedDevice
+
+                val device = adapter.getRemoteDevice(selectedDevice?.address)
                 bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
-            } catch (e: IllegalArgumentException) {
+            } catch (_: IllegalArgumentException) {
                 Log.d(LOG_TAG, "Device not found")
                 close()
             }
@@ -97,7 +98,6 @@ class BleGattControllerImpl(
 
                 BluetoothProfile.STATE_CONNECTED -> {
                     Log.d(LOG_TAG, "GATT successfully connected")
-                    _connectedDevice.value = gatt?.device?.toBleDevice()
                     _connectionState.value = ConnectionState.CONNECTED
                 }
 
