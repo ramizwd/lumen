@@ -67,6 +67,14 @@ class BleViewModel @Inject constructor(
         }
     }
 
+    fun turnLedOn() {
+        bleUseCases.turnLedOnUseCase()
+    }
+
+    fun turnLedOff() {
+        bleUseCases.turnLedOffUseCase()
+    }
+
     override fun onCleared() {
         super.onCleared()
         bleUseCases.stopScanUseCase()

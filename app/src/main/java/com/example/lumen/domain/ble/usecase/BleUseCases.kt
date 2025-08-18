@@ -14,4 +14,6 @@ data class BleUseCases @Inject constructor(
     val observeConnectionUseCase: ObserveConnectionUseCase,
     val disconnectUseCase: DisconnectUseCase,
     val observeConnectedDeviceUseCase: ObserveConnectedDeviceUseCase,
+    val turnLedOnUseCase: TurnLedOnUseCase,
+    val turnLedOffUseCase: TurnLedOffUseCase,
 )

@@ -26,6 +26,8 @@ fun DiscoverDevicesScreen(
     onStopScanClick: () -> Unit,
     onConnectToDevice: (String) -> Unit,
     onDisconnectClick: () -> Unit,
+    onTurnLedOnClick: () -> Unit,
+    onTurnLedOffClick: () -> Unit,
 ) {
     val isScanning = state.isScanning
 
@@ -40,17 +42,20 @@ fun DiscoverDevicesScreen(
             Text(text = if (isScanning) "Stop Scan" else "Start Scan")
         }
 
-        Text(
-            text = "Devices:",
-            modifier = Modifier.padding(top = 16.dp)
-        )
-
         when (state.connectionState) {
             ConnectionState.CONNECTING -> {
                 Text(text = "CONNECTING to ${state.connectedDevice?.name}...")
             }
             ConnectionState.CONNECTED -> {
                 Text(text = "CONNECTED to ${state.connectedDevice?.name}")
+
+                Button(onClick = onTurnLedOnClick) {
+                    Text(text = "Turn On")
+                }
+                Button(onClick = onTurnLedOffClick) {
+                    Text(text = "Turn Off")
+                }
+
                 Button(onClick = onDisconnectClick) {
                     Text(text = "Disconnect")
                 }
@@ -59,6 +64,11 @@ fun DiscoverDevicesScreen(
                 Text(text = "DISCONNECTING from ${state.connectedDevice?.name}")
             ConnectionState.DISCONNECTED -> Text(text = "DISCONNECTED")
         }
+
+        Text(
+            text = "Devices:",
+            modifier = Modifier.padding(top = 16.dp)
+        )
 
         DeviceList(
             scanResults = state.scanResults,
@@ -93,6 +103,8 @@ fun DiscoverDevicesScreenWithDevicesPreview() {
                 onStopScanClick = {},
                 onConnectToDevice = {},
                 onDisconnectClick = {},
+                onTurnLedOnClick = {},
+                onTurnLedOffClick = {},
             )
         }
     }
@@ -115,7 +127,9 @@ fun DiscoverDevicesScreenWithoutDevicesPreview() {
                 onStartScanClick = {},
                 onStopScanClick = {},
                 onConnectToDevice = {},
-                onDisconnectClick = {}
+                onDisconnectClick = {},
+                onTurnLedOnClick = {},
+                onTurnLedOffClick = {},
             )
         }
     }

@@ -91,6 +91,8 @@ class MainActivity : ComponentActivity() {
                         onStopScanClick = vm::stopScan,
                         onConnectToDevice = vm::connectToDevice,
                         onDisconnectClick = vm::disconnectFromDevice,
+                        onTurnLedOnClick = vm::turnLedOn,
+                        onTurnLedOffClick = vm::turnLedOff
                     )
                 }
             }
