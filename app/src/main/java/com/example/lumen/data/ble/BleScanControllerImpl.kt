@@ -129,6 +129,7 @@ class BleScanControllerImpl(
 
     // Anonymous object for receiving and processing the scan results
     private val leScanCallback = object : ScanCallback() {
+
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
 
