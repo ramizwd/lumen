@@ -1,4 +1,4 @@
-package com.example.lumen.domain.ble.usecase
+package com.example.lumen.domain.ble.usecase.discovery
 
 import android.util.Log
 import com.example.lumen.domain.ble.BleScanController

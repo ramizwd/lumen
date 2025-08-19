@@ -1,4 +1,4 @@
-package com.example.lumen.domain.ble.usecase
+package com.example.lumen.domain.ble.usecase.connection
 
 import com.example.lumen.domain.ble.BleGattController
 import javax.inject.Inject

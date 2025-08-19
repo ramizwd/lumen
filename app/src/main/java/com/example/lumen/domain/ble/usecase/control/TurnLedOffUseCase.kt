@@ -1,4 +1,4 @@
-package com.example.lumen.domain.ble.usecase
+package com.example.lumen.domain.ble.usecase.control
 
 import android.util.Log
 import com.example.lumen.domain.ble.BleGattController

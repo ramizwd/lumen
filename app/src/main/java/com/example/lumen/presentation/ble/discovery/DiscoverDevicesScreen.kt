@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble
+package com.example.lumen.presentation.ble.discovery
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,19 +15,16 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.ConnectionState
-import com.example.lumen.presentation.ble.components.DeviceList
+import com.example.lumen.presentation.ble.discovery.components.DeviceList
 import com.example.lumen.presentation.theme.LumenTheme
 
 @Composable
 fun DiscoverDevicesScreen(
     innerPadding: PaddingValues,
-    state: BleUiState,
+    state: DiscoveryUiState,
     onStartScanClick: () -> Unit,
     onStopScanClick: () -> Unit,
     onConnectToDevice: (String) -> Unit,
-    onDisconnectClick: () -> Unit,
-    onTurnLedOnClick: () -> Unit,
-    onTurnLedOffClick: () -> Unit,
 ) {
     val isScanning = state.isScanning
 
@@ -40,29 +37,6 @@ fun DiscoverDevicesScreen(
     ) {
         Button(onClick = if (isScanning) onStopScanClick else onStartScanClick) {
             Text(text = if (isScanning) "Stop Scan" else "Start Scan")
-        }
-
-        when (state.connectionState) {
-            ConnectionState.CONNECTING -> {
-                Text(text = "CONNECTING to ${state.connectedDevice?.name}...")
-            }
-            ConnectionState.CONNECTED -> {
-                Text(text = "CONNECTED to ${state.connectedDevice?.name}")
-
-                Button(onClick = onTurnLedOnClick) {
-                    Text(text = "Turn On")
-                }
-                Button(onClick = onTurnLedOffClick) {
-                    Text(text = "Turn Off")
-                }
-
-                Button(onClick = onDisconnectClick) {
-                    Text(text = "Disconnect")
-                }
-            }
-            ConnectionState.DISCONNECTING ->
-                Text(text = "DISCONNECTING from ${state.connectedDevice?.name}")
-            ConnectionState.DISCONNECTED -> Text(text = "DISCONNECTED")
         }
 
         Text(
@@ -90,7 +64,7 @@ fun DiscoverDevicesScreenWithDevicesPreview() {
                 BleDevice(name = null, address = "FF:EE:DD:CC:BB:AA")
             )
 
-            val state = BleUiState(
+            val state = DiscoveryUiState(
                 scanResults = mockScanResults,
                 isScanning = true,
                 connectionState = ConnectionState.DISCONNECTED
@@ -102,9 +76,6 @@ fun DiscoverDevicesScreenWithDevicesPreview() {
                 onStartScanClick = {},
                 onStopScanClick = {},
                 onConnectToDevice = {},
-                onDisconnectClick = {},
-                onTurnLedOnClick = {},
-                onTurnLedOffClick = {},
             )
         }
     }
@@ -115,7 +86,7 @@ fun DiscoverDevicesScreenWithDevicesPreview() {
 fun DiscoverDevicesScreenWithoutDevicesPreview() {
     LumenTheme {
         Surface {
-            val state = BleUiState(
+            val state = DiscoveryUiState(
                 scanResults = emptyList(),
                 isScanning = false,
                 connectionState = ConnectionState.CONNECTED
@@ -127,9 +98,6 @@ fun DiscoverDevicesScreenWithoutDevicesPreview() {
                 onStartScanClick = {},
                 onStopScanClick = {},
                 onConnectToDevice = {},
-                onDisconnectClick = {},
-                onTurnLedOnClick = {},
-                onTurnLedOffClick = {},
             )
         }
     }

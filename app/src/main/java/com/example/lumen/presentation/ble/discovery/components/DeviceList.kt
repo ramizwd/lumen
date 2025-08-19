@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.components
+package com.example.lumen.presentation.ble.discovery.components
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items

@@ -13,12 +13,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.lumen.presentation.ble.BleViewModel
-import com.example.lumen.presentation.ble.DiscoverDevicesScreen
+import com.example.lumen.domain.ble.model.ConnectionState
+import com.example.lumen.presentation.ble.discovery.DiscoverDevicesScreen
+import com.example.lumen.presentation.ble.discovery.DiscoveryViewModel
+import com.example.lumen.presentation.ble.led_control.LedControlScreen
+import com.example.lumen.presentation.ble.led_control.LedControlViewModel
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.permissionArray
 import dagger.hilt.android.AndroidEntryPoint
@@ -80,20 +84,38 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LumenTheme {
-                val vm = hiltViewModel<BleViewModel>()
-                val state by vm.state.collectAsState()
+                val discoveryViewModel = hiltViewModel<DiscoveryViewModel>()
+                val ledControlViewModel = hiltViewModel<LedControlViewModel>()
+
+                val discoveryState by discoveryViewModel.state.collectAsState()
+                val connectedDevice by ledControlViewModel.connectedDevice.collectAsState()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    DiscoverDevicesScreen(
-                        innerPadding,
-                        state = state,
-                        onStartScanClick = vm::startScan,
-                        onStopScanClick = vm::stopScan,
-                        onConnectToDevice = vm::connectToDevice,
-                        onDisconnectClick = vm::disconnectFromDevice,
-                        onTurnLedOnClick = vm::turnLedOn,
-                        onTurnLedOffClick = vm::turnLedOff
-                    )
+                    when (discoveryState.connectionState) {
+                        ConnectionState.CONNECTING -> {
+                            Text(text = "CONNECTING...")
+                        }
+                        ConnectionState.CONNECTED -> {
+                            LedControlScreen(
+                                innerPadding,
+                                connectedDevice = connectedDevice,
+                                onDisconnectClick = discoveryViewModel::disconnectFromDevice,
+                                onTurnLedOnClick = ledControlViewModel::turnLedOn,
+                                onTurnLedOffClick = ledControlViewModel::turnLedOff,
+                            )
+                        }
+                        ConnectionState.DISCONNECTING ->
+                            Text(text = "DISCONNECTING...")
+                        ConnectionState.DISCONNECTED -> {
+                            DiscoverDevicesScreen(
+                                innerPadding,
+                                state = discoveryState,
+                                onStartScanClick = discoveryViewModel::startScan,
+                                onStopScanClick = discoveryViewModel::stopScan,
+                                onConnectToDevice = discoveryViewModel::connectToDevice,
+                            )
+                        }
+                    }
                 }
             }
         }

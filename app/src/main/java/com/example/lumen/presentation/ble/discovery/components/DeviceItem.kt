@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.components
+package com.example.lumen.presentation.ble.discovery.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES

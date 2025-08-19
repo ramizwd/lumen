@@ -1,8 +1,9 @@
-package com.example.lumen.presentation.ble
+package com.example.lumen.presentation.ble.discovery
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lumen.domain.ble.usecase.BleUseCases
+import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
+import com.example.lumen.domain.ble.usecase.discovery.DiscoveryUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -12,27 +13,26 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * ViewModel for invoking BLE operations and retrieving results
+ * ViewModel for invoking BLE scan and connection operations
  */
 @HiltViewModel
-class BleViewModel @Inject constructor(
-    private val bleUseCases: BleUseCases
+class DiscoveryViewModel @Inject constructor(
+    private val discoveryUseCases: DiscoveryUseCases,
+    private val connectionUseCases: ConnectionUseCases,
 ): ViewModel() {
 
-    private val _state = MutableStateFlow(BleUiState())
+    private val _state = MutableStateFlow(DiscoveryUiState())
 
     val state = combine(
-        bleUseCases.observeScanResultsUseCase(),
-        bleUseCases.observeIsScanningUseCase(),
-        bleUseCases.observeConnectionUseCase(),
-        bleUseCases.observeConnectedDeviceUseCase(),
+        discoveryUseCases.observeScanResultsUseCase(),
+        discoveryUseCases.observeIsScanningUseCase(),
+        connectionUseCases.observeConnectionUseCase(),
         _state
-    ) { scanResults, isScanning, connectionState, connectedDevice, state ->
+    ) { scanResults, isScanning, connectionState, state ->
         state.copy(
             scanResults = scanResults,
             isScanning = isScanning,
             connectionState = connectionState,
-            connectedDevice = connectedDevice,
         )
     }.stateIn(
         viewModelScope,
@@ -42,13 +42,13 @@ class BleViewModel @Inject constructor(
 
     fun startScan() {
         viewModelScope.launch {
-            bleUseCases.startScanUseCase()
+            discoveryUseCases.startScanUseCase()
         }
     }
 
     fun stopScan() {
         viewModelScope.launch {
-            bleUseCases.stopScanUseCase()
+            discoveryUseCases.stopScanUseCase()
         }
     }
 
@@ -56,28 +56,20 @@ class BleViewModel @Inject constructor(
         viewModelScope.launch {
             val selectedDevice = state.value.scanResults.find { it.address == address }
             selectedDevice?.let {
-                bleUseCases.connectToDeviceUseCase(selectedDevice)
+                connectionUseCases.connectToDeviceUseCase(selectedDevice)
             }
         }
     }
 
     fun disconnectFromDevice() {
         viewModelScope.launch {
-            bleUseCases.disconnectUseCase()
+            connectionUseCases.disconnectUseCase()
         }
-    }
-
-    fun turnLedOn() {
-        bleUseCases.turnLedOnUseCase()
-    }
-
-    fun turnLedOff() {
-        bleUseCases.turnLedOffUseCase()
     }
 
     override fun onCleared() {
         super.onCleared()
-        bleUseCases.stopScanUseCase()
-        bleUseCases.disconnectUseCase()
+        discoveryUseCases.stopScanUseCase()
+        connectionUseCases.disconnectUseCase()
     }
 }
