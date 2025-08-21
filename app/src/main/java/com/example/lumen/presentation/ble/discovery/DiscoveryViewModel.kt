@@ -13,7 +13,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * ViewModel for invoking BLE scan and connection operations
+ * ViewModel for managing UI state related to scan and connection,
+ * also responsible for invoking scan and connection operations.
  */
 @HiltViewModel
 class DiscoveryViewModel @Inject constructor(
