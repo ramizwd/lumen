@@ -3,6 +3,7 @@ package com.example.lumen.presentation.ble.led_control
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.domain.ble.model.StaticLedColors
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,7 +14,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * ViewModel for invoking BLE device control operations
+ * ViewModel for managing UI state related to the connected device,
+ * also responsible for invoking device control operations.
  */
 @HiltViewModel
 class LedControlViewModel @Inject constructor(
@@ -33,11 +35,14 @@ class LedControlViewModel @Inject constructor(
     }
 
     fun turnLedOn() {
-        controlUseCases.turnLedOnUseCase()
-
+        controlUseCases.turnLedOnOffUseCase(true)
     }
 
     fun turnLedOff() {
-        controlUseCases.turnLedOffUseCase()
+        controlUseCases.turnLedOnOffUseCase(false)
+    }
+
+    fun changeStaticColor(color: StaticLedColors) {
+        controlUseCases.changeStaticColorUseCase(color)
     }
 }
