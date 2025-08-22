@@ -1,7 +1,8 @@
 package com.example.lumen.domain.ble.model
 
 /**
- * enum for all preset colors the user can choose from
+ * enum for all preset colors the user can choose from.
+ * Format: RR GG BB and 1E (command byte)
  */
 enum class StaticLedColors(val hex: String) {
     RED("ff00001e"),

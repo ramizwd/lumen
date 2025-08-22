@@ -91,7 +91,7 @@ class BleGattControllerImpl(
         TODO("Not yet implemented")
     }
 
-    override fun writeCharacteristic(
+    override suspend fun writeCharacteristic(
         serviceUUID: UUID,
         charaUUID: UUID,
         data: ByteArray

@@ -102,7 +102,8 @@ class MainActivity : ComponentActivity() {
                                 onDisconnectClick = discoveryViewModel::disconnectFromDevice,
                                 onTurnLedOnClick = ledControlViewModel::turnLedOn,
                                 onTurnLedOffClick = ledControlViewModel::turnLedOff,
-                                onChangeStaticColorClick = ledControlViewModel::changeStaticColor
+                                onChangeStaticColorClick = ledControlViewModel::changeStaticColor,
+                                onChangeBrightness = ledControlViewModel::changeBrightness,
                             )
                         }
                         ConnectionState.DISCONNECTING ->

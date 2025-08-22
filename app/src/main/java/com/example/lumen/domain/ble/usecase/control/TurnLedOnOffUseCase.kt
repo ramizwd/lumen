@@ -15,7 +15,7 @@ class TurnLedOnOffUseCase @Inject constructor(
         private const val LOG_TAG = "TurnLedOnOffUseCase"
     }
 
-    operator fun invoke(isLedOn: Boolean) {
+    suspend operator fun invoke(isLedOn: Boolean) {
         val command = if (isLedOn) {
             Log.d(LOG_TAG, "Turn LED on")
             LED_ON_COMMAND

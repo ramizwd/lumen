@@ -10,7 +10,7 @@ class ChangeStaticColorUseCase @Inject constructor(
     private val bleGattController: BleGattController
 ) {
 
-    operator fun invoke(color: StaticLedColors){
+    suspend operator fun invoke(color: StaticLedColors){
         bleGattController.writeCharacteristic(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,

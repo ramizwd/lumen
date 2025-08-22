@@ -20,7 +20,7 @@ interface BleGattController {
         charaUUID: UUID
     ): ByteArray?
 
-    fun writeCharacteristic(
+    suspend fun writeCharacteristic(
         serviceUUID: UUID,
         charaUUID: UUID,
         data: ByteArray
