@@ -13,9 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.StaticLedColors
 import com.example.lumen.presentation.theme.LumenTheme
+import com.example.lumen.utils.AppConstants.BRIGHTNESS_MAX
+import com.example.lumen.utils.AppConstants.BRIGHTNESS_MIN
 
 @Composable
 fun LedControlScreen(
@@ -34,6 +41,7 @@ fun LedControlScreen(
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     onChangeStaticColorClick: (StaticLedColors) -> Unit,
+    onChangeBrightness: (Int) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -42,6 +50,9 @@ fun LedControlScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+
+        var sliderPosition by remember { mutableFloatStateOf(0f) }
+
         Text(text = "CONNECTED to ${connectedDevice?.name}")
 
 
@@ -80,6 +91,18 @@ fun LedControlScreen(
             }
         }
 
+        Slider(
+            modifier = Modifier.padding(end = 34.dp, start = 34.dp),
+            valueRange = BRIGHTNESS_MIN.toFloat()..BRIGHTNESS_MAX.toFloat(),
+            value = sliderPosition,
+            onValueChange = {
+                sliderPosition = it
+                onChangeBrightness(it.toInt())
+            },
+        )
+        val sliderPercentage = ((sliderPosition / BRIGHTNESS_MAX) * 100).toInt()
+        Text(text = "${sliderPercentage}%")
+
         Button(onClick = onDisconnectClick) {
             Text(text = "Disconnect")
         }
@@ -104,6 +127,7 @@ fun LedControlScreenPreview() {
                 onTurnLedOnClick = {},
                 onTurnLedOffClick = {},
                 onChangeStaticColorClick = {},
+                onChangeBrightness = {},
             )
         }
     }
