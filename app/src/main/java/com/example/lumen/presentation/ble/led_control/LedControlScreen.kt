@@ -41,8 +41,7 @@ import com.example.lumen.utils.AppConstants.BRIGHTNESS_MIN
 @Composable
 fun LedControlScreen(
     innerPadding: PaddingValues,
-    connectedDevice: BleDevice?,
-    controllerState: LedControllerState,
+    state: LedControlUiState,
     onDisconnectClick: () -> Unit,
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
@@ -58,13 +57,13 @@ fun LedControlScreen(
     ) {
         val hapticFeedback = LocalHapticFeedback.current
 
-        val isControllerOn = controllerState.isOn
-        val currBrightness = controllerState.brightness.toFloat()
+        val isControllerOn = state.controllerState?.isOn ?: false
+        val currBrightness = state.controllerState?.brightness?.toFloat() ?: 0f
 
         var sliderPosition by remember { mutableFloatStateOf(currBrightness) }
         var checked by remember { mutableStateOf(isControllerOn) }
 
-        Text(text = "CONNECTED to ${connectedDevice?.name}")
+        Text(text = "CONNECTED to ${state.connectedDevice?.name}")
 
         Switch(
             checked = checked,
@@ -151,10 +150,14 @@ fun LedControlScreenPreview() {
                 whiteLedBrightness = 0.toByte()
             )
 
-            LedControlScreen(
-                innerPadding = PaddingValues(),
+            val state = LedControlUiState(
                 connectedDevice = connDevice,
                 controllerState = controllerState,
+            )
+
+            LedControlScreen(
+                innerPadding = PaddingValues(),
+                state = state,
                 onDisconnectClick = {},
                 onTurnLedOnClick = {},
                 onTurnLedOffClick = {},

@@ -9,4 +9,5 @@ data class ControlUseCases @Inject constructor(
     val turnLedOnOffUseCase: TurnLedOnOffUseCase,
     val changeStaticColorUseCase: ChangeStaticColorUseCase,
     val changeBrightnessUseCase: ChangeBrightnessUseCase,
+    val observeControllerStateUseCase: ObserveControllerStateUseCase,
 )

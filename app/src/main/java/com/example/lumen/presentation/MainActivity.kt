@@ -85,12 +85,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             LumenTheme {
                 val discoveryViewModel = hiltViewModel<DiscoveryViewModel>()
-                val ledControlViewModel = hiltViewModel<LedControlViewModel>()
-
                 val discoveryState by discoveryViewModel.state.collectAsState()
 
-                val connectedDevice by ledControlViewModel.connectedDevice.collectAsState()
-                val controllerState by ledControlViewModel.ledControllerState.collectAsState()
+                val ledControlViewModel = hiltViewModel<LedControlViewModel>()
+                val controlState by ledControlViewModel.state.collectAsState()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     when (discoveryState.connectionState) {
@@ -98,11 +96,10 @@ class MainActivity : ComponentActivity() {
                             Text(text = "CONNECTING...")
                         }
                         ConnectionState.CONNECTED -> {
-                            if (controllerState != null) {
+                            if (controlState.controllerState != null) {
                                 LedControlScreen(
                                     innerPadding,
-                                    connectedDevice = connectedDevice,
-                                    controllerState = controllerState!!,
+                                    state = controlState,
                                     onDisconnectClick = discoveryViewModel::disconnectFromDevice,
                                     onTurnLedOnClick = ledControlViewModel::turnLedOn,
                                     onTurnLedOffClick = ledControlViewModel::turnLedOff,
