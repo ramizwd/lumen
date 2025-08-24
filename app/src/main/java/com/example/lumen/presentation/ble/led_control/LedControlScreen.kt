@@ -1,42 +1,25 @@
 package com.example.lumen.presentation.ble.led_control
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.LedControllerState
 import com.example.lumen.domain.ble.model.StaticLedColors
+import com.example.lumen.presentation.ble.led_control.components.BrightnessSlider
+import com.example.lumen.presentation.ble.led_control.components.LedSwitch
+import com.example.lumen.presentation.ble.led_control.components.PresetColorRow
 import com.example.lumen.presentation.theme.LumenTheme
-import com.example.lumen.utils.AppConstants.BRIGHTNESS_MAX
-import com.example.lumen.utils.AppConstants.BRIGHTNESS_MIN
 
 @Composable
 fun LedControlScreen(
@@ -55,69 +38,20 @@ fun LedControlScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        val hapticFeedback = LocalHapticFeedback.current
-
-        val isControllerOn = state.controllerState?.isOn ?: false
-        val currBrightness = state.controllerState?.brightness?.toFloat() ?: 0f
-
-        var sliderPosition by remember { mutableFloatStateOf(currBrightness) }
-        var checked by remember { mutableStateOf(isControllerOn) }
-
         Text(text = "CONNECTED to ${state.connectedDevice?.name}")
 
-        Switch(
-            checked = checked,
-            onCheckedChange = {
-                if (it) {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn)
-                    checked = true
-                    onTurnLedOnClick()
-                } else {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOff)
-                    checked = false
-                    onTurnLedOffClick()
-                }},
+        LedSwitch(
+            isOn = state.controllerState?.isOn ?: false,
+            onTurnLedOnClick = onTurnLedOnClick,
+            onTurnLedOffClick = onTurnLedOffClick,
         )
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            StaticLedColors.entries.forEach { color ->
-                val bgColor = when(color) {
-                    StaticLedColors.RED -> Color.Red
-                    StaticLedColors.GREEN -> Color.Green
-                    StaticLedColors.BLUE -> Color.Blue
-                    StaticLedColors.YELLOW -> Color.Yellow
-                    StaticLedColors.PURPLE -> Color.Magenta
-                    StaticLedColors.CYAN -> Color.Cyan
-                    StaticLedColors.WHITE -> Color.White
-                }
+        PresetColorRow(onChangeStaticColorClick = onChangeStaticColorClick)
 
-                Box(
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .size(40.dp)
-                        .clip(shape = CircleShape)
-                        .background(bgColor)
-                        .border(
-                            width = 1.dp,
-                            color = Color.Black,
-                            shape = CircleShape,
-                        )
-                        .clickable { onChangeStaticColorClick(color) }
-                )
-            }
-        }
-
-        Slider(
-            modifier = Modifier.padding(end = 34.dp, start = 34.dp),
-            valueRange = BRIGHTNESS_MIN.toFloat()..BRIGHTNESS_MAX.toFloat(),
-            value = sliderPosition,
-            onValueChange = {
-                sliderPosition = it
-                onChangeBrightness(it.toInt())
-            },
+        BrightnessSlider(
+            currentBrightness = state.controllerState?.brightness?.toFloat() ?: 0f,
+            onChangeBrightness = onChangeBrightness
         )
-        val sliderPercentage = ((sliderPosition / BRIGHTNESS_MAX) * 100).toInt()
-        Text(text = "${sliderPercentage}%")
 
         Button(onClick = onDisconnectClick) {
             Text(text = "Disconnect")
