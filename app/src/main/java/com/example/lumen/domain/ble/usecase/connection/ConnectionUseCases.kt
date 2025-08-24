@@ -10,4 +10,5 @@ data class ConnectionUseCases @Inject constructor(
     val observeConnectionUseCase: ObserveConnectionUseCase,
     val disconnectUseCase: DisconnectUseCase,
     val observeConnectedDeviceUseCase: ObserveConnectedDeviceUseCase,
+    val observeControllerStateUseCase: ObserveControllerStateUseCase
 )

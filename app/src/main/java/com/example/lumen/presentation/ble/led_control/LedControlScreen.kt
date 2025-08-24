@@ -15,19 +15,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.domain.ble.model.LedControllerState
 import com.example.lumen.domain.ble.model.StaticLedColors
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.AppConstants.BRIGHTNESS_MAX
@@ -37,6 +42,7 @@ import com.example.lumen.utils.AppConstants.BRIGHTNESS_MIN
 fun LedControlScreen(
     innerPadding: PaddingValues,
     connectedDevice: BleDevice?,
+    controllerState: LedControllerState,
     onDisconnectClick: () -> Unit,
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
@@ -50,18 +56,29 @@ fun LedControlScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        val hapticFeedback = LocalHapticFeedback.current
 
-        var sliderPosition by remember { mutableFloatStateOf(0f) }
+        val isControllerOn = controllerState.isOn
+        val currBrightness = controllerState.brightness.toFloat()
+
+        var sliderPosition by remember { mutableFloatStateOf(currBrightness) }
+        var checked by remember { mutableStateOf(isControllerOn) }
 
         Text(text = "CONNECTED to ${connectedDevice?.name}")
 
-
-        Button(onClick = onTurnLedOnClick) {
-            Text(text = "Turn On")
-        }
-        Button(onClick = onTurnLedOffClick) {
-            Text(text = "Turn Off")
-        }
+        Switch(
+            checked = checked,
+            onCheckedChange = {
+                if (it) {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                    checked = true
+                    onTurnLedOnClick()
+                } else {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOff)
+                    checked = false
+                    onTurnLedOffClick()
+                }},
+        )
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             StaticLedColors.entries.forEach { color ->
@@ -120,9 +137,24 @@ fun LedControlScreenPreview() {
                 address = "00:11:22:33:44:55"
             )
 
+            val controllerState = LedControllerState(
+                isOn = true,
+                preset = 5.toByte(),
+                speed = 50.toByte(),
+                brightness = 180,
+                icModel = 1.toByte(),
+                channel = 0.toByte(),
+                pixelCount = 80,
+                red = "FF",
+                green = "00",
+                blue = "00",
+                whiteLedBrightness = 0.toByte()
+            )
+
             LedControlScreen(
                 innerPadding = PaddingValues(),
                 connectedDevice = connDevice,
+                controllerState = controllerState,
                 onDisconnectClick = {},
                 onTurnLedOnClick = {},
                 onTurnLedOffClick = {},

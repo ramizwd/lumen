@@ -2,6 +2,7 @@ package com.example.lumen.domain.ble
 
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.ConnectionState
+import com.example.lumen.domain.ble.model.LedControllerState
 import kotlinx.coroutines.flow.StateFlow
 import java.util.UUID
 
@@ -11,14 +12,10 @@ import java.util.UUID
 interface BleGattController {
     val connectionState: StateFlow<ConnectionState>
     val connectedDevice: StateFlow<BleDevice?>
+    val ledControllerState: StateFlow<LedControllerState?>
 
     fun connect(selectedDevice: BleDevice?)
     fun disconnect()
-
-    fun readCharacteristic(
-        serviceUUID: UUID,
-        charaUUID: UUID
-    ): ByteArray?
 
     suspend fun writeCharacteristic(
         serviceUUID: UUID,
