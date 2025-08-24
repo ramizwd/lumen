@@ -11,7 +11,7 @@ import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.os.Build
 import android.util.Log
-import com.example.lumen.data.mapper.toLedControllerInfo
+import com.example.lumen.data.mapper.toLedControllerState
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.ConnectionState
@@ -19,7 +19,7 @@ import com.example.lumen.domain.ble.model.GattConstants.CCCD_UUID
 import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.GET_INFO_COMMAND
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
-import com.example.lumen.domain.ble.model.LedControllerInfo
+import com.example.lumen.domain.ble.model.LedControllerState
 import com.example.lumen.utils.hasPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -57,9 +57,9 @@ class BleGattControllerImpl(
     override val connectedDevice: StateFlow<BleDevice?>
         get() = _connectedDevice.asStateFlow()
 
-    private val _ledControllerInfo = MutableStateFlow<LedControllerInfo?>(null)
-    override val ledControllerInfo: StateFlow<LedControllerInfo?>
-        get() = _ledControllerInfo.asStateFlow()
+    private val _ledControllerState = MutableStateFlow<LedControllerState?>(null)
+    override val ledControllerState: StateFlow<LedControllerState?>
+        get() = _ledControllerState.asStateFlow()
 
     override fun connect(selectedDevice: BleDevice?) {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
@@ -228,7 +228,7 @@ class BleGattControllerImpl(
 
             // Get the LED controller's info from its notification
             if (characteristic.uuid == CHARACTERISTIC_UUID) {
-                getControllerInfo(value)
+                getControllerState(value)
             }
         }
 
@@ -248,7 +248,7 @@ class BleGattControllerImpl(
 
                 // Get the LED controller's info from its notification
                 if (characteristic.uuid == CHARACTERISTIC_UUID) {
-                    getControllerInfo(value)
+                    getControllerState(value)
                 }
             }
         }
@@ -294,7 +294,7 @@ class BleGattControllerImpl(
                     descriptor.uuid == CCCD_UUID) {
                     Log.d(LOG_TAG, "Notifications successfully enabled")
 
-                    requestControllerInfo()
+                    requestControllerState()
                 }
             } ?: Log.d(LOG_TAG, "Descriptor write failed")
         }
@@ -321,7 +321,7 @@ class BleGattControllerImpl(
         } ?: Log.d(LOG_TAG, "GATT not initialized for enableNotifications")
     }
 
-    private fun requestControllerInfo() {
+    private fun requestControllerState() {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission missing!")
             return
@@ -343,10 +343,10 @@ class BleGattControllerImpl(
     }
 
 
-    private fun getControllerInfo(value: ByteArray) {
+    private fun getControllerState(value: ByteArray) {
         if (value.size >= 12) {
-            _ledControllerInfo.value = value.toLedControllerInfo()
-            Log.d(LOG_TAG, "Controller info: ${_ledControllerInfo.value}")
+            _ledControllerState.value = value.toLedControllerState()
+            Log.i(LOG_TAG, "Controller state: ${_ledControllerState.value}")
         } else {
             Log.d(LOG_TAG, "Expected length 12 bytes. Received: ${value.size}")
         }
@@ -371,6 +371,7 @@ class BleGattControllerImpl(
         bluetoothGatt?.close()
         bluetoothGatt = null
         _connectedDevice.value = null
+        _ledControllerState.value = null
         _connectionState.value = ConnectionState.DISCONNECTED
     }
 }

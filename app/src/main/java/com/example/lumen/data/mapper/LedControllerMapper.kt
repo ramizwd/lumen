@@ -1,11 +1,11 @@
 package com.example.lumen.data.mapper
 
-import com.example.lumen.domain.ble.model.LedControllerInfo
+import com.example.lumen.domain.ble.model.LedControllerState
 
 /**
  * Parses the 12 byte response from the LED controller that holds the device's state
  */
-fun ByteArray.toLedControllerInfo(): LedControllerInfo {
+fun ByteArray.toLedControllerState(): LedControllerState {
     if (this.size < 12) {
         throw IllegalArgumentException("Invalid data length! Expected 12 bytes.")
     }
@@ -13,7 +13,7 @@ fun ByteArray.toLedControllerInfo(): LedControllerInfo {
     val isOn = this[0] == 0x01.toByte()
     val preset = this[1]
     val speed = this[2]
-    val brightness = this[3]
+    val brightness = this[3].toUByte().toInt()
     val icMode = this[4]
     val channel = this[5]
     val pixelCountMSB = this[6].toUByte().toInt()
@@ -24,7 +24,7 @@ fun ByteArray.toLedControllerInfo(): LedControllerInfo {
     val blue = this[10].toHexString()
     val whiteLedBrightness = this[11]
 
-    return LedControllerInfo(
+    return LedControllerState(
         isOn = isOn,
         preset = preset,
         speed = speed,

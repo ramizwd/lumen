@@ -88,7 +88,9 @@ class MainActivity : ComponentActivity() {
                 val ledControlViewModel = hiltViewModel<LedControlViewModel>()
 
                 val discoveryState by discoveryViewModel.state.collectAsState()
+
                 val connectedDevice by ledControlViewModel.connectedDevice.collectAsState()
+                val controllerState by ledControlViewModel.ledControllerState.collectAsState()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     when (discoveryState.connectionState) {
@@ -96,15 +98,20 @@ class MainActivity : ComponentActivity() {
                             Text(text = "CONNECTING...")
                         }
                         ConnectionState.CONNECTED -> {
-                            LedControlScreen(
-                                innerPadding,
-                                connectedDevice = connectedDevice,
-                                onDisconnectClick = discoveryViewModel::disconnectFromDevice,
-                                onTurnLedOnClick = ledControlViewModel::turnLedOn,
-                                onTurnLedOffClick = ledControlViewModel::turnLedOff,
-                                onChangeStaticColorClick = ledControlViewModel::changeStaticColor,
-                                onChangeBrightness = ledControlViewModel::changeBrightness,
-                            )
+                            if (controllerState != null) {
+                                LedControlScreen(
+                                    innerPadding,
+                                    connectedDevice = connectedDevice,
+                                    controllerState = controllerState!!,
+                                    onDisconnectClick = discoveryViewModel::disconnectFromDevice,
+                                    onTurnLedOnClick = ledControlViewModel::turnLedOn,
+                                    onTurnLedOffClick = ledControlViewModel::turnLedOff,
+                                    onChangeStaticColorClick = ledControlViewModel::changeStaticColor,
+                                    onChangeBrightness = ledControlViewModel::changeBrightness,
+                                )
+                            } else {
+                                Text(text = "Loading state...")
+                            }
                         }
                         ConnectionState.DISCONNECTING ->
                             Text(text = "DISCONNECTING...")

@@ -1,8 +1,10 @@
 package com.example.lumen.presentation.ble.led_control
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.domain.ble.model.LedControllerState
 import com.example.lumen.domain.ble.model.StaticLedColors
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
@@ -17,7 +19,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * ViewModel for managing UI state related to the connected device,
+ * ViewModel for managing UI state related to the connected device and its state,
  * also responsible for invoking device control operations.
  */
 @OptIn(FlowPreview::class)
@@ -27,8 +29,15 @@ class LedControlViewModel @Inject constructor(
     private val controlUseCases: ControlUseCases,
 ): ViewModel() {
 
+    companion object {
+        private const val LOG_TAG = "LedControlViewModel"
+    }
+
     private val _connectedDevice = MutableStateFlow<BleDevice?>(null)
     val connectedDevice: StateFlow<BleDevice?> = _connectedDevice.asStateFlow()
+
+    private val _ledControllerState = MutableStateFlow<LedControllerState?>(null)
+    val ledControllerState: StateFlow<LedControllerState?> = _ledControllerState.asStateFlow()
 
     private val _brightnessChangeFlow = MutableSharedFlow<Int>()
 
@@ -36,6 +45,13 @@ class LedControlViewModel @Inject constructor(
         viewModelScope.launch {
             connectionUseCases.observeConnectedDeviceUseCase().collect { device ->
                 _connectedDevice.value = device
+            }
+        }
+
+        viewModelScope.launch {
+            connectionUseCases.observeControllerStateUseCase().collect { state ->
+                _ledControllerState.value = state
+                Log.d(LOG_TAG, "collected state: $state")
             }
         }
 

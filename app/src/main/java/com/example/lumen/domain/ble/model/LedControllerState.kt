@@ -3,11 +3,11 @@ package com.example.lumen.domain.ble.model
 /**
  * Represents the LED controller's state
  */
-data class LedControllerInfo(
+data class LedControllerState(
     val isOn: Boolean,
     val preset: Byte,
     val speed: Byte,
-    val brightness: Byte,
+    val brightness: Int,
     val icModel: Byte,
     val channel: Byte,
     val pixelCount: Int,
