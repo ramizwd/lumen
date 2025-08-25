@@ -116,8 +116,8 @@ class MainActivity : ComponentActivity() {
                             DiscoverDevicesScreen(
                                 innerPadding,
                                 state = discoveryState,
-                                onStartScanClick = discoveryViewModel::startScan,
-                                onStopScanClick = discoveryViewModel::stopScan,
+                                onStartScan = discoveryViewModel::startScan,
+                                onStopScan = discoveryViewModel::stopScan,
                                 onConnectToDevice = discoveryViewModel::connectToDevice,
                             )
                         }

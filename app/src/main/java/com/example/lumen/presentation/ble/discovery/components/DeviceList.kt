@@ -1,31 +1,46 @@
 package com.example.lumen.presentation.ble.discovery.components
 
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.presentation.common.components.PullToRefresh
 import com.example.lumen.presentation.theme.LumenTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun DeviceList(
     scanResults: List<BleDevice>,
-    onDeviceClick: (BleDevice) -> Unit
+    onDeviceClick: (BleDevice) -> Unit,
+    onStartScan: () -> Unit
 ) {
-    if (scanResults.isEmpty()) {
-        Text("No devices found")
-    } else {
-        LazyColumn {
-            items(scanResults) { device ->
-                DeviceItem(
-                    device = device,
-                    onDeviceClick = onDeviceClick
-                )
+    var isRefreshing by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    PullToRefresh(
+        items = scanResults,
+        content = { device ->
+            DeviceItem(
+                device = device,
+                onDeviceClick = onDeviceClick
+            )
+        },
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            coroutineScope.launch {
+                isRefreshing = true
+                onStartScan()
+                delay(1000) // show indicator for 1 sec.
+                isRefreshing = false
             }
-        }
-    }
+        },
+    )
 }
 
 @PreviewLightDark()
@@ -41,7 +56,8 @@ fun DeviceListPreview() {
 
             DeviceList(
                 scanResults = mockScanResults,
-                onDeviceClick = {}
+                onDeviceClick = {},
+                onStartScan = {},
             )
         }
     }
@@ -54,7 +70,8 @@ fun DeviceListWithoutDevicesPreview() {
         Surface {
             DeviceList(
                 scanResults = emptyList(),
-                onDeviceClick = {}
+                onDeviceClick = {},
+                onStartScan = {},
             )
         }
     }
