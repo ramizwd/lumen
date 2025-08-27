@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,7 +29,7 @@ class DiscoveryViewModel @Inject constructor(
         discoveryUseCases.observeScanResultsUseCase(),
         discoveryUseCases.observeIsScanningUseCase(),
         connectionUseCases.observeConnectionUseCase(),
-        _state
+        _state.onStart { startScan() }
     ) { scanResults, isScanning, connectionState, state ->
         state.copy(
             scanResults = scanResults,
@@ -40,10 +41,6 @@ class DiscoveryViewModel @Inject constructor(
         SharingStarted.WhileSubscribed(5000),
         _state.value
     )
-
-    init {
-        startScan()
-    }
 
     fun startScan() {
         viewModelScope.launch {

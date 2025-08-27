@@ -14,10 +14,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.presentation.ble.discovery.DiscoverDevicesScreen
 import com.example.lumen.presentation.ble.discovery.DiscoveryViewModel
@@ -85,10 +85,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             LumenTheme {
                 val discoveryViewModel = hiltViewModel<DiscoveryViewModel>()
-                val discoveryState by discoveryViewModel.state.collectAsState()
+                val discoveryState by discoveryViewModel.state.collectAsStateWithLifecycle()
 
                 val ledControlViewModel = hiltViewModel<LedControlViewModel>()
-                val controlState by ledControlViewModel.state.collectAsState()
+                val controlState by ledControlViewModel.state.collectAsStateWithLifecycle()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     when (discoveryState.connectionState) {
