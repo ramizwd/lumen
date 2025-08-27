@@ -14,7 +14,7 @@ class ChangeBrightnessUseCase @Inject constructor(
         private const val LOG_TAG = "ChangeBrightnessUseCase"
     }
 
-    suspend operator fun invoke(value: Int) {
+    suspend operator fun invoke(value: Float) {
         Log.d(LOG_TAG, "Value: $value")
 
         val commandHex = value.toBrightnessHex()

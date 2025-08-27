@@ -33,6 +33,7 @@ class LedControlViewModel @Inject constructor(
     }
 
     private val _state = MutableStateFlow(LedControlUiState())
+    private val _brightnessChangeFlow = MutableSharedFlow<Float>()
 
     val state = combine(
         connectionUseCases.observeConnectedDeviceUseCase(),
@@ -50,8 +51,6 @@ class LedControlViewModel @Inject constructor(
         SharingStarted.WhileSubscribed(5000),
         _state.value
     )
-
-    private val _brightnessChangeFlow = MutableSharedFlow<Int>()
 
     init {
         // Collects the most recent value emitted within 150 milliseconds and pass it down
@@ -83,7 +82,7 @@ class LedControlViewModel @Inject constructor(
         }
     }
 
-    fun changeBrightness(value: Int) {
+    fun changeBrightness(value: Float) {
         viewModelScope.launch {
             _brightnessChangeFlow.emit(value)
         }

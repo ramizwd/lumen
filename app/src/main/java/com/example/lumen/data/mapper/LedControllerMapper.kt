@@ -13,7 +13,7 @@ fun ByteArray.toLedControllerState(): LedControllerState {
     val isOn = this[0] == 0x01.toByte()
     val preset = this[1]
     val speed = this[2]
-    val brightness = this[3].toUByte().toInt()
+    val brightness = this[3].toUByte().toFloat()
     val icMode = this[4]
     val channel = this[5]
     val pixelCountMSB = this[6].toUByte().toInt()

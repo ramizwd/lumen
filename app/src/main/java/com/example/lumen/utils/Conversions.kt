@@ -8,8 +8,8 @@ import com.example.lumen.utils.AppConstants.BRIGHTNESS_MIN
  * Ensures the value is within the brightness range and
  * returns the brightness hex.
  */
-fun Int.toBrightnessHex(): String {
-    val brightness = this.coerceIn(BRIGHTNESS_MIN, BRIGHTNESS_MAX)
+fun Float.toBrightnessHex(): String {
+    val brightness = this.coerceIn(BRIGHTNESS_MIN, BRIGHTNESS_MAX).toInt()
     val hex = String.format("%02X", brightness)
 
     return "${hex}${BRIGHTNESS_SUFFIX_HEX}"

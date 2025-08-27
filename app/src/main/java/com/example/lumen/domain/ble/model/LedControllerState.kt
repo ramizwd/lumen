@@ -7,7 +7,7 @@ data class LedControllerState(
     val isOn: Boolean,
     val preset: Byte,
     val speed: Byte,
-    val brightness: Int,
+    val brightness: Float,
     val icModel: Byte,
     val channel: Byte,
     val pixelCount: Int,

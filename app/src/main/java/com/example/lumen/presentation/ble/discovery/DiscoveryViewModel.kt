@@ -41,6 +41,10 @@ class DiscoveryViewModel @Inject constructor(
         _state.value
     )
 
+    init {
+        startScan()
+    }
+
     fun startScan() {
         viewModelScope.launch {
             discoveryUseCases.startScanUseCase()

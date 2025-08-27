@@ -29,7 +29,7 @@ fun LedControlScreen(
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     onChangeStaticColorClick: (StaticLedColors) -> Unit,
-    onChangeBrightness: (Int) -> Unit,
+    onChangeBrightness: (Float) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -49,7 +49,7 @@ fun LedControlScreen(
         PresetColorRow(onChangeStaticColorClick = onChangeStaticColorClick)
 
         BrightnessSlider(
-            currentBrightness = state.controllerState?.brightness?.toFloat() ?: 0f,
+            currentBrightness = state.controllerState?.brightness ?: 0f,
             onChangeBrightness = onChangeBrightness
         )
 
@@ -74,7 +74,7 @@ fun LedControlScreenPreview() {
                 isOn = true,
                 preset = 5.toByte(),
                 speed = 50.toByte(),
-                brightness = 180,
+                brightness = 180f,
                 icModel = 1.toByte(),
                 channel = 0.toByte(),
                 pixelCount = 80,
