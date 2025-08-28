@@ -1,5 +1,6 @@
 package com.example.lumen.presentation.ble.led_control
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.BleDevice
@@ -25,6 +27,7 @@ import com.example.lumen.presentation.ble.led_control.components.LedSwitch
 import com.example.lumen.presentation.ble.led_control.components.PresetColorRow
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.hexToComposeColor
+import java.lang.IllegalArgumentException
 
 @Composable
 fun LedControlScreen(
@@ -43,9 +46,16 @@ fun LedControlScreen(
             val green = it.green
             val blue = it.blue
             val hexColor = "$red$green$blue"
-            hexColor.hexToComposeColor()
+            try {
+                hexColor.hexToComposeColor()
+            } catch (e: IllegalArgumentException) {
+                Log.d("LedControlScreen", "Error converting to Compose color:" +
+                        " ${e.message}")
+                Color.White
+            }
         }
     }
+
     val currentBrightness = state.controllerState?.brightness ?: 0f
     val isOn = state.controllerState?.isOn ?: false
 
