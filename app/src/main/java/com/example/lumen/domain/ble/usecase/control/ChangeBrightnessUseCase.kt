@@ -4,7 +4,7 @@ import android.util.Log
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
-import com.example.lumen.utils.toBrightnessHex
+import com.example.lumen.utils.toBrightnessCommandBytes
 import javax.inject.Inject
 
 class ChangeBrightnessUseCase @Inject constructor(
@@ -17,13 +17,10 @@ class ChangeBrightnessUseCase @Inject constructor(
     suspend operator fun invoke(value: Float) {
         Log.d(LOG_TAG, "Value: $value")
 
-        val commandHex = value.toBrightnessHex()
-        Log.d(LOG_TAG, "Hex: $commandHex")
-
         bleGattController.writeCharacteristic(
-            serviceUUID = SERVICE_UUID,
-            charaUUID = CHARACTERISTIC_UUID,
-            data = commandHex.hexToByteArray()
+            SERVICE_UUID,
+            CHARACTERISTIC_UUID,
+            value.toBrightnessCommandBytes()
         )
     }
 }

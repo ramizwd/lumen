@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.LedControllerState
-import com.example.lumen.domain.ble.model.StaticLedColors
+import com.example.lumen.domain.ble.model.PresetLedColors
 import com.example.lumen.presentation.ble.led_control.components.BrightnessSlider
 import com.example.lumen.presentation.ble.led_control.components.ColorPicker
 import com.example.lumen.presentation.ble.led_control.components.LedSwitch
@@ -33,7 +33,7 @@ fun LedControlScreen(
     onDisconnectClick: () -> Unit,
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
-    onChangeStaticColorClick: (StaticLedColors) -> Unit,
+    onChangeStaticColorClick: (PresetLedColors) -> Unit,
     onSetHsvColor: (String) -> Unit,
     onChangeBrightness: (Float) -> Unit,
 ) {
