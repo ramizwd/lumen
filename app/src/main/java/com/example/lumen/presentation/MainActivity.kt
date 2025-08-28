@@ -104,6 +104,7 @@ class MainActivity : ComponentActivity() {
                                     onTurnLedOnClick = ledControlViewModel::turnLedOn,
                                     onTurnLedOffClick = ledControlViewModel::turnLedOff,
                                     onChangeStaticColorClick = ledControlViewModel::changeStaticColor,
+                                    onSetHsvColor = ledControlViewModel::setHsvColor,
                                     onChangeBrightness = ledControlViewModel::changeBrightness,
                                 )
                             } else {

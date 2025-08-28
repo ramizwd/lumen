@@ -3,7 +3,7 @@ package com.example.lumen.presentation.ble.led_control
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lumen.domain.ble.model.StaticLedColors
+import com.example.lumen.domain.ble.model.PresetLedColors
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -76,9 +76,15 @@ class LedControlViewModel @Inject constructor(
         }
     }
 
-    fun changeStaticColor(color: StaticLedColors) {
+    fun changeStaticColor(color: PresetLedColors) {
         viewModelScope.launch {
-            controlUseCases.changeStaticColorUseCase(color)
+            controlUseCases.setPresetColorUseCase(color)
+        }
+    }
+
+    fun setHsvColor(hexColor: String) {
+        viewModelScope.launch {
+            controlUseCases.setHsvColorUseCase(hexColor)
         }
     }
 

@@ -3,18 +3,18 @@ package com.example.lumen.domain.ble.usecase.control
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
-import com.example.lumen.domain.ble.model.StaticLedColors
+import com.example.lumen.utils.hexToColorCommandBytes
 import javax.inject.Inject
 
-class ChangeStaticColorUseCase @Inject constructor(
+class SetHsvColorUseCase @Inject constructor(
     private val bleGattController: BleGattController
 ) {
 
-    suspend operator fun invoke(color: StaticLedColors){
+    suspend operator fun invoke(hexColor: String) {
         bleGattController.writeCharacteristic(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
-            color.commandBytes
+            hexColor.hexToColorCommandBytes()
         )
     }
 }

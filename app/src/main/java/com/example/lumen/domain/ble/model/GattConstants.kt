@@ -9,6 +9,7 @@ object GattConstants {
 
     // Service and characteristic UUIDs
 
+    // Service and its characteristic (with notify and write) and CCCD
     val SERVICE_UUID: UUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb")
     val CHARACTERISTIC_UUID: UUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
     val CCCD_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
@@ -22,5 +23,8 @@ object GattConstants {
 
     // Padding values (0s) and command byte (2A) of brightness hex
     const val BRIGHTNESS_SUFFIX_HEX = "00002A"
+
+    // Color change command byte
+    const val COLOR_SUFFIX_HEX = "1E"
 
 }

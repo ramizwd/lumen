@@ -16,23 +16,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.example.lumen.domain.ble.model.StaticLedColors
+import com.example.lumen.domain.ble.model.PresetLedColors
 import com.example.lumen.presentation.theme.LumenTheme
 
 @Composable
 fun PresetColorRow(
-    onChangeStaticColorClick: (StaticLedColors) -> Unit,
+    onChangeStaticColorClick: (PresetLedColors) -> Unit,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        StaticLedColors.entries.forEach { color ->
+        PresetLedColors.entries.forEach { color ->
             val bgColor = when(color) {
-                StaticLedColors.RED -> Color.Red
-                StaticLedColors.GREEN -> Color.Green
-                StaticLedColors.BLUE -> Color.Blue
-                StaticLedColors.YELLOW -> Color.Yellow
-                StaticLedColors.PURPLE -> Color.Magenta
-                StaticLedColors.CYAN -> Color.Cyan
-                StaticLedColors.WHITE -> Color.White
+                PresetLedColors.RED -> Color.Red
+                PresetLedColors.GREEN -> Color.Green
+                PresetLedColors.BLUE -> Color.Blue
+                PresetLedColors.YELLOW -> Color.Yellow
+                PresetLedColors.PURPLE -> Color.Magenta
+                PresetLedColors.CYAN -> Color.Cyan
+                PresetLedColors.WHITE -> Color.White
             }
 
             Box(

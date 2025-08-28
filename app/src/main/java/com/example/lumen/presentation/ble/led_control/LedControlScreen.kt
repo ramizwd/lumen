@@ -4,22 +4,27 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.LedControllerState
-import com.example.lumen.domain.ble.model.StaticLedColors
+import com.example.lumen.domain.ble.model.PresetLedColors
 import com.example.lumen.presentation.ble.led_control.components.BrightnessSlider
+import com.example.lumen.presentation.ble.led_control.components.ColorPicker
 import com.example.lumen.presentation.ble.led_control.components.LedSwitch
 import com.example.lumen.presentation.ble.led_control.components.PresetColorRow
 import com.example.lumen.presentation.theme.LumenTheme
+import com.example.lumen.utils.hexToComposeColor
 
 @Composable
 fun LedControlScreen(
@@ -28,9 +33,22 @@ fun LedControlScreen(
     onDisconnectClick: () -> Unit,
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
-    onChangeStaticColorClick: (StaticLedColors) -> Unit,
+    onChangeStaticColorClick: (PresetLedColors) -> Unit,
+    onSetHsvColor: (String) -> Unit,
     onChangeBrightness: (Float) -> Unit,
 ) {
+    val currentColor = remember {
+        state.controllerState?.let {
+            val red = it.red
+            val green = it.green
+            val blue = it.blue
+            val hexColor = "$red$green$blue"
+            hexColor.hexToComposeColor()
+        }
+    }
+    val currentBrightness = state.controllerState?.brightness ?: 0f
+    val isOn = state.controllerState?.isOn ?: false
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -41,22 +59,30 @@ fun LedControlScreen(
         Text(text = "CONNECTED to ${state.connectedDevice?.name}")
 
         LedSwitch(
-            isOn = state.controllerState?.isOn ?: false,
+            isOn = isOn,
             onTurnLedOnClick = onTurnLedOnClick,
             onTurnLedOffClick = onTurnLedOffClick,
+        )
+
+        ColorPicker(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(450.dp)
+                .padding(16.dp),
+            currentColor = currentColor,
+            onSetHsvColor = onSetHsvColor,
         )
 
         PresetColorRow(onChangeStaticColorClick = onChangeStaticColorClick)
 
         BrightnessSlider(
-            currentBrightness = state.controllerState?.brightness ?: 0f,
+            currentBrightness = currentBrightness,
             onChangeBrightness = onChangeBrightness
         )
 
         Button(onClick = onDisconnectClick) {
             Text(text = "Disconnect")
         }
-
     }
 }
 
@@ -96,6 +122,7 @@ fun LedControlScreenPreview() {
                 onTurnLedOnClick = {},
                 onTurnLedOffClick = {},
                 onChangeStaticColorClick = {},
+                onSetHsvColor = {},
                 onChangeBrightness = {},
             )
         }
