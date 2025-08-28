@@ -8,6 +8,7 @@ import javax.inject.Inject
 data class ControlUseCases @Inject constructor(
     val turnLedOnOffUseCase: TurnLedOnOffUseCase,
     val changeStaticColorUseCase: ChangeStaticColorUseCase,
+    val setHsvColorUseCase: SetHsvColorUseCase,
     val changeBrightnessUseCase: ChangeBrightnessUseCase,
     val observeControllerStateUseCase: ObserveControllerStateUseCase,
 )

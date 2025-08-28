@@ -82,6 +82,12 @@ class LedControlViewModel @Inject constructor(
         }
     }
 
+    fun setHsvColor(hexColor: String) {
+        viewModelScope.launch {
+            controlUseCases.setHsvColorUseCase(hexColor)
+        }
+    }
+
     fun changeBrightness(value: Float) {
         viewModelScope.launch {
             _brightnessChangeFlow.emit(value)
