@@ -24,10 +24,10 @@ import com.example.lumen.domain.ble.model.PresetLedColors
 import com.example.lumen.presentation.ble.led_control.components.BrightnessSlider
 import com.example.lumen.presentation.ble.led_control.components.ColorPicker
 import com.example.lumen.presentation.ble.led_control.components.LedSwitch
+import com.example.lumen.presentation.ble.led_control.components.MatchDeviceThemeButton
 import com.example.lumen.presentation.ble.led_control.components.PresetColorRow
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.hexToComposeColor
-import java.lang.IllegalArgumentException
 
 @Composable
 fun LedControlScreen(
@@ -82,6 +82,8 @@ fun LedControlScreen(
             currentColor = currentColor,
             onSetHsvColor = onSetHsvColor,
         )
+
+        MatchDeviceThemeButton(onSetHsvColor = onSetHsvColor)
 
         PresetColorRow(onChangeStaticColorClick = onChangeStaticColorClick)
 
