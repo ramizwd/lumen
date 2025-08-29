@@ -1,0 +1,27 @@
+package com.example.lumen.presentation.ble.led_control.components
+
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.toArgb
+import android.graphics.Color as AndroidColor
+
+@Composable
+fun MatchDeviceThemeButton(
+    onSetHsvColor: (String) -> Unit
+) {
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
+
+    // Set the luminosity of primary color to max, convert to hex, and drop alpha
+    val argbInt = onPrimaryColor.toArgb()
+    val hsv = FloatArray(3)
+    AndroidColor.colorToHSV(argbInt, hsv)
+    hsv[2] = 1f
+
+    val hexPrimaryColorSaturated = AndroidColor.HSVToColor(hsv).toHexString().drop(2)
+
+    Button(onClick = { onSetHsvColor(hexPrimaryColorSaturated) }) {
+        Text(text = "Match with device theme")
+    }
+}
