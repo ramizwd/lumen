@@ -9,4 +9,5 @@ enum class ConnectionState {
     DISCONNECTING,
     DISCONNECTED,
     RETRYING,
+    WRONG_DEVICE,
 }

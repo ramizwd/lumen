@@ -123,6 +123,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         ConnectionState.RETRYING -> Text(text = "RETRYING CONNECTION...")
+                        ConnectionState.WRONG_DEVICE -> Text(text = "WRONG DEVICE, DISCONNECTING...")
                     }
                 }
             }

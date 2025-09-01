@@ -193,8 +193,17 @@ class BleGattControllerImpl(
                 return
             }
 
+            // Only connect to devices that are LED controllers with specific service
+            val ledControllerService = gatt?.getService(SERVICE_UUID)
+            if (ledControllerService == null) {
+                Log.d(LOG_TAG, "Wrong device, disconnecting...")
+                _connectionState.value = ConnectionState.WRONG_DEVICE
+                gatt?.disconnect()
+                return
+            }
+
             println("Services discovered:")
-            gatt?.services?.forEach { service ->
+            gatt.services?.forEach { service ->
                 println(" Service UUID: ${service.uuid}")
 
                 service.characteristics.forEach { characteristic ->
