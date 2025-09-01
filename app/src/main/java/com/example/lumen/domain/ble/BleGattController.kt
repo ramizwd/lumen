@@ -11,7 +11,7 @@ import java.util.UUID
  */
 interface BleGattController {
     val connectionState: StateFlow<ConnectionState>
-    val connectedDevice: StateFlow<BleDevice?>
+    val selectedDevice: StateFlow<BleDevice?>
     val ledControllerState: StateFlow<LedControllerState?>
 
     fun connect(selectedDevice: BleDevice?)

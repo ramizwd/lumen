@@ -36,14 +36,14 @@ class LedControlViewModel @Inject constructor(
     private val _brightnessChangeFlow = MutableSharedFlow<Float>()
 
     val state = combine(
-        connectionUseCases.observeConnectedDeviceUseCase(),
+        connectionUseCases.observeSelectedDeviceUseCase(),
         controlUseCases.observeControllerStateUseCase(),
         _state,
     ) { connectedDevice, controllerState, state ->
         Log.d(LOG_TAG, "collected state: $controllerState")
 
         state.copy(
-            connectedDevice = connectedDevice,
+            selectedDevice = connectedDevice,
             controllerState = controllerState,
         )
     }.stateIn(
