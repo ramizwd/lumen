@@ -66,7 +66,7 @@ fun LedControlScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(text = "CONNECTED to ${state.connectedDevice?.name}")
+        Text(text = "CONNECTED to ${state.selectedDevice?.name}")
 
         LedSwitch(
             isOn = isOn,
@@ -123,7 +123,7 @@ fun LedControlScreenPreview() {
             )
 
             val state = LedControlUiState(
-                connectedDevice = connDevice,
+                selectedDevice = connDevice,
                 controllerState = controllerState,
             )
 

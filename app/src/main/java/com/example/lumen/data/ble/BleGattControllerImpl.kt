@@ -21,9 +21,14 @@ import com.example.lumen.domain.ble.model.GattConstants.GET_INFO_COMMAND
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
 import com.example.lumen.domain.ble.model.LedControllerState
 import com.example.lumen.utils.hasPermission
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 /**
@@ -37,6 +42,9 @@ class BleGattControllerImpl(
 
     companion object {
         private const val LOG_TAG = "BleGattControllerImpl"
+
+        private const val MAX_CONNECTION_TRIES = 5
+        private const val RETRY_DELAY_MILLIS: Long = 500 // half a sec
     }
 
     private val bluetoothManager by lazy {
@@ -49,13 +57,17 @@ class BleGattControllerImpl(
 
     private var bluetoothGatt: BluetoothGatt? = null
 
+    private var connRetryCount = 0
+    private var connRetryJob: Job? = null
+    private val bleConnScope = CoroutineScope(Dispatchers.IO)
+
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
     override val connectionState: StateFlow<ConnectionState>
         get() = _connectionState.asStateFlow()
 
-    private val _connectedDevice = MutableStateFlow<BleDevice?>(null)
-    override val connectedDevice: StateFlow<BleDevice?>
-        get() = _connectedDevice.asStateFlow()
+    private val _selectedDevice = MutableStateFlow<BleDevice?>(null)
+    override val selectedDevice: StateFlow<BleDevice?>
+        get() = _selectedDevice.asStateFlow()
 
     private val _ledControllerState = MutableStateFlow<LedControllerState?>(null)
     override val ledControllerState: StateFlow<LedControllerState?>
@@ -70,7 +82,7 @@ class BleGattControllerImpl(
         bluetoothAdapter?.let { adapter ->
             try {
                 _connectionState.value = ConnectionState.CONNECTING
-                _connectedDevice.value = selectedDevice
+                _selectedDevice.value = selectedDevice
 
                 val device = adapter.getRemoteDevice(selectedDevice?.address)
                 bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
@@ -87,8 +99,12 @@ class BleGattControllerImpl(
             return
         }
 
+        connRetryJob?.cancel()
+        connRetryJob = null
+
         if (_connectionState.value == ConnectionState.CONNECTED ||
-            _connectionState.value == ConnectionState.CONNECTING) {
+            _connectionState.value == ConnectionState.CONNECTING ||
+            _connectionState.value == ConnectionState.RETRYING) {
             bluetoothGatt?.disconnect()
             Log.d(LOG_TAG, "Device disconnected")
         }
@@ -130,11 +146,6 @@ class BleGattControllerImpl(
                 return
             }
 
-            if (status != BluetoothGatt.GATT_SUCCESS) {
-                close()
-                return
-            }
-
             when (newState) {
                 BluetoothProfile.STATE_CONNECTING -> {
                     Log.d(LOG_TAG, "GATT connecting...")
@@ -143,6 +154,7 @@ class BleGattControllerImpl(
 
                 BluetoothProfile.STATE_CONNECTED -> {
                     Log.d(LOG_TAG, "GATT successfully connected")
+                    connRetryCount = 0
                     _connectionState.value = ConnectionState.CONNECTED
                     bluetoothGatt?.discoverServices()
                 }
@@ -153,8 +165,17 @@ class BleGattControllerImpl(
                 }
 
                 BluetoothProfile.STATE_DISCONNECTED -> {
-                    close()
                     Log.d(LOG_TAG, "GATT disconnected")
+
+                    if (status != BluetoothGatt.GATT_SUCCESS) {
+                        Log.e(LOG_TAG, "GATT failure")
+
+                        // Sometimes connection fails due to BLE or the device being
+                        // connected to is finicky. If it fails, try again after some delay.
+                        retryConnection()
+                    } else {
+                        close()
+                    }
                 }
             }
         }
@@ -292,7 +313,8 @@ class BleGattControllerImpl(
             descriptor?.let { descriptor ->
                 if (descriptor.characteristic.uuid == CHARACTERISTIC_UUID &&
                     descriptor.uuid == CCCD_UUID) {
-                    Log.d(LOG_TAG, "Notifications successfully enabled")
+                    Log.d(LOG_TAG, "Notifications successfully enabled for" +
+                            " characteristic ${descriptor.characteristic.uuid}")
 
                     requestControllerState()
                 }
@@ -367,11 +389,42 @@ class BleGattControllerImpl(
         } ?: Log.d(LOG_TAG, "GATT not initialized for charaWriteOperation")
     }
 
+    private fun retryConnection() {
+        connRetryJob?.cancel()
+
+        if (connRetryCount < MAX_CONNECTION_TRIES) {
+            connRetryCount++
+            _connectionState.value = ConnectionState.RETRYING
+            Log.d(LOG_TAG, "Connection failed (attempt $connRetryCount). Retrying...")
+
+            connRetryJob = bleConnScope.launch {
+                delay(RETRY_DELAY_MILLIS)
+                bluetoothGatt?.close()
+                bluetoothGatt = null
+
+                _selectedDevice.value?.let { device ->
+                    connect(device)
+                } ?: run {
+                    Log.e(LOG_TAG, "Cannot retry, device to connect to is null")
+                    close()
+                }
+            }
+        } else {
+            Log.e(LOG_TAG, "Max connection tries reached. Connection failed")
+            close()
+        }
+    }
+
     private fun close() {
         bluetoothGatt?.close()
         bluetoothGatt = null
-        _connectedDevice.value = null
+        _selectedDevice.value = null
         _ledControllerState.value = null
+        connRetryCount = 0
+        connRetryJob?.cancel()
+        connRetryJob = null
         _connectionState.value = ConnectionState.DISCONNECTED
+
+        Log.d(LOG_TAG, "Connection closed")
     }
 }

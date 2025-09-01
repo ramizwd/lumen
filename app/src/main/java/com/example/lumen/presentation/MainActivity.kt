@@ -122,6 +122,7 @@ class MainActivity : ComponentActivity() {
                                 onConnectToDevice = discoveryViewModel::connectToDevice,
                             )
                         }
+                        ConnectionState.RETRYING -> Text(text = "RETRYING CONNECTION...")
                     }
                 }
             }

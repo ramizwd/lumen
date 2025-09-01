@@ -5,10 +5,10 @@ import com.example.lumen.domain.ble.model.BleDevice
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class ObserveConnectedDeviceUseCase @Inject constructor(
+class ObserveSelectedDeviceUseCase @Inject constructor(
     private val bleGattController: BleGattController
 ) {
     operator fun invoke(): Flow<BleDevice?> {
-        return bleGattController.connectedDevice
+        return bleGattController.selectedDevice
     }
 }
