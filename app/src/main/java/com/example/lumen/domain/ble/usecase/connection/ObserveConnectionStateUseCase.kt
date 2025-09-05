@@ -6,7 +6,7 @@ import com.example.lumen.domain.ble.model.ConnectionState
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class ObserveConnectionUseCase @Inject constructor(
+class ObserveConnectionStateUseCase @Inject constructor(
     private val bleGattController: BleGattController
 ) {
     companion object {

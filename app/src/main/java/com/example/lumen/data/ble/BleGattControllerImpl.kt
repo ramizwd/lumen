@@ -14,6 +14,7 @@ import android.util.Log
 import com.example.lumen.data.mapper.toLedControllerState
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.domain.ble.model.ConnectionResult
 import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.domain.ble.model.GattConstants.CCCD_UUID
 import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
@@ -24,9 +25,13 @@ import com.example.lumen.utils.hasPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -73,24 +78,35 @@ class BleGattControllerImpl(
     override val ledControllerState: StateFlow<LedControllerState?>
         get() = _ledControllerState.asStateFlow()
 
-    override fun connect(selectedDevice: BleDevice?) {
-        if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
-            Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission missing!")
-            return
-        }
+    private val _connectionEvents = MutableSharedFlow<ConnectionResult>(
+        replay = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    override val connectionEvents: SharedFlow<ConnectionResult>
+        get() = _connectionEvents.asSharedFlow()
 
-        bluetoothAdapter?.let { adapter ->
-            try {
-                _connectionState.value = ConnectionState.CONNECTING
-                _selectedDevice.value = selectedDevice
-
-                val device = adapter.getRemoteDevice(selectedDevice?.address)
-                bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
-            } catch (_: IllegalArgumentException) {
-                Log.d(LOG_TAG, "Device not found")
-                close()
+    override suspend fun connect(selectedDevice: BleDevice?) {
+            if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
+                Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission missing!")
+                return
             }
-        } ?: Log.d(LOG_TAG, "BluetoothAdapter not initialized.")
+
+            bluetoothAdapter?.let { adapter ->
+                try {
+                    _connectionState.value = ConnectionState.CONNECTING
+                    _selectedDevice.value = selectedDevice
+
+                    val device = adapter.getRemoteDevice(selectedDevice?.address)
+                    bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
+                } catch (e: IllegalArgumentException) {
+                    Log.d(LOG_TAG, "Device not found: ${e.localizedMessage}")
+
+                    _connectionEvents.emit(
+                        ConnectionResult.Error("Device not found")
+                    )
+                    close()
+                }
+            } ?: Log.d(LOG_TAG, "BluetoothAdapter not initialized.")
     }
 
     override fun disconnect() {
@@ -156,6 +172,7 @@ class BleGattControllerImpl(
                     Log.d(LOG_TAG, "GATT successfully connected")
                     connRetryCount = 0
                     _connectionState.value = ConnectionState.CONNECTED
+                    _connectionEvents.tryEmit(ConnectionResult.ConnectionEstablished)
                     bluetoothGatt?.discoverServices()
                 }
 
@@ -168,12 +185,13 @@ class BleGattControllerImpl(
                     Log.d(LOG_TAG, "GATT disconnected")
 
                     if (status != BluetoothGatt.GATT_SUCCESS) {
-                        Log.e(LOG_TAG, "GATT failure")
+                        Log.e(LOG_TAG, "GATT failure (status: $status)")
 
                         // Sometimes connection fails due to BLE or the device being
                         // connected to is finicky. If it fails, try again after some delay.
                         retryConnection()
                     } else {
+                        _connectionEvents.tryEmit(ConnectionResult.Disconnected)
                         close()
                     }
                 }
@@ -386,14 +404,28 @@ class BleGattControllerImpl(
     private fun charaWriteOperation(chara: BluetoothGattCharacteristic, data: ByteArray) {
         bluetoothGatt?.let { gatt ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                gatt.writeCharacteristic(
-                    chara,
-                    data,
-                    BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-                )
+                try {
+                    gatt.writeCharacteristic(
+                        chara,
+                        data,
+                        BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                    )
+                } catch (e: Exception) {
+                    Log.e(LOG_TAG, "Error writing to characteristic: ${e.message}")
+                    _connectionEvents.tryEmit(
+                        ConnectionResult.Error("Error sending command")
+                    )
+                }
             } else {
-                chara.value = data
-                gatt.writeCharacteristic(chara)
+                try {
+                    chara.value = data
+                    gatt.writeCharacteristic(chara)
+                } catch (e: Exception) {
+                    Log.e(LOG_TAG, "Error writing to characteristic: ${e.message}")
+                    _connectionEvents.tryEmit(
+                        ConnectionResult.Error("Error sending command")
+                    )
+                }
             }
         } ?: Log.d(LOG_TAG, "GATT not initialized for charaWriteOperation")
     }
@@ -415,11 +447,18 @@ class BleGattControllerImpl(
                     connect(device)
                 } ?: run {
                     Log.e(LOG_TAG, "Cannot retry, device to connect to is null")
+                    _connectionEvents.emit(
+                        ConnectionResult.Error("Cannot retry, no device selected")
+                    )
                     close()
                 }
             }
         } else {
             Log.e(LOG_TAG, "Max connection tries reached. Connection failed")
+            _connectionEvents.tryEmit(
+                ConnectionResult.ConnectionFailed("Connection failed")
+            )
+
             close()
         }
     }

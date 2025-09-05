@@ -36,7 +36,7 @@ fun LedControlScreen(
     onDisconnectClick: () -> Unit,
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
-    onChangeStaticColorClick: (PresetLedColors) -> Unit,
+    onChangePresetColorClick: (PresetLedColors) -> Unit,
     onSetHsvColor: (String) -> Unit,
     onChangeBrightness: (Float) -> Unit,
 ) {
@@ -85,7 +85,7 @@ fun LedControlScreen(
 
         MatchDeviceThemeButton(onSetHsvColor = onSetHsvColor)
 
-        PresetColorRow(onChangeStaticColorClick = onChangeStaticColorClick)
+        PresetColorRow(onChangePresetColorClick = onChangePresetColorClick)
 
         BrightnessSlider(
             currentBrightness = currentBrightness,
@@ -133,7 +133,7 @@ fun LedControlScreenPreview() {
                 onDisconnectClick = {},
                 onTurnLedOnClick = {},
                 onTurnLedOffClick = {},
-                onChangeStaticColorClick = {},
+                onChangePresetColorClick = {},
                 onSetHsvColor = {},
                 onChangeBrightness = {},
             )

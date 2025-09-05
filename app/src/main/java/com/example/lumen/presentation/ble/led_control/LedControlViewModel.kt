@@ -76,7 +76,7 @@ class LedControlViewModel @Inject constructor(
         }
     }
 
-    fun changeStaticColor(color: PresetLedColors) {
+    fun changePresetColor(color: PresetLedColors) {
         viewModelScope.launch {
             controlUseCases.setPresetColorUseCase(color)
         }
