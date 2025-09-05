@@ -100,10 +100,10 @@ class BleGattControllerImpl(
                     bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
                 } catch (e: IllegalArgumentException) {
                     Log.d(LOG_TAG, "Device not found: ${e.localizedMessage}")
-
                     _connectionEvents.emit(
                         ConnectionResult.Error("Device not found")
                     )
+
                     close()
                 }
             } ?: Log.d(LOG_TAG, "BluetoothAdapter not initialized.")

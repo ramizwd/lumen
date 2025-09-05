@@ -8,6 +8,7 @@ import javax.inject.Inject
 data class DiscoveryUseCases @Inject constructor(
     val observeIsScanningUseCase: ObserveIsScanningUseCase,
     val observeScanResultsUseCase: ObserveScanResultsUseCase,
+    val observeScanErrorsUseCase: ObserveScanErrorsUseCase,
     val startScanUseCase: StartScanUseCase,
     val stopScanUseCase: StopScanUseCase,
 )

@@ -39,7 +39,7 @@ class DiscoveryViewModel @Inject constructor(
         discoveryUseCases.observeScanResultsUseCase(),
         discoveryUseCases.observeIsScanningUseCase(),
         connectionUseCases.observeConnectionStateUseCase(),
-        _state.onStart { startScan() }
+        _state.onStart { startScan() } //TODO: causing scan to fail if BT is not available. Need to start when BT is ready
     ) { scanResults, isScanning, connectionState, state ->
         state.copy(
             scanResults = scanResults,
@@ -53,6 +53,12 @@ class DiscoveryViewModel @Inject constructor(
     )
 
     init {
+        discoveryUseCases.observeScanErrorsUseCase().onEach { error ->
+            _state.update { it.copy(
+                errorMessage = error
+            ) }
+        }.launchIn(viewModelScope)
+
         connectionUseCases.observeConnectionEventsUseCase().onEach { result ->
             when(result) {
                 ConnectionResult.ConnectionEstablished -> {

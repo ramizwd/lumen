@@ -16,9 +16,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -62,6 +66,13 @@ class BleScanControllerImpl(
     override val isScanning: StateFlow<Boolean>
         get() = _isScanning.asStateFlow()
 
+    private val _errors = MutableSharedFlow<String>(
+        replay = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    override val errors: SharedFlow<String>
+        get() = _errors.asSharedFlow()
+
     override suspend fun startScan() {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
             Log.d(LOG_TAG, "BLUETOOTH_SCAN permission missing!")
@@ -92,14 +103,15 @@ class BleScanControllerImpl(
                     stopScan()
                     Log.d(LOG_TAG, "Ble scan stopped automatically")
                 }
-            } catch (e: SecurityException) {
-                Log.d(LOG_TAG, "SecurityException during scan start: ${e.message}")
-                _isScanning.value = false
             } catch (e: Exception) {
-                Log.d(LOG_TAG, "Exception during scan start: ${e.message}")
+                Log.e(LOG_TAG, "Exception during scan start: ${e.message}")
+                _errors.tryEmit("Scan failed")
                 _isScanning.value = false
             }
-        } ?: Log.d(LOG_TAG, "BLE Scanner not initialized.")
+        } ?: run {
+            Log.e(LOG_TAG, "BLE Scanner not initialized - startScan()")
+            _errors.tryEmit("Scan failed")
+        }
     }
 
     override fun stopScan() {
@@ -119,12 +131,14 @@ class BleScanControllerImpl(
                 scanJob?.cancel()
                 scanJob = null
                 Log.d(LOG_TAG, "BLE Scan stopped...")
-            } catch (e: SecurityException) {
-                Log.d(LOG_TAG, "SecurityException during scan stop: ${e.message}")
             } catch (e: Exception) {
-                Log.d(LOG_TAG, "Exception during scan stop: ${e.message}")
+                Log.e(LOG_TAG, "Exception during scan stop: ${e.message}")
+                _errors.tryEmit("Stopping scan failed")
             }
-        } ?: Log.d(LOG_TAG, "BLE Scanner not initialized.")
+        } ?: run {
+            Log.e(LOG_TAG, "BLE Scanner not initialized - stopScan()")
+            _errors.tryEmit("Stopping scan failed")
+        }
     }
 
     // Anonymous object for receiving and processing the scan results
@@ -150,7 +164,8 @@ class BleScanControllerImpl(
 
         override fun onScanFailed(errorCode: Int) {
             super.onScanFailed(errorCode)
-            Log.d(LOG_TAG, "BLE Scan failed with error: $errorCode")
+            Log.e(LOG_TAG, "BLE Scan failed with error: $errorCode")
+            _errors.tryEmit("Stopping scan failed")
             _isScanning.value = false
             scanJob?.cancel()
             scanJob = null
