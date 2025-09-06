@@ -1,12 +1,12 @@
 package com.example.lumen.domain.ble.usecase.connection
 
-import android.util.Log
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.ConnectionState
 import kotlinx.coroutines.flow.Flow
+import timber.log.Timber
 import javax.inject.Inject
 
-class ObserveConnectionUseCase @Inject constructor(
+class ObserveConnectionStateUseCase @Inject constructor(
     private val bleGattController: BleGattController
 ) {
     companion object {
@@ -14,7 +14,7 @@ class ObserveConnectionUseCase @Inject constructor(
     }
 
     operator fun invoke(): Flow<ConnectionState> {
-        Log.d(LOG_TAG, "Connection state")
+        Timber.tag(LOG_TAG).d("Connection state")
         return bleGattController.connectionState
     }
 }

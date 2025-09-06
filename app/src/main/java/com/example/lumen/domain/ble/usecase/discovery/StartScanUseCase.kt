@@ -1,7 +1,7 @@
 package com.example.lumen.domain.ble.usecase.discovery
 
-import android.util.Log
 import com.example.lumen.domain.ble.BleScanController
+import timber.log.Timber
 import javax.inject.Inject
 
 class StartScanUseCase @Inject constructor(
@@ -12,7 +12,7 @@ class StartScanUseCase @Inject constructor(
     }
 
     suspend operator fun invoke() {
-        Log.d(LOG_TAG, "Start scan")
+        Timber.tag(LOG_TAG).d("Start scan")
         bleScanController.startScan()
     }
 }

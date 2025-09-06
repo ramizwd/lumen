@@ -10,10 +10,10 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import com.example.lumen.data.mapper.toLedControllerState
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.domain.ble.model.ConnectionResult
 import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.domain.ble.model.GattConstants.CCCD_UUID
 import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
@@ -24,11 +24,16 @@ import com.example.lumen.utils.hasPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.util.UUID
 
 /**
@@ -73,29 +78,40 @@ class BleGattControllerImpl(
     override val ledControllerState: StateFlow<LedControllerState?>
         get() = _ledControllerState.asStateFlow()
 
-    override fun connect(selectedDevice: BleDevice?) {
-        if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
-            Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission missing!")
-            return
-        }
+    private val _connectionEvents = MutableSharedFlow<ConnectionResult>(
+        replay = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    override val connectionEvents: SharedFlow<ConnectionResult>
+        get() = _connectionEvents.asSharedFlow()
 
-        bluetoothAdapter?.let { adapter ->
-            try {
-                _connectionState.value = ConnectionState.CONNECTING
-                _selectedDevice.value = selectedDevice
-
-                val device = adapter.getRemoteDevice(selectedDevice?.address)
-                bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
-            } catch (_: IllegalArgumentException) {
-                Log.d(LOG_TAG, "Device not found")
-                close()
+    override suspend fun connect(selectedDevice: BleDevice?) {
+            if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
+                Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
+                return
             }
-        } ?: Log.d(LOG_TAG, "BluetoothAdapter not initialized.")
+
+            bluetoothAdapter?.let { adapter ->
+                try {
+                    _connectionState.value = ConnectionState.CONNECTING
+                    _selectedDevice.value = selectedDevice
+
+                    val device = adapter.getRemoteDevice(selectedDevice?.address)
+                    bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
+                } catch (e: IllegalArgumentException) {
+                    Timber.tag(LOG_TAG).e(e,"Device not found")
+                    _connectionEvents.emit(
+                        ConnectionResult.Error("Device not found")
+                    )
+
+                    close()
+                }
+            } ?: Timber.tag(LOG_TAG).e("BluetoothAdapter not initialized.")
     }
 
     override fun disconnect() {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
-            Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission missing!")
+            Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
             return
         }
 
@@ -106,7 +122,7 @@ class BleGattControllerImpl(
             _connectionState.value == ConnectionState.CONNECTING ||
             _connectionState.value == ConnectionState.RETRYING) {
             bluetoothGatt?.disconnect()
-            Log.d(LOG_TAG, "Device disconnected")
+            Timber.tag(LOG_TAG).i("Device disconnected")
         }
     }
 
@@ -116,23 +132,23 @@ class BleGattControllerImpl(
         data: ByteArray
     ) {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
-            Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission missing!")
+            Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
             return
         }
 
         bluetoothGatt?.let { gatt ->
             val service = gatt.getService(serviceUUID) ?: run {
-                Log.d(LOG_TAG, "Service $serviceUUID not found")
+                Timber.tag(LOG_TAG).d("Service $serviceUUID not found")
                 return
             }
 
             val chara = service.getCharacteristic(charaUUID) ?: run {
-                Log.d(LOG_TAG, "Characteristic $charaUUID not found")
+                Timber.tag(LOG_TAG).d("Characteristic $charaUUID not found")
                 return
             }
 
             charaWriteOperation(chara, data)
-         } ?: Log.d(LOG_TAG, "GATT not initialized for writeCharacteristic")
+         } ?: Timber.tag(LOG_TAG).e("GATT not initialized for writeCharacteristic")
     }
 
     // Object that handles GATT connection state
@@ -142,38 +158,40 @@ class BleGattControllerImpl(
             super.onConnectionStateChange(gatt, status, newState)
 
             if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
-                Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission missing!")
+                Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
                 return
             }
 
             when (newState) {
                 BluetoothProfile.STATE_CONNECTING -> {
-                    Log.d(LOG_TAG, "GATT connecting...")
+                    Timber.tag(LOG_TAG).d("GATT connecting...")
                     _connectionState.value = ConnectionState.CONNECTING
                 }
 
                 BluetoothProfile.STATE_CONNECTED -> {
-                    Log.d(LOG_TAG, "GATT successfully connected")
+                    Timber.tag(LOG_TAG).i("GATT successfully connected")
                     connRetryCount = 0
                     _connectionState.value = ConnectionState.CONNECTED
+                    _connectionEvents.tryEmit(ConnectionResult.ConnectionEstablished)
                     bluetoothGatt?.discoverServices()
                 }
 
                 BluetoothProfile.STATE_DISCONNECTING -> {
-                    Log.d(LOG_TAG, "GATT disconnecting...")
+                    Timber.tag(LOG_TAG).d("GATT disconnecting...")
                     _connectionState.value = ConnectionState.DISCONNECTING
                 }
 
                 BluetoothProfile.STATE_DISCONNECTED -> {
-                    Log.d(LOG_TAG, "GATT disconnected")
+                    Timber.tag(LOG_TAG).d("GATT disconnected")
 
                     if (status != BluetoothGatt.GATT_SUCCESS) {
-                        Log.e(LOG_TAG, "GATT failure")
+                        Timber.tag(LOG_TAG).e("GATT failure (status: $status)")
 
                         // Sometimes connection fails due to BLE or the device being
                         // connected to is finicky. If it fails, try again after some delay.
                         retryConnection()
                     } else {
+                        _connectionEvents.tryEmit(ConnectionResult.Disconnected)
                         close()
                     }
                 }
@@ -184,7 +202,7 @@ class BleGattControllerImpl(
             super.onServicesDiscovered(gatt, status)
 
             if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
-                Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission missing!")
+                Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
                 return
             }
 
@@ -196,20 +214,14 @@ class BleGattControllerImpl(
             // Only connect to devices that are LED controllers with specific service
             val ledControllerService = gatt?.getService(SERVICE_UUID)
             if (ledControllerService == null) {
-                Log.d(LOG_TAG, "Wrong device, disconnecting...")
+                Timber.tag(LOG_TAG).d("Wrong device, disconnecting...")
                 _connectionState.value = ConnectionState.WRONG_DEVICE
                 gatt?.disconnect()
                 return
             }
 
-            println("Services discovered:")
             gatt.services?.forEach { service ->
-                println(" Service UUID: ${service.uuid}")
-
                 service.characteristics.forEach { characteristic ->
-                    println("  Characteristic UUID: ${characteristic.uuid} " +
-                            "(${characteristic.properties})")
-
                     val supportsNotify = characteristic.properties and
                             BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0
                     val supportsIndicate = characteristic.properties and
@@ -242,7 +254,7 @@ class BleGattControllerImpl(
                 return
             }
 
-            Log.d(LOG_TAG, "Characteristic ${characteristic?.uuid} written")
+            Timber.tag(LOG_TAG).i("Characteristic ${characteristic?.uuid} written")
         }
 
         override fun onCharacteristicChanged(
@@ -252,8 +264,10 @@ class BleGattControllerImpl(
         ) {
             super.onCharacteristicChanged(gatt, characteristic, value)
 
-            Log.d(LOG_TAG, "Notification received from ${characteristic.uuid}: " +
-                    value.toHexString()
+            Timber.tag(LOG_TAG).d(
+                "Notification received from %s: %s",
+                characteristic.uuid,
+                value.toHexString()
             )
 
             // Get the LED controller's info from its notification
@@ -272,8 +286,10 @@ class BleGattControllerImpl(
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                 val value = characteristic.value
 
-                Log.d(LOG_TAG, "Notification received from ${characteristic.uuid}: " +
-                        value.toHexString()
+                Timber.tag(LOG_TAG).d(
+                    "Notification received from %s: %s",
+                    characteristic.uuid,
+                    value.toHexString()
                 )
 
                 // Get the LED controller's info from its notification
@@ -291,8 +307,11 @@ class BleGattControllerImpl(
         ) {
             super.onDescriptorRead(gatt, descriptor, status, value)
 
-            Log.d(LOG_TAG, "onDescriptorRead: ${descriptor.uuid} " +
-                    "value: ${value.toHexString()}")
+            Timber.tag(LOG_TAG).d(
+                "onDescriptorRead: %s value: %s",
+                descriptor.uuid,
+                value.toHexString()
+            )
         }
 
         @Deprecated("Deprecated in API 33")
@@ -303,8 +322,11 @@ class BleGattControllerImpl(
         ) {
             super.onDescriptorRead(gatt, descriptor, status)
 
-            Log.d(LOG_TAG, "onDescriptorRead: ${descriptor.uuid} " +
-                    "value: ${descriptor.value.toHexString()}")
+            Timber.tag(LOG_TAG).d(
+                "onDescriptorRead: %s value: %s",
+                descriptor.uuid,
+                descriptor.value.toHexString()
+            )
         }
 
         override fun onDescriptorWrite(
@@ -322,12 +344,15 @@ class BleGattControllerImpl(
             descriptor?.let { descriptor ->
                 if (descriptor.characteristic.uuid == CHARACTERISTIC_UUID &&
                     descriptor.uuid == CCCD_UUID) {
-                    Log.d(LOG_TAG, "Notifications successfully enabled for" +
-                            " characteristic ${descriptor.characteristic.uuid}")
+
+                    Timber.tag(LOG_TAG).i(
+                        "Notifications successfully enabled for characteristic %s",
+                        descriptor.characteristic.uuid
+                    )
 
                     requestControllerState()
                 }
-            } ?: Log.d(LOG_TAG, "Descriptor write failed")
+            } ?: Timber.tag(LOG_TAG).e("Descriptor write failed")
         }
     }
 
@@ -337,7 +362,11 @@ class BleGattControllerImpl(
 
             val desc = chara.getDescriptor(CCCD_UUID)
             desc?.let { descriptor ->
-                Log.d(LOG_TAG, "Writing descriptor for notifications on ${chara.uuid}")
+
+                Timber.tag(LOG_TAG).d(
+                    "Writing descriptor for notifications on %s",
+                    chara.uuid
+                )
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     gatt.writeDescriptor(
@@ -348,54 +377,70 @@ class BleGattControllerImpl(
                     descriptor.value = descValue
                     gatt.writeDescriptor(descriptor)
                 }
-            } ?: Log.d(LOG_TAG, "CCCD not found for ${chara.uuid}")
-        } ?: Log.d(LOG_TAG, "GATT not initialized for enableNotifications")
+            } ?: Timber.tag(LOG_TAG).w("CCCD not found for ${chara.uuid}")
+        } ?: Timber.tag(LOG_TAG).e("GATT not initialized for enableNotifications")
     }
 
     private fun requestControllerState() {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
-            Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission missing!")
+            Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
             return
         }
 
         bluetoothGatt?.let { gatt ->
             val service = gatt.getService(SERVICE_UUID) ?: run {
-                Log.d(LOG_TAG, "Service $SERVICE_UUID not found")
+                Timber.tag(LOG_TAG).w("Service $SERVICE_UUID not found")
                 return
             }
 
             val chara = service.getCharacteristic(CHARACTERISTIC_UUID) ?: run {
-                Log.d(LOG_TAG, "Characteristic $CHARACTERISTIC_UUID not found")
+                Timber.tag(LOG_TAG)
+                    .w("Characteristic $CHARACTERISTIC_UUID not found")
                 return
             }
 
             charaWriteOperation(chara, GET_INFO_COMMAND)
-        } ?: Log.d(LOG_TAG, "GATT not initialized for requestControllerInfo")
+        } ?: Timber.tag(LOG_TAG).e("GATT not initialized for requestControllerInfo")
     }
 
 
     private fun getControllerState(value: ByteArray) {
         if (value.size >= 12) {
             _ledControllerState.value = value.toLedControllerState()
-            Log.i(LOG_TAG, "Controller state: ${_ledControllerState.value}")
+            Timber.tag(LOG_TAG).i("Controller state: ${_ledControllerState.value}")
         } else {
-            Log.d(LOG_TAG, "Expected length 12 bytes. Received: ${value.size}")
+            Timber.tag(LOG_TAG)
+                .w("Expected length 12 bytes. Received: ${value.size}")
         }
     }
 
     private fun charaWriteOperation(chara: BluetoothGattCharacteristic, data: ByteArray) {
         bluetoothGatt?.let { gatt ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                gatt.writeCharacteristic(
-                    chara,
-                    data,
-                    BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-                )
+                try {
+                    gatt.writeCharacteristic(
+                        chara,
+                        data,
+                        BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                    )
+                } catch (e: Exception) {
+                    Timber.tag(LOG_TAG).e(e,"Error writing to characteristic")
+                    _connectionEvents.tryEmit(
+                        ConnectionResult.Error("Error sending command")
+                    )
+                }
             } else {
-                chara.value = data
-                gatt.writeCharacteristic(chara)
+                try {
+                    chara.value = data
+                    gatt.writeCharacteristic(chara)
+                } catch (e: Exception) {
+                    Timber.tag(LOG_TAG).e(e,"Error writing to characteristic")
+                    _connectionEvents.tryEmit(
+                        ConnectionResult.Error("Error sending command")
+                    )
+                }
             }
-        } ?: Log.d(LOG_TAG, "GATT not initialized for charaWriteOperation")
+        } ?: Timber.tag(LOG_TAG).e("GATT not initialized for charaWriteOperation")
     }
 
     private fun retryConnection() {
@@ -404,7 +449,8 @@ class BleGattControllerImpl(
         if (connRetryCount < MAX_CONNECTION_TRIES) {
             connRetryCount++
             _connectionState.value = ConnectionState.RETRYING
-            Log.d(LOG_TAG, "Connection failed (attempt $connRetryCount). Retrying...")
+            Timber.tag(LOG_TAG)
+                .w("Connection failed (attempt $connRetryCount). Retrying...")
 
             connRetryJob = bleConnScope.launch {
                 delay(RETRY_DELAY_MILLIS)
@@ -414,12 +460,21 @@ class BleGattControllerImpl(
                 _selectedDevice.value?.let { device ->
                     connect(device)
                 } ?: run {
-                    Log.e(LOG_TAG, "Cannot retry, device to connect to is null")
+                    Timber.tag(LOG_TAG)
+                        .e("Cannot retry, device to connect to is null")
+                    _connectionEvents.emit(
+                        ConnectionResult.Error("Cannot retry, no device selected")
+                    )
                     close()
                 }
             }
         } else {
-            Log.e(LOG_TAG, "Max connection tries reached. Connection failed")
+            Timber.tag(LOG_TAG)
+                .e("Max connection tries reached. Connection failed")
+
+            _connectionEvents.tryEmit(
+                ConnectionResult.ConnectionFailed("Connection failed")
+            )
             close()
         }
     }
@@ -434,6 +489,6 @@ class BleGattControllerImpl(
         connRetryJob = null
         _connectionState.value = ConnectionState.DISCONNECTED
 
-        Log.d(LOG_TAG, "Connection closed")
+        Timber.tag(LOG_TAG).d("Connection closed")
     }
 }

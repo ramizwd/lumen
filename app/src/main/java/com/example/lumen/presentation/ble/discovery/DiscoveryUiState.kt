@@ -8,9 +8,17 @@ import com.example.lumen.domain.ble.model.ConnectionState
  * [scanResults] holds BLE scan result list of type BleDevice
  * [isScanning] Boolean for indicating if BLE is scanning
  * [connectionState] indicates the connection state of the GATT client
+ * [deviceToConnect] storing device that we want to connect to for retrying connection
+ * [shouldShowRetryConnection] to show the retry connection snackbar
+ * [errorMessage] holds error messages related to GATT operations
+ * [infoMessage] holds success or general info messages related to GATT operations
  */
 data class DiscoveryUiState(
     val scanResults: List<BleDevice> = emptyList(),
     val isScanning: Boolean = false,
     val connectionState: ConnectionState = ConnectionState.DISCONNECTED,
+    val deviceToConnect: BleDevice? = null,
+    val shouldShowRetryConnection: Boolean = false,
+    val errorMessage: String? = null,
+    val infoMessage: String? = null,
 )

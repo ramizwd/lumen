@@ -7,7 +7,8 @@ import javax.inject.Inject
  */
 data class ConnectionUseCases @Inject constructor(
     val connectToDeviceUseCase: ConnectToDeviceUseCase,
-    val observeConnectionUseCase: ObserveConnectionUseCase,
+    val observeConnectionStateUseCase: ObserveConnectionStateUseCase,
+    val observeConnectionEventsUseCase: ObserveConnectionEventsUseCase,
     val disconnectUseCase: DisconnectUseCase,
     val observeSelectedDeviceUseCase: ObserveSelectedDeviceUseCase,
 )

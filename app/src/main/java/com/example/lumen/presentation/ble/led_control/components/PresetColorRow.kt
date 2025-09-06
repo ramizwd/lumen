@@ -21,7 +21,7 @@ import com.example.lumen.presentation.theme.LumenTheme
 
 @Composable
 fun PresetColorRow(
-    onChangeStaticColorClick: (PresetLedColors) -> Unit,
+    onChangePresetColorClick: (PresetLedColors) -> Unit,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         PresetLedColors.entries.forEach { color ->
@@ -46,7 +46,7 @@ fun PresetColorRow(
                         color = Color.Black,
                         shape = CircleShape,
                     )
-                    .clickable { onChangeStaticColorClick(color) }
+                    .clickable { onChangePresetColorClick(color) }
             )
         }
     }
@@ -58,7 +58,7 @@ fun PresetColorPreview() {
     LumenTheme {
         Surface { 
             PresetColorRow(
-                onChangeStaticColorClick = {}
+                onChangePresetColorClick = {}
             )
         }
     }

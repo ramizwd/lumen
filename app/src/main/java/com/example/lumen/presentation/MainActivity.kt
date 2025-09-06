@@ -6,15 +6,21 @@ import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -26,6 +32,7 @@ import com.example.lumen.presentation.ble.led_control.LedControlViewModel
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.permissionArray
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -53,14 +60,14 @@ class MainActivity : ComponentActivity() {
         val bluetoothLeAvailable = packageManager.
         hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
         if (!bluetoothLeAvailable){
-            Log.d(LOG_TAG, "BLE not available.")
+            Timber.tag(LOG_TAG).d("BLE not available.")
             return
         }
 
         val enableBluetoothLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) {
-            Log.d(LOG_TAG, "request res: ${it.resultCode}")
+            Timber.tag(LOG_TAG).d("request res: ${it.resultCode}")
         }
 
         // Launcher to request Bluetooth permissions
@@ -90,7 +97,53 @@ class MainActivity : ComponentActivity() {
                 val ledControlViewModel = hiltViewModel<LedControlViewModel>()
                 val controlState by ledControlViewModel.state.collectAsStateWithLifecycle()
 
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                val snackbarHostState = remember { SnackbarHostState() }
+
+                LaunchedEffect(key1 = discoveryState.errorMessage) {
+                    discoveryState.errorMessage?.let { message ->
+
+                        if (discoveryState.shouldShowRetryConnection) {
+                            val result = snackbarHostState.showSnackbar(
+                                message = message,
+                                actionLabel = "Retry",
+                                duration = SnackbarDuration.Indefinite
+                            )
+                            when (result) {
+                                SnackbarResult.Dismissed -> {
+                                    discoveryViewModel.clearErrorMessage()
+                                }
+                                SnackbarResult.ActionPerformed -> {
+                                    discoveryViewModel.retryConnection()
+                                }
+                            }
+                        } else {
+                            Toast.makeText(
+                                applicationContext,
+                                message,
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+
+                        discoveryViewModel.clearErrorMessage()
+                    }
+                }
+
+                LaunchedEffect(key1 = discoveryState.infoMessage) {
+                    discoveryState.infoMessage?.let { message ->
+                        Toast.makeText(
+                            applicationContext,
+                            message,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        discoveryViewModel.clearInfoMessage()
+                    }
+                }
+
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    snackbarHost = { SnackbarHost(snackbarHostState) }
+                ) { innerPadding ->
+
                     when (discoveryState.connectionState) {
                         ConnectionState.CONNECTING -> {
                             Text(text = "CONNECTING...")
@@ -103,7 +156,7 @@ class MainActivity : ComponentActivity() {
                                     onDisconnectClick = discoveryViewModel::disconnectFromDevice,
                                     onTurnLedOnClick = ledControlViewModel::turnLedOn,
                                     onTurnLedOffClick = ledControlViewModel::turnLedOff,
-                                    onChangeStaticColorClick = ledControlViewModel::changeStaticColor,
+                                    onChangePresetColorClick = ledControlViewModel::changePresetColor,
                                     onSetHsvColor = ledControlViewModel::setHsvColor,
                                     onChangeBrightness = ledControlViewModel::changeBrightness,
                                 )
