@@ -1,6 +1,5 @@
 package com.example.lumen.presentation.ble.led_control
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lumen.domain.ble.model.PresetLedColors
@@ -15,6 +14,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -40,7 +40,7 @@ class LedControlViewModel @Inject constructor(
         controlUseCases.observeControllerStateUseCase(),
         _state,
     ) { connectedDevice, controllerState, state ->
-        Log.d(LOG_TAG, "collected state: $controllerState")
+        Timber.tag(LOG_TAG).d("collected state: $controllerState")
 
         state.copy(
             selectedDevice = connectedDevice,

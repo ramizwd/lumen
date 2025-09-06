@@ -1,6 +1,5 @@
 package com.example.lumen.presentation.ble.discovery
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lumen.domain.ble.model.ConnectionResult
@@ -17,6 +16,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -81,7 +81,8 @@ class DiscoveryViewModel @Inject constructor(
                 }
             }
         }.catch { throwable ->
-            Log.e(LOG_TAG, "Connection event error: ${throwable.localizedMessage}")
+            Timber.tag(LOG_TAG)
+                .e("Connection event error: ${throwable.localizedMessage}")
         }.launchIn(viewModelScope)
     }
 

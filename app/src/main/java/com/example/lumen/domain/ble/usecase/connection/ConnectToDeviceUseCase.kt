@@ -1,9 +1,9 @@
 package com.example.lumen.domain.ble.usecase.connection
 
-import android.util.Log
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.BleScanController
 import com.example.lumen.domain.ble.model.BleDevice
+import timber.log.Timber
 import javax.inject.Inject
 
 class ConnectToDeviceUseCase @Inject constructor(
@@ -15,7 +15,7 @@ class ConnectToDeviceUseCase @Inject constructor(
     }
 
     suspend operator fun invoke(selectedDevice: BleDevice?) {
-        Log.d(LOG_TAG, "Connect to device ($selectedDevice)")
+        Timber.tag(LOG_TAG).d("Connect to device ($selectedDevice)")
         bleScanController.stopScan()
         bleGattController.connect(selectedDevice)
     }

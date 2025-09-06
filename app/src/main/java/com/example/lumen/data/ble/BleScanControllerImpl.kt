@@ -7,7 +7,6 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
-import android.util.Log
 import com.example.lumen.data.mapper.toBleDevice
 import com.example.lumen.domain.ble.BleScanController
 import com.example.lumen.domain.ble.model.BleDevice
@@ -26,6 +25,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 /**
  * Class that implements [BleScanController] interface.
@@ -75,7 +75,7 @@ class BleScanControllerImpl(
 
     override suspend fun startScan() {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
-            Log.d(LOG_TAG, "BLUETOOTH_SCAN permission missing!")
+            Timber.tag(LOG_TAG).e("BLUETOOTH_SCAN permission missing!")
             return
         }
 
@@ -95,28 +95,28 @@ class BleScanControllerImpl(
             try {
                 scanner.startScan(null, settings, leScanCallback)
                 _isScanning.value = true
-                Log.d(LOG_TAG, "BLE Scan started...")
+                Timber.tag(LOG_TAG).d("BLE Scan started...")
 
                 // Start a coroutine to stop scanning after a period
                 scanJob = bleScanScope.launch {
                     delay(SCAN_PERIOD_MILLIS)
                     stopScan()
-                    Log.d(LOG_TAG, "Ble scan stopped automatically")
+                    Timber.tag(LOG_TAG).i("Ble scan stopped automatically")
                 }
             } catch (e: Exception) {
-                Log.e(LOG_TAG, "Exception during scan start: ${e.message}")
+                Timber.tag(LOG_TAG).e(e,"Exception during scan start")
                 _errors.tryEmit("Scan failed")
                 _isScanning.value = false
             }
         } ?: run {
-            Log.e(LOG_TAG, "BLE Scanner not initialized - startScan()")
+            Timber.tag(LOG_TAG).e("BLE Scanner not initialized - startScan()")
             _errors.tryEmit("Scan failed")
         }
     }
 
     override fun stopScan() {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
-            Log.d(LOG_TAG, "BLUETOOTH_SCAN permission missing!")
+            Timber.tag(LOG_TAG).e("BLUETOOTH_SCAN permission missing!")
             return
         }
 
@@ -130,13 +130,13 @@ class BleScanControllerImpl(
                 _isScanning.value = false
                 scanJob?.cancel()
                 scanJob = null
-                Log.d(LOG_TAG, "BLE Scan stopped...")
+                Timber.tag(LOG_TAG).i("BLE Scan stopped...")
             } catch (e: Exception) {
-                Log.e(LOG_TAG, "Exception during scan stop: ${e.message}")
+                Timber.tag(LOG_TAG).e(e,"Exception during scan stop")
                 _errors.tryEmit("Stopping scan failed")
             }
         } ?: run {
-            Log.e(LOG_TAG, "BLE Scanner not initialized - stopScan()")
+            Timber.tag(LOG_TAG).e("BLE Scanner not initialized - stopScan()")
             _errors.tryEmit("Stopping scan failed")
         }
     }
@@ -159,12 +159,12 @@ class BleScanControllerImpl(
         // Used if setReportDelay() is set to a non-zero value
         override fun onBatchScanResults(results: MutableList<ScanResult>?) {
             super.onBatchScanResults(results)
-            Log.d(LOG_TAG, "onBatchScanResults: ${results?.size} results")
+            Timber.tag(LOG_TAG).d("onBatchScanResults: ${results?.size} results")
         }
 
         override fun onScanFailed(errorCode: Int) {
             super.onScanFailed(errorCode)
-            Log.e(LOG_TAG, "BLE Scan failed with error: $errorCode")
+            Timber.tag(LOG_TAG).e("BLE Scan failed with error: $errorCode")
             _errors.tryEmit("Stopping scan failed")
             _isScanning.value = false
             scanJob?.cancel()

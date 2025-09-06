@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -33,6 +32,7 @@ import com.example.lumen.presentation.ble.led_control.LedControlViewModel
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.permissionArray
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -60,14 +60,14 @@ class MainActivity : ComponentActivity() {
         val bluetoothLeAvailable = packageManager.
         hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
         if (!bluetoothLeAvailable){
-            Log.d(LOG_TAG, "BLE not available.")
+            Timber.tag(LOG_TAG).d("BLE not available.")
             return
         }
 
         val enableBluetoothLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) {
-            Log.d(LOG_TAG, "request res: ${it.resultCode}")
+            Timber.tag(LOG_TAG).d("request res: ${it.resultCode}")
         }
 
         // Launcher to request Bluetooth permissions

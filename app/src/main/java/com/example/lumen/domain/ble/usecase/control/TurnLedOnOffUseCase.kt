@@ -6,6 +6,7 @@ import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.LED_OFF_COMMAND
 import com.example.lumen.domain.ble.model.GattConstants.LED_ON_COMMAND
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
+import timber.log.Timber
 import javax.inject.Inject
 
 class TurnLedOnOffUseCase @Inject constructor(
@@ -17,10 +18,10 @@ class TurnLedOnOffUseCase @Inject constructor(
 
     suspend operator fun invoke(isLedOn: Boolean) {
         val command = if (isLedOn) {
-            Log.d(LOG_TAG, "Turn LED on")
+            Timber.tag(LOG_TAG).d("Turn LED on")
             LED_ON_COMMAND
         } else {
-            Log.d(LOG_TAG, "Turn LED off")
+            Timber.tag(LOG_TAG).d("Turn LED off")
             LED_OFF_COMMAND
         }
 

@@ -1,6 +1,5 @@
 package com.example.lumen.presentation.ble.led_control
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -28,6 +27,7 @@ import com.example.lumen.presentation.ble.led_control.components.MatchDeviceThem
 import com.example.lumen.presentation.ble.led_control.components.PresetColorRow
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.hexToComposeColor
+import timber.log.Timber
 
 @Composable
 fun LedControlScreen(
@@ -49,8 +49,8 @@ fun LedControlScreen(
             try {
                 hexColor.hexToComposeColor()
             } catch (e: IllegalArgumentException) {
-                Log.d("LedControlScreen", "Error converting to Compose color:" +
-                        " ${e.message}")
+                Timber.tag("LedControlScreen")
+                    .e(e, "Error converting to Compose color")
                 Color.White
             }
         }

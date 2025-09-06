@@ -1,10 +1,10 @@
 package com.example.lumen.domain.ble.usecase.control
 
-import android.util.Log
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
 import com.example.lumen.utils.toBrightnessCommandBytes
+import timber.log.Timber
 import javax.inject.Inject
 
 class ChangeBrightnessUseCase @Inject constructor(
@@ -15,7 +15,7 @@ class ChangeBrightnessUseCase @Inject constructor(
     }
 
     suspend operator fun invoke(value: Float) {
-        Log.d(LOG_TAG, "Value: $value")
+        Timber.tag(LOG_TAG).d("Value: $value")
 
         bleGattController.writeCharacteristic(
             SERVICE_UUID,

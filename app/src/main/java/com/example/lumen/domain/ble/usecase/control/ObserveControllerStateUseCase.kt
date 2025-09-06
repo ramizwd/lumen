@@ -1,9 +1,9 @@
 package com.example.lumen.domain.ble.usecase.control
 
-import android.util.Log
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.LedControllerState
 import kotlinx.coroutines.flow.Flow
+import timber.log.Timber
 import javax.inject.Inject
 
 class ObserveControllerStateUseCase @Inject constructor(
@@ -15,7 +15,7 @@ class ObserveControllerStateUseCase @Inject constructor(
 
     operator fun invoke(): Flow<LedControllerState?> {
         val controllerState = bleGattController.ledControllerState
-        Log.d(LOG_TAG, "Controller state: $controllerState")
+        Timber.tag(LOG_TAG).d("Controller state: $controllerState")
 
         return controllerState
     }
