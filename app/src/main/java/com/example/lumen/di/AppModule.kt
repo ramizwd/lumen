@@ -3,8 +3,10 @@ package com.example.lumen.di
 import android.content.Context
 import com.example.lumen.data.ble.BleGattControllerImpl
 import com.example.lumen.data.ble.BleScanControllerImpl
+import com.example.lumen.data.ble.BluetoothStateManagerImpl
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.BleScanController
+import com.example.lumen.domain.ble.BluetoothStateManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,5 +28,13 @@ object AppModule {
     @Singleton
     fun provideBleGattController(@ApplicationContext context: Context): BleGattController {
         return BleGattControllerImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBluetoothStateDataSource(
+        @ApplicationContext context: Context
+    ): BluetoothStateManager {
+        return BluetoothStateManagerImpl(context)
     }
 }

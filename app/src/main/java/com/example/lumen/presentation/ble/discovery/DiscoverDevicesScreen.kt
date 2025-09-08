@@ -1,23 +1,33 @@
 package com.example.lumen.presentation.ble.discovery
 
+import android.bluetooth.BluetoothAdapter
+import android.content.Intent
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.presentation.ble.discovery.components.DeviceList
+import com.example.lumen.presentation.ble.discovery.components.ScanButton
+import com.example.lumen.presentation.common.components.PermissionAlertDialog
 import com.example.lumen.presentation.theme.LumenTheme
+import timber.log.Timber
+
+private const val LOG_TAG = "DiscoverDevicesScreen"
 
 @Composable
 fun DiscoverDevicesScreen(
@@ -28,6 +38,10 @@ fun DiscoverDevicesScreen(
     onConnectToDevice: (String) -> Unit,
 ) {
     val isScanning = state.isScanning
+    val context = LocalContext.current
+    val enableBluetoothLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { }
 
     Column(
         modifier = Modifier
@@ -45,9 +59,33 @@ fun DiscoverDevicesScreen(
                 onStartScan = onStartScan,
             )
         }
+        ScanButton(
+            isEnabled = state.bluetoothState == BluetoothState.ON,
+            onStartScan = onStartScan,
+            onStopScan = onStopScan,
+            isScanning = isScanning
+        )
 
-        Button(onClick = if (isScanning) onStopScan else onStartScan) {
-            Text(text = if (isScanning) "Stop Scanning" else "Start Scan")
+        if (state.showEnableBtDialog) {
+            PermissionAlertDialog(
+                onConfirmation = {
+                    try {
+                        enableBluetoothLauncher.launch(
+                            Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                        )
+                    } catch (e: SecurityException) {
+                        Timber.tag(LOG_TAG)
+                            .e(e, "BLUETOOTH_CONNECT permission missing!")
+                        Toast.makeText(
+                            context,
+                            "Nearby devices permission missing!",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                },
+                dialogTitle = "Bluetooth is off",
+                dialogText = "Please enable Bluetooth to start scanning.",
+            )
         }
     }
 }

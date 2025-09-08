@@ -86,27 +86,36 @@ class BleGattControllerImpl(
         get() = _connectionEvents.asSharedFlow()
 
     override suspend fun connect(selectedDevice: BleDevice?) {
-            if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
-                Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
-                return
+        if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
+            Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
+            return
+        }
+
+        if (bluetoothAdapter?.isEnabled != true) {
+            Timber.tag(LOG_TAG)
+                .e("bluetoothAdapter is null or not enabled - startScan()")
+            _connectionEvents.emit(
+                ConnectionResult.Error("Bluetooth is not enabled")
+            )
+            return
+        }
+
+        bluetoothAdapter?.let { adapter ->
+            try {
+                _connectionState.value = ConnectionState.CONNECTING
+                _selectedDevice.value = selectedDevice
+
+                val device = adapter.getRemoteDevice(selectedDevice?.address)
+                bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
+            } catch (e: IllegalArgumentException) {
+                Timber.tag(LOG_TAG).e(e,"Device not found")
+                _connectionEvents.emit(
+                    ConnectionResult.Error("Device not found")
+                )
+
+                close()
             }
-
-            bluetoothAdapter?.let { adapter ->
-                try {
-                    _connectionState.value = ConnectionState.CONNECTING
-                    _selectedDevice.value = selectedDevice
-
-                    val device = adapter.getRemoteDevice(selectedDevice?.address)
-                    bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
-                } catch (e: IllegalArgumentException) {
-                    Timber.tag(LOG_TAG).e(e,"Device not found")
-                    _connectionEvents.emit(
-                        ConnectionResult.Error("Device not found")
-                    )
-
-                    close()
-                }
-            } ?: Timber.tag(LOG_TAG).e("BluetoothAdapter not initialized.")
+        } ?: Timber.tag(LOG_TAG).e("BluetoothAdapter not initialized.")
     }
 
     override fun disconnect() {
@@ -122,7 +131,7 @@ class BleGattControllerImpl(
             _connectionState.value == ConnectionState.CONNECTING ||
             _connectionState.value == ConnectionState.RETRYING) {
             bluetoothGatt?.disconnect()
-            Timber.tag(LOG_TAG).i("Device disconnected")
+            Timber.tag(LOG_TAG).d("Device disconnected")
         }
     }
 

@@ -38,7 +38,7 @@ import timber.log.Timber
 class MainActivity : ComponentActivity() {
 
     companion object MainActivity {
-        private const val LOG_TAG = "MainActivity"
+        private const val LOG_TAG = "MainActivityLog"
     }
 
     private val bluetoothManager by lazy {
@@ -102,11 +102,11 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(key1 = discoveryState.errorMessage) {
                     discoveryState.errorMessage?.let { message ->
 
-                        if (discoveryState.shouldShowRetryConnection) {
+                        if (discoveryState.showRetryConnection) {
                             val result = snackbarHostState.showSnackbar(
                                 message = message,
                                 actionLabel = "Retry",
-                                duration = SnackbarDuration.Indefinite
+                                duration = SnackbarDuration.Long
                             )
                             when (result) {
                                 SnackbarResult.Dismissed -> {

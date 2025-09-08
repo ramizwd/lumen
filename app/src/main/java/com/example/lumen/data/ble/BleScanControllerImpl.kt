@@ -37,7 +37,7 @@ class BleScanControllerImpl(
 ): BleScanController {
 
     companion object {
-        private const val LOG_TAG = "BleControllerImpl"
+        private const val LOG_TAG = "BleScanControllerImpl"
 
         private const val REPOT_DELAY_MILLIS: Long = 0
         private const val SCAN_PERIOD_MILLIS: Long = 30_000 // Scan for 30 seconds
@@ -79,6 +79,19 @@ class BleScanControllerImpl(
             return
         }
 
+        if (bluetoothAdapter?.isEnabled != true) {
+            Timber.tag(LOG_TAG)
+                .e("bluetoothAdapter is null or not enabled - startScan()")
+            _errors.emit("Bluetooth is not enabled")
+            return
+        }
+
+        if (bluetoothLeScanner == null) {
+            Timber.tag(LOG_TAG).e("BluetoothLeScanner is null - startScan()")
+            _errors.emit("BLE scanning not supported")
+            return
+        }
+
         if (_isScanning.value) {
             stopScan()
         }
@@ -95,22 +108,23 @@ class BleScanControllerImpl(
             try {
                 scanner.startScan(null, settings, leScanCallback)
                 _isScanning.value = true
-                Timber.tag(LOG_TAG).d("BLE Scan started...")
+                Timber.tag(LOG_TAG).d("Scan started...")
 
                 // Start a coroutine to stop scanning after a period
                 scanJob = bleScanScope.launch {
                     delay(SCAN_PERIOD_MILLIS)
                     stopScan()
-                    Timber.tag(LOG_TAG).i("Ble scan stopped automatically")
+                    Timber.tag(LOG_TAG).i("Scan stopped automatically")
                 }
             } catch (e: Exception) {
                 Timber.tag(LOG_TAG).e(e,"Exception during scan start")
-                _errors.tryEmit("Scan failed")
+                _errors.emit("Scan failed")
                 _isScanning.value = false
             }
         } ?: run {
-            Timber.tag(LOG_TAG).e("BLE Scanner not initialized - startScan()")
-            _errors.tryEmit("Scan failed")
+            Timber.tag(LOG_TAG)
+                .e("bluetoothLeScanner not initialized - startScan()")
+            _errors.emit("Scan failed")
         }
     }
 
@@ -124,20 +138,36 @@ class BleScanControllerImpl(
             return
         }
 
+        if (bluetoothAdapter?.isEnabled != true) {
+            Timber.tag(LOG_TAG)
+                .e("bluetoothAdapter is null or not enabled - stopScan()")
+            clearScanState()
+            _errors.tryEmit("Bluetooth is not enabled")
+            return
+        }
+
+        if (bluetoothLeScanner == null) {
+            Timber.tag(LOG_TAG).e("BluetoothLeScanner is null - stopScan()")
+            clearScanState()
+            _errors.tryEmit("BLE scanning not supported")
+            return
+        }
+
         bluetoothLeScanner?.let { scanner ->
             try {
                 scanner.stopScan(leScanCallback)
-                _isScanning.value = false
-                scanJob?.cancel()
-                scanJob = null
-                Timber.tag(LOG_TAG).i("BLE Scan stopped...")
+                Timber.tag(LOG_TAG).i("Scan stopped")
             } catch (e: Exception) {
                 Timber.tag(LOG_TAG).e(e,"Exception during scan stop")
                 _errors.tryEmit("Stopping scan failed")
+            } finally {
+                Timber.tag(LOG_TAG).i("Scan state cleared - stopScan()")
+                clearScanState()
             }
         } ?: run {
-            Timber.tag(LOG_TAG).e("BLE Scanner not initialized - stopScan()")
+            Timber.tag(LOG_TAG).e("bluetoothLeScanner not initialized - stopScan()")
             _errors.tryEmit("Stopping scan failed")
+            clearScanState()
         }
     }
 
@@ -166,9 +196,13 @@ class BleScanControllerImpl(
             super.onScanFailed(errorCode)
             Timber.tag(LOG_TAG).e("BLE Scan failed with error: $errorCode")
             _errors.tryEmit("Stopping scan failed")
-            _isScanning.value = false
-            scanJob?.cancel()
-            scanJob = null
+            clearScanState()
         }
+    }
+
+    private fun clearScanState() {
+        _isScanning.value = false
+        scanJob?.cancel()
+        scanJob = null
     }
 }

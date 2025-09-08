@@ -29,6 +29,8 @@ import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.hexToComposeColor
 import timber.log.Timber
 
+private const val LOG_TAG = "LedControlScreen"
+
 @Composable
 fun LedControlScreen(
     innerPadding: PaddingValues,
@@ -49,7 +51,7 @@ fun LedControlScreen(
             try {
                 hexColor.hexToComposeColor()
             } catch (e: IllegalArgumentException) {
-                Timber.tag("LedControlScreen")
+                Timber.tag(LOG_TAG)
                     .e(e, "Error converting to Compose color")
                 Color.White
             }
