@@ -106,7 +106,7 @@ class MainActivity : ComponentActivity() {
                             val result = snackbarHostState.showSnackbar(
                                 message = message,
                                 actionLabel = "Retry",
-                                duration = SnackbarDuration.Indefinite
+                                duration = SnackbarDuration.Long
                             )
                             when (result) {
                                 SnackbarResult.Dismissed -> {

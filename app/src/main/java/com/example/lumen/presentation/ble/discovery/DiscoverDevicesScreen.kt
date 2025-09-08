@@ -6,17 +6,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.presentation.ble.discovery.components.DeviceList
+import com.example.lumen.presentation.ble.discovery.components.ScanButton
 import com.example.lumen.presentation.theme.LumenTheme
 
 @Composable
@@ -46,9 +46,12 @@ fun DiscoverDevicesScreen(
             )
         }
 
-        Button(onClick = if (isScanning) onStopScan else onStartScan) {
-            Text(text = if (isScanning) "Stop Scanning" else "Start Scan")
-        }
+        ScanButton(
+            isEnabled = state.bluetoothState == BluetoothState.ON,
+            onStartScan = onStartScan,
+            onStopScan = onStopScan,
+            isScanning = isScanning
+        )
     }
 }
 

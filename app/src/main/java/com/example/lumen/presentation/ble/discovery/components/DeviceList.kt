@@ -51,7 +51,7 @@ fun DeviceList(
     )
 }
 
-@PreviewLightDark()
+@PreviewLightDark
 @Composable
 fun DeviceListPreview() {
     LumenTheme {
@@ -71,7 +71,7 @@ fun DeviceListPreview() {
     }
 }
 
-@PreviewLightDark()
+@PreviewLightDark
 @Composable
 fun DeviceListWithoutDevicesPreview() {
     LumenTheme {
