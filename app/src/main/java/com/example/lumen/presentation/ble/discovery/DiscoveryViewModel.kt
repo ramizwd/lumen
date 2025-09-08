@@ -50,6 +50,7 @@ class DiscoveryViewModel @Inject constructor(
             isScanning = isScanning,
             bluetoothState = bluetoothState,
             connectionState = connectionState,
+            showEnableBtDialog = bluetoothState == BluetoothState.OFF
         )
     }.stateIn(
         viewModelScope,
@@ -108,12 +109,12 @@ class DiscoveryViewModel @Inject constructor(
 
                 is ConnectionResult.Error -> {
                     _state.update { it.copy(
-                        errorMessage = result.message, shouldShowRetryConnection = false
+                        errorMessage = result.message, showRetryConnection = false
                     ) }
                 }
                 is ConnectionResult.ConnectionFailed -> {
                     _state.update { it.copy(
-                        errorMessage = result.message, shouldShowRetryConnection = true
+                        errorMessage = result.message, showRetryConnection = true
                     ) }
                 }
             }

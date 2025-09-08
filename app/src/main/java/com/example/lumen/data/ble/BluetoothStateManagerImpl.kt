@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.callbackFlow
 
 /**
  * Implements [BluetoothStateManager] interface.
- * Used to monitor Bluetooth state with a broadcast receiver
+ * Class to monitor Bluetooth state using a broadcast receiver
  */
 class BluetoothStateManagerImpl(
     private val context: Context,
