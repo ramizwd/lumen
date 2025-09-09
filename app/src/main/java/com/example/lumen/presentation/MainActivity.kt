@@ -13,14 +13,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -29,9 +31,12 @@ import com.example.lumen.presentation.ble.discovery.DiscoverDevicesScreen
 import com.example.lumen.presentation.ble.discovery.DiscoveryViewModel
 import com.example.lumen.presentation.ble.led_control.LedControlScreen
 import com.example.lumen.presentation.ble.led_control.LedControlViewModel
+import com.example.lumen.presentation.common.utils.showToast
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.permissionArray
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -97,45 +102,69 @@ class MainActivity : ComponentActivity() {
                 val ledControlViewModel = hiltViewModel<LedControlViewModel>()
                 val controlState by ledControlViewModel.state.collectAsStateWithLifecycle()
 
+                val currentToastRef: MutableState<Toast?> = remember {
+                    mutableStateOf(null)
+                }
+
                 val snackbarHostState = remember { SnackbarHostState() }
+                var snackbarJob: Job? by remember { mutableStateOf(null) }
 
-                LaunchedEffect(key1 = discoveryState.errorMessage) {
-                    discoveryState.errorMessage?.let { message ->
+                LaunchedEffect(key1 = Unit) {
+                    launch {
+                        discoveryViewModel.snackbarEvent.collect { event ->
+                            snackbarJob?.cancel()
 
-                        if (discoveryState.showRetryConnection) {
-                            val result = snackbarHostState.showSnackbar(
-                                message = message,
-                                actionLabel = "Retry",
-                                duration = SnackbarDuration.Long
-                            )
-                            when (result) {
-                                SnackbarResult.Dismissed -> {
-                                    discoveryViewModel.clearErrorMessage()
-                                }
-                                SnackbarResult.ActionPerformed -> {
-                                    discoveryViewModel.retryConnection()
+                            snackbarJob = launch {
+                                val result = snackbarHostState.showSnackbar(
+                                    message = event.message,
+                                    actionLabel = event.actionLabel,
+                                    duration = event.duration
+                                )
+
+                                when (result) {
+                                    SnackbarResult.Dismissed -> {
+                                        discoveryViewModel.clearErrorMessage()
+                                    }
+                                    SnackbarResult.ActionPerformed -> {
+                                        discoveryViewModel.retryConnection()
+                                    }
                                 }
                             }
-                        } else {
-                            Toast.makeText(
-                                applicationContext,
-                                message,
-                                Toast.LENGTH_LONG
-                            ).show()
                         }
+                    }
 
-                        discoveryViewModel.clearErrorMessage()
+                    launch {
+                        discoveryViewModel.state.collect { uiState ->
+                            if (discoveryState.connectionState == ConnectionState.CONNECTED) {
+                                snackbarJob?.cancel()
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                            }
+                        }
                     }
                 }
 
                 LaunchedEffect(key1 = discoveryState.infoMessage) {
-                    discoveryState.infoMessage?.let { message ->
-                        Toast.makeText(
-                            applicationContext,
-                            message,
-                            Toast.LENGTH_SHORT
-                        ).show()
+                    discoveryState.infoMessage?.let { msg ->
+                        showToast(
+                            context = applicationContext,
+                            message = msg,
+                            duration = Toast.LENGTH_SHORT,
+                            currentToastRef = currentToastRef
+                        )
                         discoveryViewModel.clearInfoMessage()
+                    }
+                }
+
+                LaunchedEffect(key1 = discoveryState.errorMessage) {
+                    if (discoveryState.errorMessage != null &&
+                        !discoveryState.showRetryConnection) {
+                        showToast(
+                            context = applicationContext,
+                            message = discoveryState.errorMessage!!,
+                            duration = Toast.LENGTH_SHORT,
+                            currentToastRef = currentToastRef
+                        )
+                        discoveryViewModel.clearErrorMessage()
                     }
                 }
 

@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,6 +27,7 @@ import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.presentation.ble.discovery.components.DeviceList
 import com.example.lumen.presentation.ble.discovery.components.ScanButton
 import com.example.lumen.presentation.common.components.PermissionAlertDialog
+import com.example.lumen.presentation.common.utils.showToast
 import com.example.lumen.presentation.theme.LumenTheme
 import timber.log.Timber
 
@@ -38,7 +42,9 @@ fun DiscoverDevicesScreen(
     onConnectToDevice: (String) -> Unit,
 ) {
     val isScanning = state.isScanning
-    val context = LocalContext.current
+    val context = LocalContext.current.applicationContext
+    val currentToastRef: MutableState<Toast?> = remember { mutableStateOf(null) }
+
     val enableBluetoothLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { }
@@ -76,11 +82,13 @@ fun DiscoverDevicesScreen(
                     } catch (e: SecurityException) {
                         Timber.tag(LOG_TAG)
                             .e(e, "BLUETOOTH_CONNECT permission missing!")
-                        Toast.makeText(
-                            context,
-                            "Nearby devices permission missing!",
-                            Toast.LENGTH_LONG
-                        ).show()
+
+                        showToast(
+                            context = context,
+                            message = "Nearby devices permission missing!",
+                            duration = Toast.LENGTH_LONG,
+                            currentToastRef = currentToastRef
+                        )
                     }
                 },
                 dialogTitle = "Bluetooth is off",

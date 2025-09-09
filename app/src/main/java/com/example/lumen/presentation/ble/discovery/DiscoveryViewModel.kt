@@ -1,5 +1,6 @@
 package com.example.lumen.presentation.ble.discovery
 
+import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lumen.domain.ble.model.BluetoothState
@@ -8,13 +9,16 @@ import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.discovery.DiscoveryUseCases
+import com.example.lumen.presentation.common.model.SnackbarEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -35,6 +39,9 @@ class DiscoveryViewModel @Inject constructor(
     companion object {
         private const val LOG_TAG = "DiscoveryViewModel"
     }
+
+    private val _snackbarEvent = Channel<SnackbarEvent>(Channel.BUFFERED)
+    val snackbarEvent = _snackbarEvent.receiveAsFlow()
 
     private val _state = MutableStateFlow(DiscoveryUiState())
 
@@ -101,7 +108,11 @@ class DiscoveryViewModel @Inject constructor(
         connectionUseCases.observeConnectionEventsUseCase().onEach { result ->
             when(result) {
                 ConnectionResult.ConnectionEstablished -> {
-                    _state.update { it.copy(infoMessage = null) }
+                    _state.update { it.copy(
+                        infoMessage = null,
+                        errorMessage = null,
+                        showRetryConnection = false
+                    ) }
                 }
                 ConnectionResult.Disconnected -> {
                     _state.update { it.copy(infoMessage = "Disconnected") }
@@ -113,9 +124,14 @@ class DiscoveryViewModel @Inject constructor(
                     ) }
                 }
                 is ConnectionResult.ConnectionFailed -> {
-                    _state.update { it.copy(
-                        errorMessage = result.message, showRetryConnection = true
-                    ) }
+                    _state.update { it.copy(showRetryConnection = true) }
+                    _snackbarEvent.send(
+                        SnackbarEvent(
+                            message = result.message,
+                            actionLabel = "RETRY",
+                            duration = SnackbarDuration.Long,
+                        )
+                    )
                 }
             }
         }.catch { throwable ->
