@@ -86,7 +86,7 @@ fun DiscoverDevicesScreen(
                         showToast(
                             context = context,
                             message = "Nearby devices permission missing!",
-                            duration = Toast.LENGTH_LONG,
+                            duration = Toast.LENGTH_SHORT,
                             currentToastRef = currentToastRef
                         )
                     }

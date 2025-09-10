@@ -11,7 +11,6 @@ import com.example.lumen.domain.ble.model.ConnectionState
  * [bluetoothState] Hold current state of Bluetooth
  * [connectionState] indicates the connection state of the GATT client
  * [deviceToConnect] storing device that we want to connect to for retrying connection
- * [showRetryConnection] to show the retry connection snackbar
  * [errorMessage] holds error messages related to GATT operations
  * [infoMessage] holds success or general info messages related to GATT operations
  */
@@ -21,7 +20,6 @@ data class DiscoveryUiState(
     val bluetoothState: BluetoothState = BluetoothState.UNKNOWN,
     val connectionState: ConnectionState = ConnectionState.DISCONNECTED,
     val deviceToConnect: BleDevice? = null,
-    val showRetryConnection: Boolean = false,
     val showEnableBtDialog: Boolean = false,
     val errorMessage: String? = null,
     val infoMessage: String? = null,

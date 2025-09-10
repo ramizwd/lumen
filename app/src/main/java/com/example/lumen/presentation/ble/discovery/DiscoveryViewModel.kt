@@ -111,20 +111,21 @@ class DiscoveryViewModel @Inject constructor(
                     _state.update { it.copy(
                         infoMessage = null,
                         errorMessage = null,
-                        showRetryConnection = false
                     ) }
                 }
                 ConnectionResult.Disconnected -> {
                     _state.update { it.copy(infoMessage = "Disconnected") }
                 }
+                ConnectionResult.InvalidDevice -> {
+                    _state.update { it.copy(infoMessage = "Invalid device") }
+                }
 
                 is ConnectionResult.Error -> {
                     _state.update { it.copy(
-                        errorMessage = result.message, showRetryConnection = false
+                        errorMessage = result.message
                     ) }
                 }
                 is ConnectionResult.ConnectionFailed -> {
-                    _state.update { it.copy(showRetryConnection = true) }
                     _snackbarEvent.send(
                         SnackbarEvent(
                             message = result.message,

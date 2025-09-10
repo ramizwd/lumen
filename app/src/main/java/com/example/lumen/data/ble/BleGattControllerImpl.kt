@@ -85,9 +85,14 @@ class BleGattControllerImpl(
     override val connectionEvents: SharedFlow<ConnectionResult>
         get() = _connectionEvents.asSharedFlow()
 
+    private var isInvalidDevice = false
+
     override suspend fun connect(selectedDevice: BleDevice?) {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
+            _connectionEvents.emit(
+                ConnectionResult.Error("Nearby devices permission missing!")
+            )
             return
         }
 
@@ -121,6 +126,9 @@ class BleGattControllerImpl(
     override fun disconnect() {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
+            _connectionEvents.tryEmit(
+                ConnectionResult.Error("Nearby devices permission missing!")
+            )
             return
         }
 
@@ -130,6 +138,7 @@ class BleGattControllerImpl(
         if (_connectionState.value == ConnectionState.CONNECTED ||
             _connectionState.value == ConnectionState.CONNECTING ||
             _connectionState.value == ConnectionState.RETRYING) {
+            isInvalidDevice = false
             bluetoothGatt?.disconnect()
             Timber.tag(LOG_TAG).d("Device disconnected")
         }
@@ -142,6 +151,9 @@ class BleGattControllerImpl(
     ) {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
+            _connectionEvents.emit(
+                ConnectionResult.Error("Nearby devices permission missing!")
+            )
             return
         }
 
@@ -200,7 +212,13 @@ class BleGattControllerImpl(
                         // connected to is finicky. If it fails, try again after some delay.
                         retryConnection()
                     } else {
-                        _connectionEvents.tryEmit(ConnectionResult.Disconnected)
+                        var disconnectRes = if (isInvalidDevice)
+                            ConnectionResult.InvalidDevice
+                        else ConnectionResult.Disconnected
+
+                        _connectionEvents.tryEmit(
+                            disconnectRes
+                        )
                         close()
                     }
                 }
@@ -225,6 +243,7 @@ class BleGattControllerImpl(
             if (ledControllerService == null) {
                 Timber.tag(LOG_TAG).d("Wrong device, disconnecting...")
                 _connectionState.value = ConnectionState.WRONG_DEVICE
+                isInvalidDevice = true
                 gatt?.disconnect()
                 return
             }

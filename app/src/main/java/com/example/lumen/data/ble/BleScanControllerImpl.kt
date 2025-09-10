@@ -76,6 +76,7 @@ class BleScanControllerImpl(
     override suspend fun startScan() {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
             Timber.tag(LOG_TAG).e("BLUETOOTH_SCAN permission missing!")
+            _errors.emit("Nearby devices permission missing!")
             return
         }
 
@@ -131,6 +132,7 @@ class BleScanControllerImpl(
     override fun stopScan() {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
             Timber.tag(LOG_TAG).e("BLUETOOTH_SCAN permission missing!")
+            _errors.tryEmit("Nearby devices permission missing!")
             return
         }
 

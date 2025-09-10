@@ -7,7 +7,7 @@ import androidx.compose.runtime.MutableState
 fun showToast(
     context: Context,
     message: String,
-    duration: Int = Toast.LENGTH_LONG,
+    duration: Int = Toast.LENGTH_SHORT,
     currentToastRef: MutableState<Toast?>
 ): Toast {
     currentToastRef.value?.cancel()

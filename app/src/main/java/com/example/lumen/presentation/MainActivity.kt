@@ -156,8 +156,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 LaunchedEffect(key1 = discoveryState.errorMessage) {
-                    if (discoveryState.errorMessage != null &&
-                        !discoveryState.showRetryConnection) {
+                    discoveryState.errorMessage?.let { msg ->
                         showToast(
                             context = applicationContext,
                             message = discoveryState.errorMessage!!,
