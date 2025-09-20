@@ -10,28 +10,78 @@ import com.example.lumen.presentation.theme.LumenTheme
 
 @Composable
 fun PermissionAlertDialog(
+    permissionTextProvider: PermissionTextProvider,
     onConfirmation: () -> Unit,
-    dialogTitle: String,
-    dialogText: String,
+    onDismissRequest: () -> Unit,
 ) {
     AlertDialog(
         title = {
-            Text(text = dialogTitle)
+            Text(text = permissionTextProvider.title)
         },
         text = {
-            Text(text = dialogText)
+            Text(text = permissionTextProvider.description)
         },
-        onDismissRequest = { },
+        onDismissRequest = {
+            onDismissRequest()
+        },
         confirmButton = {
             TextButton(
                 onClick = {
                     onConfirmation()
                 }
             ) {
-                Text("Ok")
+                Text(permissionTextProvider.confirmButtonText)
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                }
+            ) {
+                Text("Dismiss")
             }
         }
     )
+}
+
+interface PermissionTextProvider {
+    val title: String
+    val description: String
+    val confirmButtonText: String
+}
+
+class EnableBluetoothTextProvider() : PermissionTextProvider {
+    override val title: String
+        get() = "Bluetooth is off"
+
+    override val description: String
+        get() = "Bluetooth needs to be enabled to start scanning."
+
+    override val confirmButtonText: String
+        get() = "Enable"
+}
+
+class BluetoothPermissionTextProvider: PermissionTextProvider {
+    override val title: String
+        get() = "Permission request"
+
+    override val description: String
+        get() = "Nearby devices permission is required to scan for and connect to Bluetooth devices."
+
+    override val confirmButtonText: String
+        get() = "Allow"
+}
+
+class OpenAppSettingsTextProvider: PermissionTextProvider {
+    override val title: String
+        get() = "Permission request"
+
+    override val description: String
+        get() = "Please allow nearby devices permission in app settings to scan for and connect to Bluetooth devices."
+
+    override val confirmButtonText: String
+        get() = "Settings"
 }
 
 @PreviewLightDark
@@ -40,9 +90,23 @@ fun PermissionAlertDialogPreview() {
     LumenTheme {
         Surface {
             PermissionAlertDialog(
-                onConfirmation = { },
-                dialogTitle = "Allow permission",
-                dialogText = "Example text to allow permissions."
+                onConfirmation = {},
+                onDismissRequest = {},
+                permissionTextProvider = BluetoothPermissionTextProvider(),
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+fun PermissionAlertDialogOpenSettingsPreview() {
+    LumenTheme {
+        Surface {
+            PermissionAlertDialog(
+                onConfirmation = {},
+                onDismissRequest = {},
+                permissionTextProvider = OpenAppSettingsTextProvider(),
             )
         }
     }

@@ -9,14 +9,11 @@ import com.example.lumen.presentation.theme.LumenTheme
 
 @Composable
 fun ScanButton(
-    isEnabled: Boolean,
-    onStartScan: () -> Unit,
-    onStopScan: () -> Unit,
+    onClick: () -> Unit,
     isScanning: Boolean,
 ) {
     Button(
-        enabled = isEnabled,
-        onClick = if (isScanning) onStopScan else onStartScan
+        onClick = onClick
     ) {
         Text(text = if (isScanning) "Stop Scanning" else "Start Scan")
     }
@@ -28,24 +25,7 @@ fun ScanButtonPreview() {
     LumenTheme {
         Surface {
             ScanButton(
-                isEnabled = true,
-                onStopScan = {},
-                onStartScan = {},
-                isScanning = false
-            )
-        }
-    }
-}
-
-@PreviewLightDark
-@Composable
-fun ScanButtonDisabledPreview() {
-    LumenTheme {
-        Surface {
-            ScanButton(
-                isEnabled = false,
-                onStopScan = {},
-                onStartScan = {},
+                onClick = {},
                 isScanning = false
             )
         }
@@ -58,9 +38,7 @@ fun ScanButtonScanningPreview() {
     LumenTheme {
         Surface {
             ScanButton(
-                isEnabled = true,
-                onStopScan = {},
-                onStartScan = {},
+                onClick = {},
                 isScanning = true
             )
         }
