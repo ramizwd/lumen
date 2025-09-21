@@ -19,6 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,9 +38,9 @@ import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.presentation.ble.discovery.components.DeviceList
 import com.example.lumen.presentation.ble.discovery.components.ScanButton
-import com.example.lumen.presentation.common.components.OpenAppSettingsTextProvider
 import com.example.lumen.presentation.common.components.BluetoothPermissionTextProvider
 import com.example.lumen.presentation.common.components.EnableBluetoothTextProvider
+import com.example.lumen.presentation.common.components.OpenAppSettingsTextProvider
 import com.example.lumen.presentation.common.components.PermissionAlertDialog
 import com.example.lumen.presentation.common.utils.showToast
 import com.example.lumen.presentation.theme.LumenTheme
@@ -63,7 +64,7 @@ fun DiscoverDevicesScreen(
 
     val currentToastRef: MutableState<Toast?> = remember { mutableStateOf(null) }
 
-    var showEnableBtDialog by rememberSaveable { mutableStateOf(state.showEnableBtDialog) }
+    var showEnableBtDialog by rememberSaveable { mutableStateOf(state.isBtDisabled) }
     var showPermissionDialog by rememberSaveable { mutableStateOf(false) }
     var showOpenSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -83,6 +84,10 @@ fun DiscoverDevicesScreen(
     val enableBluetoothLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { }
+
+    LaunchedEffect(state.isBtDisabled) {
+        if (hasBtPermissions) showEnableBtDialog = state.isBtDisabled
+    }
 
     DisposableEffect(
         key1 = lifecycleOwner,
@@ -199,7 +204,7 @@ fun DiscoverDevicesScreen(
                             showOpenSettingsDialog = true
                         }
                     }
-                    state.showEnableBtDialog -> {
+                    state.isBtDisabled -> {
                         showEnableBtDialog = true
                     }
                     else -> {

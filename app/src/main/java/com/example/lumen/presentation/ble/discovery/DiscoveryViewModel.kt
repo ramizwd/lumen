@@ -57,7 +57,7 @@ class DiscoveryViewModel @Inject constructor(
             isScanning = isScanning,
             bluetoothState = bluetoothState,
             connectionState = connectionState,
-            showEnableBtDialog = bluetoothState == BluetoothState.OFF
+            isBtDisabled = bluetoothState == BluetoothState.OFF
         )
     }.stateIn(
         viewModelScope,
