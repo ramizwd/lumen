@@ -114,6 +114,14 @@ fun DiscoverDevicesScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        when (state.connectionState) {
+            ConnectionState.CONNECTING -> Text(text = "CONNECTING...")
+            ConnectionState.DISCONNECTING -> Text(text = "DISCONNECTING...")
+            ConnectionState.DISCONNECTED -> Text(text = "DISCONNECTED")
+            ConnectionState.RETRYING -> Text(text = "RETRYING...")
+            ConnectionState.WRONG_DEVICE -> Text(text = "WRONG_DEVICE, DISCONNECTING...")
+            else -> {}
+        }
 
         // Permission rationale
         if (showPermissionDialog) {

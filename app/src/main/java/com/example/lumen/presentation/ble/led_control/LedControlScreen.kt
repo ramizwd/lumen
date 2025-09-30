@@ -100,7 +100,7 @@ fun LedControlScreen(
     }
 }
 
-@PreviewLightDark()
+@PreviewLightDark
 @Composable
 fun LedControlScreenPreview() {
     LumenTheme {

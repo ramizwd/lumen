@@ -11,7 +11,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -21,12 +20,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.rememberNavController
 import com.example.lumen.domain.ble.model.ConnectionState
-import com.example.lumen.presentation.ble.discovery.DiscoverDevicesScreen
 import com.example.lumen.presentation.ble.discovery.DiscoveryViewModel
-import com.example.lumen.presentation.ble.led_control.LedControlScreen
 import com.example.lumen.presentation.ble.led_control.LedControlViewModel
 import com.example.lumen.presentation.common.utils.showToast
+import com.example.lumen.presentation.navigation.LumenNavHost
+import com.example.lumen.presentation.navigation.Screen
 import com.example.lumen.presentation.theme.LumenTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
@@ -55,6 +55,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LumenTheme {
+                val navController = rememberNavController()
+
                 val discoveryViewModel = hiltViewModel<DiscoveryViewModel>()
                 val discoveryState by discoveryViewModel.state.collectAsStateWithLifecycle()
 
@@ -94,10 +96,27 @@ class MainActivity : ComponentActivity() {
 
                     launch {
                         discoveryViewModel.state.collect { uiState ->
-                            if (discoveryState.connectionState == ConnectionState.CONNECTED) {
+                            if (discoveryState.connectionState == ConnectionState.CONNECTING ||
+                                discoveryState.connectionState == ConnectionState.CONNECTED) {
                                 snackbarJob?.cancel()
                                 snackbarHostState.currentSnackbarData?.dismiss()
                             }
+                        }
+                    }
+                }
+
+                LaunchedEffect(discoveryState.connectionState) {
+                    if (discoveryState.connectionState == ConnectionState.CONNECTED &&
+                        navController.currentDestination?.route != Screen.LedControlScreen.route) {
+                        navController.navigate(Screen.LedControlScreen.route) {
+                            popUpTo(Screen.DiscoverDevicesScreen.route) {
+                                inclusive = true
+                            }
+                        }
+                    } else if (discoveryState.connectionState == ConnectionState.DISCONNECTED &&
+                        navController.currentDestination?.route != Screen.DiscoverDevicesScreen.route) {
+                        navController.navigate(Screen.DiscoverDevicesScreen.route) {
+                            popUpTo(Screen.LedControlScreen.route) { inclusive = true }
                         }
                     }
                 }
@@ -130,41 +149,21 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     snackbarHost = { SnackbarHost(snackbarHostState) }
                 ) { innerPadding ->
-
-                    when (discoveryState.connectionState) {
-                        ConnectionState.CONNECTING -> {
-                            Text(text = "CONNECTING...")
-                        }
-                        ConnectionState.CONNECTED -> {
-                            if (controlState.controllerState != null) {
-                                LedControlScreen(
-                                    innerPadding,
-                                    state = controlState,
-                                    onDisconnectClick = discoveryViewModel::disconnectFromDevice,
-                                    onTurnLedOnClick = ledControlViewModel::turnLedOn,
-                                    onTurnLedOffClick = ledControlViewModel::turnLedOff,
-                                    onChangePresetColorClick = ledControlViewModel::changePresetColor,
-                                    onSetHsvColor = ledControlViewModel::setHsvColor,
-                                    onChangeBrightness = ledControlViewModel::changeBrightness,
-                                )
-                            } else {
-                                Text(text = "Loading state...")
-                            }
-                        }
-                        ConnectionState.DISCONNECTING ->
-                            Text(text = "DISCONNECTING...")
-                        ConnectionState.DISCONNECTED -> {
-                            DiscoverDevicesScreen(
-                                innerPadding,
-                                state = discoveryState,
-                                onStartScan = discoveryViewModel::startScan,
-                                onStopScan = discoveryViewModel::stopScan,
-                                onConnectToDevice = discoveryViewModel::connectToDevice,
-                            )
-                        }
-                        ConnectionState.RETRYING -> Text(text = "RETRYING CONNECTION...")
-                        ConnectionState.WRONG_DEVICE -> Text(text = "WRONG DEVICE, DISCONNECTING...")
-                    }
+                    LumenNavHost(
+                        innerPadding = innerPadding,
+                        navController = navController,
+                        discoveryUiState = discoveryState,
+                        onStartScan = discoveryViewModel::startScan,
+                        onStopScan = discoveryViewModel::stopScan,
+                        onConnectToDevice = discoveryViewModel::connectToDevice,
+                        ledControlUiState = controlState,
+                        onDisconnectClick = discoveryViewModel::disconnectFromDevice,
+                        onTurnLedOnClick = ledControlViewModel::turnLedOn,
+                        onTurnLedOffClick = ledControlViewModel::turnLedOff,
+                        onChangePresetColorClick = ledControlViewModel::changePresetColor,
+                        onSetHsvColor = ledControlViewModel::setHsvColor,
+                        onChangeBrightness = ledControlViewModel::changeBrightness,
+                    )
                 }
             }
         }
