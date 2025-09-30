@@ -56,6 +56,9 @@ dependencies {
     // UI libraries
     implementation(libs.compose.colorpicker)
 
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
+
     // Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
