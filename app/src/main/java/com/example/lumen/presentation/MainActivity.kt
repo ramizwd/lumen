@@ -25,8 +25,9 @@ import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.presentation.ble.discovery.DiscoveryViewModel
 import com.example.lumen.presentation.ble.led_control.LedControlViewModel
 import com.example.lumen.presentation.common.utils.showToast
+import com.example.lumen.presentation.navigation.DiscoverDevicesScreen
+import com.example.lumen.presentation.navigation.LedControlScreen
 import com.example.lumen.presentation.navigation.LumenNavHost
-import com.example.lumen.presentation.navigation.Screen
 import com.example.lumen.presentation.theme.LumenTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
@@ -106,17 +107,19 @@ class MainActivity : ComponentActivity() {
                 }
 
                 LaunchedEffect(discoveryState.connectionState) {
+                    val currentRoute = navController.currentBackStackEntry?.destination?.route
+
                     if (discoveryState.connectionState == ConnectionState.CONNECTED &&
-                        navController.currentDestination?.route != Screen.LedControlScreen.route) {
-                        navController.navigate(Screen.LedControlScreen.route) {
-                            popUpTo(Screen.DiscoverDevicesScreen.route) {
-                                inclusive = true
-                            }
+                        currentRoute != LedControlScreen::class.qualifiedName) {
+                        navController.navigate(LedControlScreen) {
+                            popUpTo(DiscoverDevicesScreen) { inclusive = true }
+                            launchSingleTop = true
                         }
                     } else if (discoveryState.connectionState == ConnectionState.DISCONNECTED &&
-                        navController.currentDestination?.route != Screen.DiscoverDevicesScreen.route) {
-                        navController.navigate(Screen.DiscoverDevicesScreen.route) {
-                            popUpTo(Screen.LedControlScreen.route) { inclusive = true }
+                        currentRoute != DiscoverDevicesScreen::class.qualifiedName) {
+                        navController.navigate(DiscoverDevicesScreen) {
+                            popUpTo(LedControlScreen) { inclusive = true }
+                            launchSingleTop = true
                         }
                     }
                 }

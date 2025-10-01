@@ -13,6 +13,9 @@ import com.example.lumen.presentation.ble.discovery.DiscoveryUiState
 import com.example.lumen.presentation.ble.led_control.LedControlScreen
 import com.example.lumen.presentation.ble.led_control.LedControlUiState
 
+/**
+ * Top-level navigation graph
+ */
 @Composable
 fun LumenNavHost(
     innerPadding: PaddingValues,
@@ -29,9 +32,9 @@ fun LumenNavHost(
     onSetHsvColor: (String) -> Unit,
     onChangeBrightness: (Float) -> Unit,
     ) {
-    NavHost(navController = navController, startDestination = Screen.DiscoverDevicesScreen.route) {
+    NavHost(navController = navController, startDestination = DiscoverDevicesScreen) {
 
-        composable(route = Screen.DiscoverDevicesScreen.route) {
+        composable<DiscoverDevicesScreen> {
             DiscoverDevicesScreen(
                 innerPadding = innerPadding,
                 state = discoveryUiState,
@@ -41,7 +44,7 @@ fun LumenNavHost(
             )
         }
 
-        composable(route = Screen.LedControlScreen.route) {
+        composable<LedControlScreen> {
             if (discoveryUiState.connectionState == ConnectionState.CONNECTED &&
                 ledControlUiState.controllerState != null) {
                 LedControlScreen(
