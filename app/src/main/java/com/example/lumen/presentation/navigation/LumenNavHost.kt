@@ -1,7 +1,6 @@
 package com.example.lumen.presentation.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,6 +11,7 @@ import com.example.lumen.presentation.ble.discovery.DiscoverDevicesScreen
 import com.example.lumen.presentation.ble.discovery.DiscoveryUiState
 import com.example.lumen.presentation.ble.led_control.LedControlScreen
 import com.example.lumen.presentation.ble.led_control.LedControlUiState
+import com.example.lumen.presentation.common.components.ConnectionIndicator
 
 /**
  * Top-level navigation graph
@@ -35,18 +35,21 @@ fun LumenNavHost(
     NavHost(navController = navController, startDestination = DiscoverDevicesScreen) {
 
         composable<DiscoverDevicesScreen> {
-            DiscoverDevicesScreen(
-                innerPadding = innerPadding,
-                state = discoveryUiState,
-                onStartScan = onStartScan,
-                onStopScan = onStopScan,
-                onConnectToDevice = onConnectToDevice,
-            )
+            if (discoveryUiState.connectionState == ConnectionState.DISCONNECTED) {
+                DiscoverDevicesScreen(
+                    innerPadding = innerPadding,
+                    state = discoveryUiState,
+                    onStartScan = onStartScan,
+                    onStopScan = onStopScan,
+                    onConnectToDevice = onConnectToDevice,
+                )
+            } else {
+                ConnectionIndicator(connectionState = discoveryUiState.connectionState)
+            }
         }
 
         composable<LedControlScreen> {
-            if (discoveryUiState.connectionState == ConnectionState.CONNECTED &&
-                ledControlUiState.controllerState != null) {
+            if (ledControlUiState.controllerState != null) {
                 LedControlScreen(
                     innerPadding = innerPadding,
                     state = ledControlUiState,
@@ -57,9 +60,6 @@ fun LumenNavHost(
                     onSetHsvColor = onSetHsvColor,
                     onChangeBrightness = onChangeBrightness,
                 )
-            }
-            else if (discoveryUiState.connectionState == ConnectionState.CONNECTED) {
-                Text(text = "Loading LED controller state...")
             }
         }
     }
