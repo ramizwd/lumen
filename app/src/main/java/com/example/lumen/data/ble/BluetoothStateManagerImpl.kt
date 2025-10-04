@@ -9,9 +9,9 @@ import android.content.IntentFilter
 import android.os.Build
 import com.example.lumen.domain.ble.BluetoothStateManager
 import com.example.lumen.domain.ble.model.BluetoothState
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 /**
  * Implements [BluetoothStateManager] interface.
@@ -29,8 +29,11 @@ class BluetoothStateManagerImpl(
         bluetoothManager?.adapter
     }
 
-    override fun observeBluetoothState(): Flow<BluetoothState> = callbackFlow {
+    private val _bluetoothState = MutableStateFlow(BluetoothState.UNKNOWN)
+    override val bluetoothState: SharedFlow<BluetoothState>
+        get() = _bluetoothState.asSharedFlow()
 
+    init {
         val bluetoothStateReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action == BluetoothAdapter.ACTION_STATE_CHANGED) {
@@ -46,7 +49,7 @@ class BluetoothStateManagerImpl(
                         BluetoothAdapter.STATE_TURNING_OFF -> BluetoothState.TURNING_OFF
                         else -> BluetoothState.UNKNOWN
                     }
-                    trySend(newState)
+                    _bluetoothState.value = newState
                 }
             }
         }
@@ -69,10 +72,6 @@ class BluetoothStateManagerImpl(
             BluetoothAdapter.STATE_TURNING_OFF -> BluetoothState.TURNING_OFF
             else -> BluetoothState.UNKNOWN
         }
-        trySend(initialState)
-
-        awaitClose {
-            context.unregisterReceiver(bluetoothStateReceiver)
-        }
+        _bluetoothState.value = initialState
     }
 }

@@ -14,7 +14,7 @@ class ObserveBluetoothStateUseCase @Inject constructor(
     }
 
     operator fun invoke(): Flow<BluetoothState> {
-        val bluetoothState = bluetoothStateDataSource.observeBluetoothState()
+        val bluetoothState = bluetoothStateDataSource.bluetoothState
         Timber.Forest.tag(LOG_TAG).d("BT state: $bluetoothState")
         return bluetoothState
     }
