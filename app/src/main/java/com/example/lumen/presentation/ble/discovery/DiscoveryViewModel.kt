@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionResult
-import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.discovery.DiscoveryUseCases
@@ -26,8 +25,8 @@ import timber.log.Timber
 import javax.inject.Inject
 
 /**
- * ViewModel for managing UI state related to scan and connection,
- * also responsible for invoking scan and connection operations.
+ * ViewModel responsible for managing scan UI state and
+ * for invoking scan and connection operations.
  */
 @HiltViewModel
 class DiscoveryViewModel @Inject constructor(
@@ -43,31 +42,29 @@ class DiscoveryViewModel @Inject constructor(
     private val _snackbarEvent = Channel<SnackbarEvent>(Channel.BUFFERED)
     val snackbarEvent = _snackbarEvent.receiveAsFlow()
 
-    private val _state = MutableStateFlow(DiscoveryUiState())
+    private val _uiState = MutableStateFlow(DiscoveryUiState())
 
-    val state = combine(
+    val uiState = combine(
         discoveryUseCases.observeScanResultsUseCase(),
         discoveryUseCases.observeIsScanningUseCase(),
         observeBluetoothStateUseCase(),
-        connectionUseCases.observeConnectionStateUseCase(),
-        _state
-    ) { scanResults, isScanning, bluetoothState, connectionState, state ->
+        _uiState
+    ) { scanResults, isScanning, bluetoothState, state ->
         state.copy(
             scanResults = scanResults,
             isScanning = isScanning,
             bluetoothState = bluetoothState,
-            connectionState = connectionState,
             isBtDisabled = bluetoothState == BluetoothState.OFF
         )
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
-        _state.value
+        _uiState.value
     )
 
     init {
         discoveryUseCases.observeScanErrorsUseCase().onEach { error ->
-            _state.update { it.copy(
+            _uiState.update { it.copy(
                 errorMessage = error
             ) }
         }.launchIn(viewModelScope)
@@ -86,12 +83,8 @@ class DiscoveryViewModel @Inject constructor(
                 }
                 BluetoothState.TURNING_OFF -> {
                     Timber.tag(LOG_TAG).d("BT turning off...")
-                    if (state.value.connectionState == ConnectionState.CONNECTED) {
-                        Timber.tag(LOG_TAG).i("Disconnecting...")
-                        disconnectFromDevice()
-                    }
 
-                    if(state.value.isScanning){
+                    if(uiState.value.isScanning){
                         Timber.tag(LOG_TAG).i("Stopping scan...")
                         stopScan()
                     }
@@ -101,27 +94,26 @@ class DiscoveryViewModel @Inject constructor(
                 }
             }
         }.catch { throwable ->
-            Timber.tag(LOG_TAG)
-                .e(throwable, "BT state observation error")
+            Timber.tag(LOG_TAG).e(throwable, "BT state observation error")
         }.launchIn(viewModelScope)
 
         connectionUseCases.observeConnectionEventsUseCase().onEach { result ->
             when(result) {
                 ConnectionResult.ConnectionEstablished -> {
-                    _state.update { it.copy(
+                    _uiState.update { it.copy(
                         infoMessage = null,
                         errorMessage = null,
                     ) }
                 }
                 ConnectionResult.Disconnected -> {
-                    _state.update { it.copy(infoMessage = "Disconnected") }
+                    _uiState.update { it.copy(infoMessage = "Disconnected") }
                 }
                 ConnectionResult.InvalidDevice -> {
-                    _state.update { it.copy(infoMessage = "Invalid device") }
+                    _uiState.update { it.copy(infoMessage = "Invalid device") }
                 }
 
                 is ConnectionResult.Error -> {
-                    _state.update { it.copy(
+                    _uiState.update { it.copy(
                         errorMessage = result.message
                     ) }
                 }
@@ -155,9 +147,9 @@ class DiscoveryViewModel @Inject constructor(
 
     fun connectToDevice(address: String) {
         viewModelScope.launch {
-            val selectedDevice = state.value.scanResults.find { it.address == address }
+            val selectedDevice = uiState.value.scanResults.find { it.address == address }
             selectedDevice?.let { device ->
-                _state.update { it.copy(deviceToConnect = device) }
+                _uiState.update { it.copy(deviceToConnect = device) }
                 connectionUseCases.connectToDeviceUseCase(device)
             }
         }
@@ -165,24 +157,18 @@ class DiscoveryViewModel @Inject constructor(
 
     fun retryConnection() {
         viewModelScope.launch {
-            state.value.deviceToConnect?.let { device ->
+            uiState.value.deviceToConnect?.let { device ->
                 connectionUseCases.connectToDeviceUseCase(device)
-            } ?: _state.update { it.copy(errorMessage = "No device to retry connection for") }
-        }
-    }
-
-    fun disconnectFromDevice() {
-        viewModelScope.launch {
-            connectionUseCases.disconnectUseCase()
+            } ?: _uiState.update { it.copy(errorMessage = "No device to retry connection for") }
         }
     }
 
     fun clearInfoMessage() {
-        _state.update { it.copy(infoMessage = null) }
+        _uiState.update { it.copy(infoMessage = null) }
     }
 
     fun clearErrorMessage() {
-        _state.update { it.copy(errorMessage = null) }
+        _uiState.update { it.copy(errorMessage = null) }
     }
 
     override fun onCleared() {

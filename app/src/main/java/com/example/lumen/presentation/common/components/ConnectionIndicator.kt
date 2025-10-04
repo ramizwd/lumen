@@ -22,7 +22,7 @@ fun ConnectionIndicator(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val loadingText = when (connectionState) {
+        val connectionStateText = when (connectionState) {
             ConnectionState.CONNECTING -> "Connecting..."
             ConnectionState.LOADING_STATE -> "Loading state..."
             ConnectionState.CONNECTED -> "Connection successful"
@@ -31,8 +31,10 @@ fun ConnectionIndicator(
             else -> ""
         }
 
-        CircularProgressIndicator()
-        Text(text = loadingText)
+        if (connectionState != ConnectionState.CONNECTED) {
+            CircularProgressIndicator()
+        }
+        Text(text = connectionStateText)
     }
 }
 

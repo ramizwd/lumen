@@ -11,12 +11,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.LedControllerState
 import com.example.lumen.domain.ble.model.PresetLedColors
@@ -34,16 +36,38 @@ private const val LOG_TAG = "LedControlScreen"
 @Composable
 fun LedControlScreen(
     innerPadding: PaddingValues,
-    state: LedControlUiState,
-    onDisconnectClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: LedControlViewModel
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LedControlContent(
+        innerPadding = innerPadding,
+        uiState = uiState,
+        onTurnLedOnClick = viewModel::turnLedOn,
+        onTurnLedOffClick = viewModel::turnLedOff,
+        onChangePresetColorClick = viewModel::changePresetColor,
+        onSetHsvColor = viewModel::setHsvColor,
+        onChangeBrightness = viewModel::changeBrightness,
+        onDisconnectClick = viewModel::disconnectFromDevice,
+        modifier = modifier,
+    )
+}
+
+@Composable
+fun LedControlContent(
+    innerPadding: PaddingValues,
+    uiState: LedControlUiState,
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     onChangePresetColorClick: (PresetLedColors) -> Unit,
     onSetHsvColor: (String) -> Unit,
     onChangeBrightness: (Float) -> Unit,
+    onDisconnectClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val currentColor = remember {
-        state.controllerState?.let {
+        uiState.controllerState?.let {
             val red = it.red
             val green = it.green
             val blue = it.blue
@@ -58,17 +82,17 @@ fun LedControlScreen(
         }
     }
 
-    val currentBrightness = state.controllerState?.brightness ?: 0f
-    val isOn = state.controllerState?.isOn ?: false
+    val currentBrightness = uiState.controllerState?.brightness ?: 0f
+    val isOn = uiState.controllerState?.isOn ?: false
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(innerPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(text = "CONNECTED to ${state.selectedDevice?.name}")
+        Text(text = "CONNECTED to ${uiState.selectedDevice?.name}")
 
         LedSwitch(
             isOn = isOn,
@@ -77,7 +101,7 @@ fun LedControlScreen(
         )
 
         ColorPicker(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .height(450.dp)
                 .padding(16.dp),
@@ -129,9 +153,9 @@ fun LedControlScreenPreview() {
                 controllerState = controllerState,
             )
 
-            LedControlScreen(
+            LedControlContent(
                 innerPadding = PaddingValues(),
-                state = state,
+                uiState = state,
                 onDisconnectClick = {},
                 onTurnLedOnClick = {},
                 onTurnLedOffClick = {},

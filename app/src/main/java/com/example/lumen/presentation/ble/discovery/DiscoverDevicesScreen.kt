@@ -15,6 +15,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,11 +35,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.lumen.domain.ble.model.BleDevice
-import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.presentation.ble.discovery.components.DeviceList
 import com.example.lumen.presentation.ble.discovery.components.ScanButton
 import com.example.lumen.presentation.common.components.BluetoothPermissionTextProvider
@@ -47,24 +52,24 @@ import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.btPermissionArray
 import com.example.lumen.utils.hasBluetoothPermissions
 import com.example.lumen.utils.shouldShowBluetoothRationale
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Composable
 fun DiscoverDevicesScreen(
-    innerPadding: PaddingValues,
-    state: DiscoveryUiState,
-    onStartScan: () -> Unit,
-    onStopScan: () -> Unit,
-    onConnectToDevice: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: DiscoveryViewModel = hiltViewModel()
 ) {
-    val isScanning = state.isScanning
-    val scanResult = state.scanResults
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val activity = LocalActivity.current
 
     val currentToastRef: MutableState<Toast?> = remember { mutableStateOf(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    var showEnableBtDialog by rememberSaveable { mutableStateOf(state.isBtDisabled) }
+    var showEnableBtDialog by rememberSaveable { mutableStateOf(uiState.isBtDisabled) }
     var showPermissionDialog by rememberSaveable { mutableStateOf(false) }
     var showOpenSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -85,8 +90,16 @@ fun DiscoverDevicesScreen(
         ActivityResultContracts.StartActivityForResult()
     ) { }
 
-    LaunchedEffect(state.isBtDisabled) {
-        if (hasBtPermissions) showEnableBtDialog = state.isBtDisabled
+    val onUiEvent: (DiscoverDevicesUiEvent) -> Unit = { event ->
+        when (event) {
+            is DiscoverDevicesUiEvent.ToggleEnableBtDialog -> showEnableBtDialog = event.show
+            is DiscoverDevicesUiEvent.TogglePermissionDialog -> showPermissionDialog = event.show
+            is DiscoverDevicesUiEvent.ToggleOpenSettingsDialog -> showOpenSettingsDialog = event.show
+        }
+    }
+
+    LaunchedEffect(uiState.isBtDisabled) {
+        if (hasBtPermissions) showEnableBtDialog = uiState.isBtDisabled
     }
 
     DisposableEffect(
@@ -107,74 +120,153 @@ fun DiscoverDevicesScreen(
         }
     )
 
+    LaunchedEffect(key1 = Unit) {
+        launch {
+            viewModel.snackbarEvent.collect { event ->
+                val result = snackbarHostState.showSnackbar(
+                    message = event.message,
+                    actionLabel = event.actionLabel,
+                    duration = event.duration
+                )
+
+                when (result) {
+                    SnackbarResult.Dismissed -> {
+                        viewModel.clearErrorMessage()
+                    }
+                    SnackbarResult.ActionPerformed -> {
+                        viewModel.retryConnection()
+                    }
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(key1 = uiState.infoMessage) {
+        uiState.infoMessage?.let { msg ->
+            showToast(
+                context = context,
+                message = msg,
+                duration = Toast.LENGTH_SHORT,
+                currentToastRef = currentToastRef
+            )
+            viewModel.clearInfoMessage()
+        }
+    }
+
+    LaunchedEffect(key1 = uiState.errorMessage) {
+        uiState.errorMessage?.let { msg ->
+            showToast(
+                context = context,
+                message = uiState.errorMessage!!,
+                duration = Toast.LENGTH_SHORT,
+                currentToastRef = currentToastRef
+            )
+            viewModel.clearErrorMessage()
+        }
+    }
+
+    // Permission rationale
+    if (showPermissionDialog) {
+        PermissionAlertDialog(
+            onConfirmation = {
+                bluetoothPermissionLauncher.launch(btPermissionArray)
+                showPermissionDialog = false
+            },
+            onDismissRequest = { showPermissionDialog = false },
+            permissionTextProvider = BluetoothPermissionTextProvider()
+        )
+    }
+
+    // Prompt to enable permission through app settings after permanent denial
+    if (showOpenSettingsDialog) {
+        PermissionAlertDialog(
+            onConfirmation = {
+                val intent = Intent(
+                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.fromParts("package", context.packageName, null)
+                )
+
+                try {
+                    context.startActivity(intent)
+                } catch (_: ActivityNotFoundException) {
+                    showToast(
+                        context = context,
+                        message = "Could not open app settings. Try again",
+                        duration = Toast.LENGTH_SHORT,
+                        currentToastRef = currentToastRef
+                    )
+                }
+                showOpenSettingsDialog = false
+            },
+            onDismissRequest = { showOpenSettingsDialog = false },
+            permissionTextProvider = OpenAppSettingsTextProvider()
+        )
+    }
+
+    // If permission enabled but BT is off, prompt to enable
+    if (hasBtPermissions && showEnableBtDialog) {
+        PermissionAlertDialog(
+            onConfirmation = {
+                try {
+                    enableBluetoothLauncher.launch(
+                        Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                    )
+                    showEnableBtDialog = false
+                } catch (_: SecurityException) {
+                    Timber.tag("DiscoverDevicesScreen").i("Show toast")
+                    showToast(
+                        context = context,
+                        message = "Nearby devices permission missing!",
+                        duration = Toast.LENGTH_SHORT,
+                        currentToastRef = currentToastRef
+                    )
+                }
+            },
+            onDismissRequest = { showEnableBtDialog = false },
+            permissionTextProvider = EnableBluetoothTextProvider()
+        )
+    }
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { innerPadding ->
+        DiscoverDevicesContent(
+            innerPadding = innerPadding,
+            uiState = uiState,
+            onStartScan = viewModel::startScan,
+            onStopScan = viewModel::stopScan,
+            onConnectToDevice = viewModel::connectToDevice,
+            hasBtPermissions = hasBtPermissions,
+            showBtPermissionRationale = showBtPermissionRationale,
+            onEvent = onUiEvent,
+            modifier = modifier,
+        )
+    }
+}
+
+@Composable
+fun DiscoverDevicesContent(
+    innerPadding: PaddingValues,
+    uiState: DiscoveryUiState,
+    onStartScan: () -> Unit,
+    onStopScan: () -> Unit,
+    onConnectToDevice: (String) -> Unit,
+    hasBtPermissions: Boolean,
+    showBtPermissionRationale: Boolean,
+    onEvent: (DiscoverDevicesUiEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val isScanning = uiState.isScanning
+    val scanResult = uiState.scanResults
+
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(innerPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-
-        // Permission rationale
-        if (showPermissionDialog) {
-            PermissionAlertDialog(
-                onConfirmation = {
-                    bluetoothPermissionLauncher.launch(btPermissionArray)
-                    showPermissionDialog = false
-                },
-                onDismissRequest = { showPermissionDialog = false },
-                permissionTextProvider = BluetoothPermissionTextProvider()
-            )
-        }
-
-        // Prompt to enable permission through app settings after permanent denial
-        if (showOpenSettingsDialog) {
-            PermissionAlertDialog(
-                onConfirmation = {
-                    val intent = Intent(
-                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.fromParts("package", context.packageName, null)
-                    )
-
-                    try {
-                        context.startActivity(intent)
-                    } catch (_: ActivityNotFoundException) {
-                        showToast(
-                            context = context,
-                            message = "Could not open app settings. Try again",
-                            duration = Toast.LENGTH_SHORT,
-                            currentToastRef = currentToastRef
-                        )
-                    }
-                    showOpenSettingsDialog = false
-                },
-                onDismissRequest = { showOpenSettingsDialog = false },
-                permissionTextProvider = OpenAppSettingsTextProvider()
-            )
-        }
-
-        // If permission enabled but BT is off, prompt to enable
-        if (hasBtPermissions && showEnableBtDialog) {
-            PermissionAlertDialog(
-                onConfirmation = {
-                    try {
-                        enableBluetoothLauncher.launch(
-                            Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                        )
-                        showEnableBtDialog = false
-                    } catch (_: SecurityException) {
-                        showToast(
-                            context = context,
-                            message = "Nearby devices permission missing!",
-                            duration = Toast.LENGTH_SHORT,
-                            currentToastRef = currentToastRef
-                        )
-                    }
-                },
-                onDismissRequest = { showEnableBtDialog = false },
-                permissionTextProvider = EnableBluetoothTextProvider()
-            )
-        }
 
         if (scanResult.isEmpty()) {
             if (!isScanning) {
@@ -184,7 +276,7 @@ fun DiscoverDevicesScreen(
             }
         }
 
-        Box(modifier = Modifier.weight(1f)) {
+        Box(modifier = modifier.weight(1f)) {
             DeviceList(
                 scanResults = scanResult,
                 onDeviceClick = {
@@ -199,13 +291,13 @@ fun DiscoverDevicesScreen(
                 when {
                     !hasBtPermissions -> {
                         if (showBtPermissionRationale) {
-                            showPermissionDialog = true
+                            onEvent(DiscoverDevicesUiEvent.TogglePermissionDialog(true))
                         } else {
-                            showOpenSettingsDialog = true
+                            onEvent(DiscoverDevicesUiEvent.ToggleOpenSettingsDialog(true))
                         }
                     }
-                    state.isBtDisabled -> {
-                        showEnableBtDialog = true
+                    uiState.isBtDisabled -> {
+                        onEvent(DiscoverDevicesUiEvent.ToggleEnableBtDialog(true))
                     }
                     else -> {
                         if (isScanning) onStopScan() else onStartScan()
@@ -219,7 +311,7 @@ fun DiscoverDevicesScreen(
 
 @PreviewLightDark
 @Composable
-fun DiscoverDevicesScreenWithDevicesPreview() {
+fun DiscoverDevicesContentWithDevicesPreview() {
     LumenTheme {
         Surface {
             val mockScanResults = listOf(
@@ -231,15 +323,18 @@ fun DiscoverDevicesScreenWithDevicesPreview() {
             val state = DiscoveryUiState(
                 scanResults = mockScanResults,
                 isScanning = true,
-                connectionState = ConnectionState.DISCONNECTED
             )
 
-            DiscoverDevicesScreen(
+            DiscoverDevicesContent(
                 innerPadding = PaddingValues(),
-                state = state,
+                uiState = state,
                 onStartScan = {},
                 onStopScan = {},
                 onConnectToDevice = {},
+                hasBtPermissions = false,
+                showBtPermissionRationale = false,
+                onEvent = { },
+                modifier = Modifier,
             )
         }
     }
@@ -247,21 +342,24 @@ fun DiscoverDevicesScreenWithDevicesPreview() {
 
 @PreviewLightDark
 @Composable
-fun DiscoverDevicesScreenWithoutDevicesPreview() {
+fun DiscoverDevicesContentWithoutDevicesPreview() {
     LumenTheme {
         Surface {
             val state = DiscoveryUiState(
                 scanResults = emptyList(),
                 isScanning = false,
-                connectionState = ConnectionState.CONNECTED
             )
 
-            DiscoverDevicesScreen(
+            DiscoverDevicesContent(
                 innerPadding = PaddingValues(),
-                state = state,
+                uiState = state,
                 onStartScan = {},
                 onStopScan = {},
                 onConnectToDevice = {},
+                hasBtPermissions = false,
+                showBtPermissionRationale = false,
+                onEvent = {},
+                modifier = Modifier,
             )
         }
     }
@@ -269,21 +367,24 @@ fun DiscoverDevicesScreenWithoutDevicesPreview() {
 
 @PreviewLightDark
 @Composable
-fun DiscoverDevicesScreenNoDevicesFoundPreview() {
+fun DiscoverDevicesContentNoDevicesFoundPreview() {
     LumenTheme {
         Surface {
             val state = DiscoveryUiState(
                 scanResults = emptyList(),
                 isScanning = true,
-                connectionState = ConnectionState.DISCONNECTED
             )
 
-            DiscoverDevicesScreen(
+            DiscoverDevicesContent(
                 innerPadding = PaddingValues(),
-                state = state,
+                uiState = state,
                 onStartScan = {},
                 onStopScan = {},
                 onConnectToDevice = {},
+                hasBtPermissions = false,
+                showBtPermissionRationale = false,
+                onEvent = {},
+                modifier = Modifier,
             )
         }
     }
