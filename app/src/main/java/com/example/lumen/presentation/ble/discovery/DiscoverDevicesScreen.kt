@@ -28,7 +28,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,10 +68,6 @@ fun DiscoverDevicesScreen(
     val currentToastRef: MutableState<Toast?> = remember { mutableStateOf(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var showEnableBtDialog by rememberSaveable { mutableStateOf(uiState.isBtDisabled) }
-    var showPermissionDialog by rememberSaveable { mutableStateOf(false) }
-    var showOpenSettingsDialog by rememberSaveable { mutableStateOf(false) }
-
     var hasBtPermissions by remember { mutableStateOf(context.hasBluetoothPermissions()) }
     var showBtPermissionRationale by remember {
         mutableStateOf(activity?.shouldShowBluetoothRationale() == true)
@@ -83,23 +78,19 @@ fun DiscoverDevicesScreen(
     ) { perms ->
         hasBtPermissions = context.hasBluetoothPermissions()
         showBtPermissionRationale = activity?.shouldShowBluetoothRationale() == true
-        showPermissionDialog = false
+        viewModel.onEvent(DiscoverDevicesUiEvent.TogglePermissionDialog(false))
     }
 
     val enableBluetoothLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { }
 
-    val onUiEvent: (DiscoverDevicesUiEvent) -> Unit = { event ->
-        when (event) {
-            is DiscoverDevicesUiEvent.ToggleEnableBtDialog -> showEnableBtDialog = event.show
-            is DiscoverDevicesUiEvent.TogglePermissionDialog -> showPermissionDialog = event.show
-            is DiscoverDevicesUiEvent.ToggleOpenSettingsDialog -> showOpenSettingsDialog = event.show
-        }
-    }
-
     LaunchedEffect(uiState.isBtDisabled) {
-        if (hasBtPermissions) showEnableBtDialog = uiState.isBtDisabled
+        if (hasBtPermissions) {
+            viewModel.onEvent(
+                DiscoverDevicesUiEvent.ToggleEnableBtDialog(uiState.isBtDisabled)
+            )
+        }
     }
 
     DisposableEffect(
@@ -166,19 +157,25 @@ fun DiscoverDevicesScreen(
     }
 
     // Permission rationale
-    if (showPermissionDialog) {
+    if (uiState.showPermissionDialog) {
         PermissionAlertDialog(
             onConfirmation = {
                 bluetoothPermissionLauncher.launch(btPermissionArray)
-                showPermissionDialog = false
+                viewModel.onEvent(
+                    DiscoverDevicesUiEvent.TogglePermissionDialog(false)
+                )
             },
-            onDismissRequest = { showPermissionDialog = false },
+            onDismissRequest = {
+                viewModel.onEvent(
+                    DiscoverDevicesUiEvent.TogglePermissionDialog(false)
+                )
+            },
             permissionTextProvider = BluetoothPermissionTextProvider()
         )
     }
 
     // Prompt to enable permission through app settings after permanent denial
-    if (showOpenSettingsDialog) {
+    if (uiState.showOpenSettingsDialog) {
         PermissionAlertDialog(
             onConfirmation = {
                 val intent = Intent(
@@ -196,22 +193,30 @@ fun DiscoverDevicesScreen(
                         currentToastRef = currentToastRef
                     )
                 }
-                showOpenSettingsDialog = false
+                viewModel.onEvent(
+                    DiscoverDevicesUiEvent.ToggleOpenSettingsDialog(false)
+                )
             },
-            onDismissRequest = { showOpenSettingsDialog = false },
+            onDismissRequest = {
+                viewModel.onEvent(
+                    DiscoverDevicesUiEvent.ToggleOpenSettingsDialog(false)
+                )
+            },
             permissionTextProvider = OpenAppSettingsTextProvider()
         )
     }
 
     // If permission enabled but BT is off, prompt to enable
-    if (hasBtPermissions && showEnableBtDialog) {
+    if (hasBtPermissions && uiState.showEnableBtDialog) {
         PermissionAlertDialog(
             onConfirmation = {
                 try {
                     enableBluetoothLauncher.launch(
                         Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                     )
-                    showEnableBtDialog = false
+                    viewModel.onEvent(
+                        DiscoverDevicesUiEvent.ToggleEnableBtDialog(false)
+                    )
                 } catch (_: SecurityException) {
                     Timber.tag("DiscoverDevicesScreen").i("Show toast")
                     showToast(
@@ -222,7 +227,11 @@ fun DiscoverDevicesScreen(
                     )
                 }
             },
-            onDismissRequest = { showEnableBtDialog = false },
+            onDismissRequest = {
+                viewModel.onEvent(
+                    DiscoverDevicesUiEvent.ToggleEnableBtDialog(false)
+                )
+            },
             permissionTextProvider = EnableBluetoothTextProvider()
         )
     }
@@ -239,7 +248,7 @@ fun DiscoverDevicesScreen(
             onConnectToDevice = viewModel::connectToDevice,
             hasBtPermissions = hasBtPermissions,
             showBtPermissionRationale = showBtPermissionRationale,
-            onEvent = onUiEvent,
+            onEvent = viewModel::onEvent,
             modifier = modifier,
         )
     }

@@ -12,6 +12,9 @@ import com.example.lumen.domain.ble.model.BluetoothState
  * [isBtDisabled] Indicates if Bluetooth off or on
  * [errorMessage] holds error messages related to GATT operations
  * [infoMessage] holds success or general info messages related to GATT operations
+ * [showEnableBtDialog] indicates whether to show the enable Bluetooth dialog
+ * [showPermissionDialog] indicates whether to show the permission rationale dialog
+ * [showOpenSettingsDialog] indicates whether to show the grant permission through settings dialog
  */
 data class DiscoveryUiState(
     val scanResults: List<BleDevice> = emptyList(),
@@ -21,4 +24,7 @@ data class DiscoveryUiState(
     val isBtDisabled: Boolean = false,
     val errorMessage: String? = null,
     val infoMessage: String? = null,
+    val showEnableBtDialog: Boolean = false,
+    val showPermissionDialog: Boolean = false,
+    val showOpenSettingsDialog: Boolean = false,
 )

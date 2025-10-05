@@ -15,7 +15,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -69,33 +71,36 @@ class DiscoveryViewModel @Inject constructor(
             ) }
         }.launchIn(viewModelScope)
 
-        observeBluetoothStateUseCase().onEach { btState ->
-            when (btState) {
-                BluetoothState.ON -> {
-                    Timber.tag(LOG_TAG).d("BT on")
-                    startScan()
-                }
-                BluetoothState.OFF -> {
-                    Timber.tag(LOG_TAG).d("BT off")
-                }
-                BluetoothState.TURNING_ON -> {
-                    Timber.tag(LOG_TAG).d("BT turning on...")
-                }
-                BluetoothState.TURNING_OFF -> {
-                    Timber.tag(LOG_TAG).d("BT turning off...")
+        uiState
+            .map { it.bluetoothState }
+            .distinctUntilChanged()
+            .onEach { btState ->
+                when (btState) {
+                    BluetoothState.ON -> {
+                        Timber.tag(LOG_TAG).d("BT on")
+                        startScan()
+                    }
+                    BluetoothState.OFF -> {
+                        Timber.tag(LOG_TAG).d("BT off")
+                    }
+                    BluetoothState.TURNING_ON -> {
+                        Timber.tag(LOG_TAG).d("BT turning on...")
+                    }
+                    BluetoothState.TURNING_OFF -> {
+                        Timber.tag(LOG_TAG).d("BT turning off...")
 
-                    if(uiState.value.isScanning){
-                        Timber.tag(LOG_TAG).i("Stopping scan...")
-                        stopScan()
+                        if (uiState.value.isScanning) {
+                            Timber.tag(LOG_TAG).i("Stopping scan...")
+                            stopScan()
+                        }
+                    }
+                    BluetoothState.UNKNOWN -> {
+                        Timber.tag(LOG_TAG).d("BT state unknown")
                     }
                 }
-                BluetoothState.UNKNOWN -> {
-                    Timber.tag(LOG_TAG).d("BT state unknown")
-                }
-            }
-        }.catch { throwable ->
-            Timber.tag(LOG_TAG).e(throwable, "BT state observation error")
-        }.launchIn(viewModelScope)
+            }.catch { throwable ->
+                Timber.tag(LOG_TAG).e(throwable, "BT state observation error")
+            }.launchIn(viewModelScope)
 
         connectionUseCases.observeConnectionEventsUseCase().onEach { result ->
             when(result) {
@@ -131,6 +136,20 @@ class DiscoveryViewModel @Inject constructor(
             Timber.tag(LOG_TAG)
                 .e(throwable, "Connection event observation error")
         }.launchIn(viewModelScope)
+    }
+
+    fun onEvent(event: DiscoverDevicesUiEvent) {
+        when (event) {
+            is DiscoverDevicesUiEvent.ToggleEnableBtDialog -> {
+                _uiState.update { it.copy(showEnableBtDialog = event.show) }
+            }
+            is DiscoverDevicesUiEvent.ToggleOpenSettingsDialog -> {
+                _uiState.update { it.copy(showOpenSettingsDialog = event.show) }
+            }
+            is DiscoverDevicesUiEvent.TogglePermissionDialog -> {
+                _uiState.update { it.copy(showPermissionDialog = event.show) }
+            }
+        }
     }
 
     fun startScan() {
