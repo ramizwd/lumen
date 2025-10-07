@@ -86,7 +86,7 @@ class LedControlViewModel @Inject constructor(
                 BluetoothState.TURNING_OFF -> {
                     Timber.tag(LOG_TAG).d("BT turning off...")
 
-                    if (uiState.value.connectionState == ConnectionState.CONNECTED) {
+                    if (uiState.value.connectionState == ConnectionState.STATE_LOADED_AND_CONNECTED) {
                         Timber.tag(LOG_TAG).i("Disconnecting...")
                         disconnectFromDevice()
                     }

@@ -135,10 +135,10 @@ class BleGattControllerImpl(
         connRetryJob?.cancel()
         connRetryJob = null
 
-        if (_connectionState.value == ConnectionState.CONNECTED ||
+        if (_connectionState.value == ConnectionState.STATE_LOADED_AND_CONNECTED ||
             _connectionState.value == ConnectionState.CONNECTING ||
             _connectionState.value == ConnectionState.RETRYING ||
-            _connectionState.value == ConnectionState.LOADING_STATE) {
+            _connectionState.value == ConnectionState.LOADING_DEVICE_STATE) {
             isInvalidDevice = false
             bluetoothGatt?.disconnect()
             Timber.tag(LOG_TAG).d("Device disconnected")
@@ -194,7 +194,7 @@ class BleGattControllerImpl(
                     Timber.tag(LOG_TAG).i("GATT successfully connected")
                     connRetryCount = 0
                     _connectionEvents.tryEmit(ConnectionResult.ConnectionEstablished)
-                    _connectionState.value = ConnectionState.LOADING_STATE
+                    _connectionState.value = ConnectionState.LOADING_DEVICE_STATE
                     bluetoothGatt?.discoverServices()
                 }
 
@@ -436,7 +436,7 @@ class BleGattControllerImpl(
     private fun getControllerState(value: ByteArray) {
         if (value.size >= 12) {
             _ledControllerState.value = value.toLedControllerState()
-            _connectionState.value = ConnectionState.CONNECTED
+            _connectionState.value = ConnectionState.STATE_LOADED_AND_CONNECTED
             Timber.tag(LOG_TAG).i("Controller state: ${_ledControllerState.value}")
         } else {
             Timber.tag(LOG_TAG)

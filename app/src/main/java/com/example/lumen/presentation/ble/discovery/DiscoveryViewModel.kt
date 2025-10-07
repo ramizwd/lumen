@@ -3,6 +3,7 @@ package com.example.lumen.presentation.ble.discovery
 import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionResult
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
@@ -15,9 +16,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -34,7 +34,7 @@ import javax.inject.Inject
 class DiscoveryViewModel @Inject constructor(
     private val discoveryUseCases: DiscoveryUseCases,
     private val connectionUseCases: ConnectionUseCases,
-    observeBluetoothStateUseCase: ObserveBluetoothStateUseCase
+    observeBluetoothStateUseCase: ObserveBluetoothStateUseCase,
 ): ViewModel() {
 
     companion object {
@@ -72,34 +72,23 @@ class DiscoveryViewModel @Inject constructor(
         }.launchIn(viewModelScope)
 
         uiState
-            .map { it.bluetoothState }
-            .distinctUntilChanged()
-            .onEach { btState ->
-                when (btState) {
-                    BluetoothState.ON -> {
-                        Timber.tag(LOG_TAG).d("BT on")
+            .distinctUntilChangedBy {
+                Pair(it.bluetoothState, it.btPermissionStatus)
+            }
+            .onEach { stateValue ->
+                val btState = stateValue.bluetoothState
+                val btPermStatus = stateValue.btPermissionStatus
+                val isScanning = stateValue.isScanning
+
+                when {
+                    btState == BluetoothState.ON && !isScanning &&
+                            btPermStatus == BluetoothPermissionStatus.GRANTED -> {
                         startScan()
                     }
-                    BluetoothState.OFF -> {
-                        Timber.tag(LOG_TAG).d("BT off")
-                    }
-                    BluetoothState.TURNING_ON -> {
-                        Timber.tag(LOG_TAG).d("BT turning on...")
-                    }
-                    BluetoothState.TURNING_OFF -> {
-                        Timber.tag(LOG_TAG).d("BT turning off...")
-
-                        if (uiState.value.isScanning) {
-                            Timber.tag(LOG_TAG).i("Stopping scan...")
-                            stopScan()
-                        }
-                    }
-                    BluetoothState.UNKNOWN -> {
-                        Timber.tag(LOG_TAG).d("BT state unknown")
+                    btState == BluetoothState.TURNING_OFF && isScanning -> {
+                        stopScan()
                     }
                 }
-            }.catch { throwable ->
-                Timber.tag(LOG_TAG).e(throwable, "BT state observation error")
             }.launchIn(viewModelScope)
 
         connectionUseCases.observeConnectionEventsUseCase().onEach { result ->
@@ -138,6 +127,26 @@ class DiscoveryViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
+    fun onBtPermissionResult(granted: Boolean, showRationale: Boolean) {
+        when {
+            granted -> {
+                _uiState.update {
+                    it.copy(btPermissionStatus = BluetoothPermissionStatus.GRANTED)
+                }
+            }
+            showRationale -> {
+                _uiState.update {
+                    it.copy(btPermissionStatus = BluetoothPermissionStatus.DENIED_RATIONALE_REQUIRED)
+                }
+            }
+            else -> {
+                _uiState.update {
+                    it.copy(btPermissionStatus = BluetoothPermissionStatus.DENIED_PERMANENTLY)
+                }
+            }
+        }
+    }
+
     fun onEvent(event: DiscoverDevicesUiEvent) {
         when (event) {
             is DiscoverDevicesUiEvent.ToggleEnableBtDialog -> {
@@ -153,14 +162,18 @@ class DiscoveryViewModel @Inject constructor(
     }
 
     fun startScan() {
-        viewModelScope.launch {
-            discoveryUseCases.startScanUseCase()
+        if (isBtAvailable()) {
+            viewModelScope.launch {
+                discoveryUseCases.startScanUseCase()
+            }
         }
     }
 
     fun stopScan() {
-        viewModelScope.launch {
-            discoveryUseCases.stopScanUseCase()
+        if (isBtAvailable()) {
+            viewModelScope.launch {
+                discoveryUseCases.stopScanUseCase()
+            }
         }
     }
 
@@ -188,6 +201,24 @@ class DiscoveryViewModel @Inject constructor(
 
     fun clearErrorMessage() {
         _uiState.update { it.copy(errorMessage = null) }
+    }
+
+    // Check BT permission and its state, trigger appropriate UI event and return a boolean
+    private fun isBtAvailable(): Boolean {
+        return when {
+            uiState.value.btPermissionStatus == BluetoothPermissionStatus.DENIED_RATIONALE_REQUIRED -> {
+                onEvent(DiscoverDevicesUiEvent.TogglePermissionDialog(true))
+                false
+            } uiState.value.btPermissionStatus == BluetoothPermissionStatus.DENIED_PERMANENTLY -> {
+                onEvent(DiscoverDevicesUiEvent.ToggleOpenSettingsDialog(true))
+                false
+            }
+            uiState.value.isBtDisabled-> {
+                onEvent(DiscoverDevicesUiEvent.ToggleEnableBtDialog(true))
+                false
+            }
+            else -> true
+        }
     }
 
     override fun onCleared() {

@@ -24,14 +24,14 @@ fun ConnectionIndicator(
     ) {
         val connectionStateText = when (connectionState) {
             ConnectionState.CONNECTING -> "Connecting..."
-            ConnectionState.LOADING_STATE -> "Loading state..."
-            ConnectionState.CONNECTED -> "Connection successful"
+            ConnectionState.LOADING_DEVICE_STATE -> "Loading state..."
+            ConnectionState.STATE_LOADED_AND_CONNECTED -> "Success"
             ConnectionState.RETRYING -> "Connection failed, retrying..."
             ConnectionState.INVALID_DEVICE -> "Invalid device, disconnecting..."
             else -> ""
         }
 
-        if (connectionState != ConnectionState.CONNECTED) {
+        if (connectionState != ConnectionState.STATE_LOADED_AND_CONNECTED) {
             CircularProgressIndicator()
         }
         Text(text = connectionStateText)

@@ -24,13 +24,13 @@ fun LumenNavHost(
 ) {
     val navController = rememberNavController()
 
-    val ledControllerViewModel = hiltViewModel<LedControlViewModel>()
-    val ledControlUiState by ledControllerViewModel.uiState.collectAsStateWithLifecycle()
+    val ledControlViewModel = hiltViewModel<LedControlViewModel>()
+    val ledControlUiState by ledControlViewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(ledControlUiState.connectionState) {
         val currentRoute = navController.currentBackStackEntry?.destination?.route
 
-        if (ledControlUiState.connectionState == ConnectionState.CONNECTED &&
+        if (ledControlUiState.connectionState == ConnectionState.STATE_LOADED_AND_CONNECTED &&
             currentRoute != LedControlScreen::class.qualifiedName) {
             navController.navigate(LedControlScreen) {
                 popUpTo(DiscoverDevicesScreen) { inclusive = true }
@@ -59,7 +59,7 @@ fun LumenNavHost(
             if (ledControlUiState.controllerState != null) {
                 LedControlScreen(
                     innerPadding = innerPadding,
-                    viewModel = ledControllerViewModel,
+                    viewModel = ledControlViewModel,
                 )
             }
         }

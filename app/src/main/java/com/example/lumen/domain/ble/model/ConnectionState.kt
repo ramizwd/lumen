@@ -5,8 +5,8 @@ package com.example.lumen.domain.ble.model
  */
 enum class ConnectionState {
     CONNECTING,
-    LOADING_STATE,
-    CONNECTED,
+    LOADING_DEVICE_STATE,
+    STATE_LOADED_AND_CONNECTED,
     DISCONNECTING,
     DISCONNECTED,
     RETRYING,
