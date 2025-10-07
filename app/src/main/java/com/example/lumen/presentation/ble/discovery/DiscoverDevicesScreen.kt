@@ -28,7 +28,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -40,6 +39,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.presentation.ble.discovery.components.DeviceList
 import com.example.lumen.presentation.ble.discovery.components.ScanButton
 import com.example.lumen.presentation.common.components.BluetoothPermissionTextProvider
@@ -68,16 +68,13 @@ fun DiscoverDevicesScreen(
     val currentToastRef: MutableState<Toast?> = remember { mutableStateOf(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var hasBtPermissions by remember { mutableStateOf(context.hasBluetoothPermissions()) }
-    var showBtPermissionRationale by remember {
-        mutableStateOf(activity?.shouldShowBluetoothRationale() == true)
-    }
-
     val bluetoothPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { perms ->
-        hasBtPermissions = context.hasBluetoothPermissions()
-        showBtPermissionRationale = activity?.shouldShowBluetoothRationale() == true
+        val granted = context.hasBluetoothPermissions()
+        val showRationale = activity?.shouldShowBluetoothRationale() == true
+
+        viewModel.onBtPermissionResult(granted, showRationale)
         viewModel.onEvent(DiscoverDevicesUiEvent.TogglePermissionDialog(false))
     }
 
@@ -85,8 +82,8 @@ fun DiscoverDevicesScreen(
         ActivityResultContracts.StartActivityForResult()
     ) { }
 
-    LaunchedEffect(uiState.isBtDisabled) {
-        if (hasBtPermissions) {
+    LaunchedEffect(key1 = uiState.isBtDisabled, key2 = uiState.btPermissionStatus) {
+        if (uiState.btPermissionStatus == BluetoothPermissionStatus.GRANTED) {
             viewModel.onEvent(
                 DiscoverDevicesUiEvent.ToggleEnableBtDialog(uiState.isBtDisabled)
             )
@@ -98,7 +95,7 @@ fun DiscoverDevicesScreen(
         effect = {
             val observer = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_START) {
-                    if (!hasBtPermissions) {
+                    if (uiState.btPermissionStatus != BluetoothPermissionStatus.GRANTED) {
                         bluetoothPermissionLauncher.launch(btPermissionArray)
                     }
                 }
@@ -175,7 +172,8 @@ fun DiscoverDevicesScreen(
     }
 
     // Prompt to enable permission through app settings after permanent denial
-    if (uiState.showOpenSettingsDialog) {
+    if (uiState.btPermissionStatus == BluetoothPermissionStatus.DENIED_PERMANENTLY &&
+        uiState.showOpenSettingsDialog) {
         PermissionAlertDialog(
             onConfirmation = {
                 val intent = Intent(
@@ -206,8 +204,9 @@ fun DiscoverDevicesScreen(
         )
     }
 
-    // If permission enabled but BT is off, prompt to enable
-    if (hasBtPermissions && uiState.showEnableBtDialog) {
+    // If permission granted but BT is off, prompt to enable
+    if (uiState.btPermissionStatus == BluetoothPermissionStatus.GRANTED &&
+        uiState.showEnableBtDialog) {
         PermissionAlertDialog(
             onConfirmation = {
                 try {
@@ -246,9 +245,6 @@ fun DiscoverDevicesScreen(
             onStartScan = viewModel::startScan,
             onStopScan = viewModel::stopScan,
             onConnectToDevice = viewModel::connectToDevice,
-            hasBtPermissions = hasBtPermissions,
-            showBtPermissionRationale = showBtPermissionRationale,
-            onEvent = viewModel::onEvent,
             modifier = modifier,
         )
     }
@@ -261,9 +257,6 @@ fun DiscoverDevicesContent(
     onStartScan: () -> Unit,
     onStopScan: () -> Unit,
     onConnectToDevice: (String) -> Unit,
-    hasBtPermissions: Boolean,
-    showBtPermissionRationale: Boolean,
-    onEvent: (DiscoverDevicesUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isScanning = uiState.isScanning
@@ -296,23 +289,7 @@ fun DiscoverDevicesContent(
         }
 
         ScanButton(
-            onClick = {
-                when {
-                    !hasBtPermissions -> {
-                        if (showBtPermissionRationale) {
-                            onEvent(DiscoverDevicesUiEvent.TogglePermissionDialog(true))
-                        } else {
-                            onEvent(DiscoverDevicesUiEvent.ToggleOpenSettingsDialog(true))
-                        }
-                    }
-                    uiState.isBtDisabled -> {
-                        onEvent(DiscoverDevicesUiEvent.ToggleEnableBtDialog(true))
-                    }
-                    else -> {
-                        if (isScanning) onStopScan() else onStartScan()
-                    }
-                }
-            },
+            onClick = { if (uiState.isScanning) onStopScan() else onStartScan() },
             isScanning = isScanning
         )
     }
@@ -340,9 +317,6 @@ fun DiscoverDevicesContentWithDevicesPreview() {
                 onStartScan = {},
                 onStopScan = {},
                 onConnectToDevice = {},
-                hasBtPermissions = false,
-                showBtPermissionRationale = false,
-                onEvent = { },
                 modifier = Modifier,
             )
         }
@@ -365,9 +339,6 @@ fun DiscoverDevicesContentWithoutDevicesPreview() {
                 onStartScan = {},
                 onStopScan = {},
                 onConnectToDevice = {},
-                hasBtPermissions = false,
-                showBtPermissionRationale = false,
-                onEvent = {},
                 modifier = Modifier,
             )
         }
@@ -390,9 +361,6 @@ fun DiscoverDevicesContentNoDevicesFoundPreview() {
                 onStartScan = {},
                 onStopScan = {},
                 onConnectToDevice = {},
-                hasBtPermissions = false,
-                showBtPermissionRationale = false,
-                onEvent = {},
                 modifier = Modifier,
             )
         }
