@@ -7,6 +7,7 @@ sealed interface ConnectionResult {
     object ConnectionEstablished: ConnectionResult
     object Disconnected: ConnectionResult
     object InvalidDevice: ConnectionResult
+    object ConnectionCanceled: ConnectionResult
 
     data class Error(val message: String): ConnectionResult
     data class ConnectionFailed(val message: String): ConnectionResult

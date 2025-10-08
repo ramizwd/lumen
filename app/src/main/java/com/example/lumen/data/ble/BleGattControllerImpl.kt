@@ -135,10 +135,18 @@ class BleGattControllerImpl(
         connRetryJob?.cancel()
         connRetryJob = null
 
-        if (_connectionState.value == ConnectionState.STATE_LOADED_AND_CONNECTED ||
-            _connectionState.value == ConnectionState.CONNECTING ||
+        // For canceling attempted connection
+        if (_connectionState.value == ConnectionState.CONNECTING ||
             _connectionState.value == ConnectionState.RETRYING ||
             _connectionState.value == ConnectionState.LOADING_DEVICE_STATE) {
+            _connectionEvents.tryEmit(ConnectionResult.ConnectionCanceled)
+            Timber.tag(LOG_TAG).d("Connection canceled")
+            close()
+            return
+        }
+
+        // For gracefully disconnecting a connected device
+        if (_connectionState.value == ConnectionState.STATE_LOADED_AND_CONNECTED) {
             isInvalidDevice = false
             bluetoothGatt?.disconnect()
             Timber.tag(LOG_TAG).d("Device disconnected")
@@ -213,13 +221,10 @@ class BleGattControllerImpl(
                         // connected to is finicky. If it fails, try again after some delay.
                         retryConnection()
                     } else {
-                        var disconnectRes = if (isInvalidDevice)
-                            ConnectionResult.InvalidDevice
+                        var disconnectRes = if (isInvalidDevice) ConnectionResult.InvalidDevice
                         else ConnectionResult.Disconnected
 
-                        _connectionEvents.tryEmit(
-                            disconnectRes
-                        )
+                        _connectionEvents.tryEmit(disconnectRes)
                         close()
                     }
                 }
@@ -239,6 +244,7 @@ class BleGattControllerImpl(
                 return
             }
 
+            // TODO It throws invalid device Toast because I'm cancelling before we get the service here
             // Only connect to devices that are LED controllers with specific service
             val ledControllerService = gatt?.getService(SERVICE_UUID)
             if (ledControllerService == null) {

@@ -51,7 +51,10 @@ fun LumenNavHost(
             if (ledControlUiState.connectionState == ConnectionState.DISCONNECTED) {
                 DiscoverDevicesScreen()
             } else {
-                ConnectionIndicator(connectionState = ledControlUiState.connectionState)
+                ConnectionIndicator(
+                    connectionState = ledControlUiState.connectionState,
+                    onCancelConnectionClick = ledControlViewModel::disconnectFromDevice
+                )
             }
         }
 

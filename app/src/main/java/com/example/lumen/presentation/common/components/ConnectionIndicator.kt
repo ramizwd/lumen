@@ -3,6 +3,7 @@ package com.example.lumen.presentation.common.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -15,7 +16,8 @@ import com.example.lumen.presentation.theme.LumenTheme
 
 @Composable
 fun ConnectionIndicator(
-    connectionState: ConnectionState
+    connectionState: ConnectionState,
+    onCancelConnectionClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -25,7 +27,6 @@ fun ConnectionIndicator(
         val connectionStateText = when (connectionState) {
             ConnectionState.CONNECTING -> "Connecting..."
             ConnectionState.LOADING_DEVICE_STATE -> "Loading state..."
-            ConnectionState.STATE_LOADED_AND_CONNECTED -> "Success"
             ConnectionState.RETRYING -> "Connection failed, retrying..."
             ConnectionState.INVALID_DEVICE -> "Invalid device, disconnecting..."
             else -> ""
@@ -33,8 +34,12 @@ fun ConnectionIndicator(
 
         if (connectionState != ConnectionState.STATE_LOADED_AND_CONNECTED) {
             CircularProgressIndicator()
+            Text(text = connectionStateText)
+
+            Button(onClick =onCancelConnectionClick) {
+                Text(text = "Cancel")
+            }
         }
-        Text(text = connectionStateText)
     }
 }
 
@@ -44,7 +49,8 @@ fun ConnectionIndicatorPreview() {
     LumenTheme {
         Surface {
             ConnectionIndicator(
-                connectionState = ConnectionState.CONNECTING
+                connectionState = ConnectionState.CONNECTING,
+                onCancelConnectionClick = {},
             )
         }
     }

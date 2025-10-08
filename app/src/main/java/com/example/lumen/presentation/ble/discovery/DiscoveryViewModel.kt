@@ -105,6 +105,9 @@ class DiscoveryViewModel @Inject constructor(
                 ConnectionResult.InvalidDevice -> {
                     _uiState.update { it.copy(infoMessage = "Invalid device") }
                 }
+                ConnectionResult.ConnectionCanceled -> {
+                    _uiState.update { it.copy(infoMessage = "Connection canceled") }
+                }
 
                 is ConnectionResult.Error -> {
                     _uiState.update { it.copy(
@@ -120,6 +123,7 @@ class DiscoveryViewModel @Inject constructor(
                         )
                     )
                 }
+
             }
         }.catch { throwable ->
             Timber.tag(LOG_TAG)
@@ -162,7 +166,7 @@ class DiscoveryViewModel @Inject constructor(
     }
 
     fun startScan() {
-        if (isBtAvailable()) {
+        if (handleScanPreconditions()) {
             viewModelScope.launch {
                 discoveryUseCases.startScanUseCase()
             }
@@ -170,7 +174,7 @@ class DiscoveryViewModel @Inject constructor(
     }
 
     fun stopScan() {
-        if (isBtAvailable()) {
+        if (handleScanPreconditions()) {
             viewModelScope.launch {
                 discoveryUseCases.stopScanUseCase()
             }
@@ -203,8 +207,8 @@ class DiscoveryViewModel @Inject constructor(
         _uiState.update { it.copy(errorMessage = null) }
     }
 
-    // Check BT permission and its state, trigger appropriate UI event and return a boolean
-    private fun isBtAvailable(): Boolean {
+    // Check BT permission and its state, trigger appropriate UI event if preconditions are not met
+    private fun handleScanPreconditions(): Boolean {
         return when {
             uiState.value.btPermissionStatus == BluetoothPermissionStatus.DENIED_RATIONALE_REQUIRED -> {
                 onEvent(DiscoverDevicesUiEvent.TogglePermissionDialog(true))
