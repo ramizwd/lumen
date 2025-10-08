@@ -53,7 +53,6 @@ import com.example.lumen.utils.btPermissionArray
 import com.example.lumen.utils.hasBluetoothPermissions
 import com.example.lumen.utils.shouldShowBluetoothRationale
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @Composable
 fun DiscoverDevicesScreen(
@@ -218,7 +217,6 @@ fun DiscoverDevicesScreen(
                         DiscoverDevicesUiEvent.ToggleEnableBtDialog(false)
                     )
                 } catch (_: SecurityException) {
-                    Timber.tag("DiscoverDevicesScreen").i("Show toast")
                     showToast(
                         context = context,
                         message = "Nearby devices permission missing!",
@@ -242,7 +240,9 @@ fun DiscoverDevicesScreen(
     ) { innerPadding ->
         DiscoverDevicesContent(
             innerPadding = innerPadding,
-            uiState = uiState,
+            isScanning = uiState.scanState == ScanState.SCANNING,
+            scanResults = uiState.scanResults,
+            emptyScanResultTxt = uiState.emptyScanResultTxt,
             onStartScan = viewModel::startScan,
             onStopScan = viewModel::stopScan,
             onConnectToDevice = viewModel::connectToDevice,
@@ -254,15 +254,14 @@ fun DiscoverDevicesScreen(
 @Composable
 fun DiscoverDevicesContent(
     innerPadding: PaddingValues,
-    uiState: DiscoveryUiState,
+    isScanning: Boolean,
+    scanResults: List<BleDevice>,
+    emptyScanResultTxt: String?,
     onStartScan: () -> Unit,
     onStopScan: () -> Unit,
     onConnectToDevice: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isScanning = uiState.scanState == ScanState.SCANNING
-    val scanResult = uiState.scanResults
-
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -271,13 +270,13 @@ fun DiscoverDevicesContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 
-        if (scanResult.isEmpty()) {
-            uiState.emptyScanResultTxt?.let { Text(text = it) }
+        if (scanResults.isEmpty() && emptyScanResultTxt != null) {
+            Text(text = emptyScanResultTxt)
         }
 
         Box(modifier = modifier.weight(1f)) {
             DeviceList(
-                scanResults = scanResult,
+                scanResults = scanResults,
                 onDeviceClick = {
                     onConnectToDevice(it.address)
                 },
@@ -297,18 +296,16 @@ fun DiscoverDevicesContent(
 fun DiscoverDevicesContentPreview() {
     LumenTheme {
         Surface {
-            val state = DiscoveryUiState(
-                scanResults = emptyList(),
-                scanState = ScanState.SCAN_PAUSED,
-            )
-
             DiscoverDevicesContent(
                 innerPadding = PaddingValues(),
-                uiState = state,
+                isScanning = false,
+                scanResults = emptyList(),
+                emptyScanResultTxt = "Start scanning to find nearby devices.",
                 onStartScan = {},
                 onStopScan = {},
                 onConnectToDevice = {},
                 modifier = Modifier,
+
             )
         }
     }
@@ -319,18 +316,16 @@ fun DiscoverDevicesContentPreview() {
 fun DiscoverDevicesContentSearchingPreview() {
     LumenTheme {
         Surface {
-            val state = DiscoveryUiState(
-                scanResults = emptyList(),
-                scanState = ScanState.SCANNING,
-            )
-
             DiscoverDevicesContent(
                 innerPadding = PaddingValues(),
-                uiState = state,
+                isScanning = true,
+                scanResults = emptyList(),
+                emptyScanResultTxt = "Searching...",
                 onStartScan = {},
                 onStopScan = {},
                 onConnectToDevice = {},
                 modifier = Modifier,
+
             )
         }
     }
@@ -347,18 +342,16 @@ fun DiscoverDevicesContentDevicesFoundPreview() {
                 BleDevice(name = null, address = "FF:EE:DD:CC:BB:AA")
             )
 
-            val state = DiscoveryUiState(
-                scanResults = mockScanResults,
-                scanState = ScanState.SCANNING,
-            )
-
             DiscoverDevicesContent(
                 innerPadding = PaddingValues(),
-                uiState = state,
+                isScanning = true,
+                scanResults = mockScanResults,
+                emptyScanResultTxt = null,
                 onStartScan = {},
                 onStopScan = {},
                 onConnectToDevice = {},
                 modifier = Modifier,
+
             )
         }
     }
@@ -369,18 +362,16 @@ fun DiscoverDevicesContentDevicesFoundPreview() {
 fun DiscoverDevicesContentNoDevicesFoundPreview() {
     LumenTheme {
         Surface {
-            val state = DiscoveryUiState(
-                scanResults = emptyList(),
-                scanState = ScanState.SCAN_AUTO_PAUSED,
-            )
-
             DiscoverDevicesContent(
                 innerPadding = PaddingValues(),
-                uiState = state,
+                isScanning = false,
+                scanResults = emptyList(),
+                emptyScanResultTxt = "No devices found.",
                 onStartScan = {},
                 onStopScan = {},
                 onConnectToDevice = {},
                 modifier = Modifier,
+
             )
         }
     }
