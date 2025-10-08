@@ -3,11 +3,11 @@ package com.example.lumen.presentation.ble.discovery
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.BluetoothState
+import com.example.lumen.domain.ble.model.ScanState
 
 /**
  * Data class for the BLE discovery and connection UI states
  * [scanResults] holds BLE scan result list of type BleDevice
- * [isScanning] Boolean for indicating if BLE is scanning
  * [bluetoothState] Hold current state of Bluetooth
  * [btPermissionStatus] indicates the permission status of Bluetooth
  * [deviceToConnect] storing device that we want to connect to for retrying connection
@@ -20,8 +20,9 @@ import com.example.lumen.domain.ble.model.BluetoothState
  */
 data class DiscoveryUiState(
     val scanResults: List<BleDevice> = emptyList(),
-    val isScanning: Boolean = false,
+    val scanState: ScanState = ScanState.SCAN_PAUSED,
     val bluetoothState: BluetoothState = BluetoothState.UNKNOWN,
+    val emptyScanResultTxt: String? = null,
     val btPermissionStatus: BluetoothPermissionStatus = BluetoothPermissionStatus.UNKNOWN,
     val deviceToConnect: BleDevice? = null,
     val isBtDisabled: Boolean = false,

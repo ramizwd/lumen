@@ -10,6 +10,7 @@ import android.content.Context
 import com.example.lumen.data.mapper.toBleDevice
 import com.example.lumen.domain.ble.BleScanController
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.domain.ble.model.ScanState
 import com.example.lumen.utils.hasPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -58,13 +59,13 @@ class BleScanControllerImpl(
     private var scanJob: Job? = null
     private val bleScanScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
+    private val _scanState = MutableStateFlow(ScanState.SCAN_PAUSED)
+    override val scanState: StateFlow<ScanState>
+        get() = _scanState.asStateFlow()
+
     private val _scanResults = MutableStateFlow<List<BleDevice>>(emptyList())
     override val scanResults: StateFlow<List<BleDevice>>
         get() = _scanResults.asStateFlow()
-
-    private val _isScanning = MutableStateFlow(false)
-    override val isScanning: StateFlow<Boolean>
-        get() = _isScanning.asStateFlow()
 
     private val _errors = MutableSharedFlow<String>(
         replay = 1,
@@ -93,7 +94,7 @@ class BleScanControllerImpl(
             return
         }
 
-        if (_isScanning.value) {
+        if (_scanState.value == ScanState.SCANNING) {
             stopScan()
         }
 
@@ -108,19 +109,20 @@ class BleScanControllerImpl(
         bluetoothLeScanner?.let { scanner ->
             try {
                 scanner.startScan(null, settings, leScanCallback)
-                _isScanning.value = true
+                _scanState.value = ScanState.SCANNING
                 Timber.tag(LOG_TAG).d("Scan started...")
 
                 // Start a coroutine to stop scanning after a period
                 scanJob = bleScanScope.launch {
                     delay(SCAN_PERIOD_MILLIS)
                     stopScan()
+                    _scanState.value = ScanState.SCAN_AUTO_PAUSED
                     Timber.tag(LOG_TAG).i("Scan stopped automatically")
                 }
             } catch (e: Exception) {
                 Timber.tag(LOG_TAG).e(e,"Exception during scan start")
                 _errors.emit("Scan failed")
-                _isScanning.value = false
+                _scanState.value = ScanState.SCAN_PAUSED
             }
         } ?: run {
             Timber.tag(LOG_TAG)
@@ -136,7 +138,8 @@ class BleScanControllerImpl(
             return
         }
 
-        if (!_isScanning.value) {
+        if (_scanState.value == ScanState.SCAN_PAUSED ||
+            _scanState.value == ScanState.SCAN_AUTO_PAUSED) {
             return
         }
 
@@ -161,14 +164,14 @@ class BleScanControllerImpl(
                 Timber.tag(LOG_TAG).i("Scan stopped")
             } catch (e: Exception) {
                 Timber.tag(LOG_TAG).e(e,"Exception during scan stop")
-                _errors.tryEmit("Stopping scan failed")
+                _errors.tryEmit("Bluetooth scanner missing")
             } finally {
                 Timber.tag(LOG_TAG).i("Scan state cleared - stopScan()")
                 clearScanState()
             }
         } ?: run {
             Timber.tag(LOG_TAG).e("bluetoothLeScanner not initialized - stopScan()")
-            _errors.tryEmit("Stopping scan failed")
+            _errors.tryEmit("Bluetooth scanner missing")
             clearScanState()
         }
     }
@@ -203,7 +206,7 @@ class BleScanControllerImpl(
     }
 
     private fun clearScanState() {
-        _isScanning.value = false
+        _scanState.value = ScanState.SCAN_PAUSED
         scanJob?.cancel()
         scanJob = null
     }

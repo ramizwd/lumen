@@ -40,6 +40,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
+import com.example.lumen.domain.ble.model.ScanState
 import com.example.lumen.presentation.ble.discovery.components.DeviceList
 import com.example.lumen.presentation.ble.discovery.components.ScanButton
 import com.example.lumen.presentation.common.components.BluetoothPermissionTextProvider
@@ -259,7 +260,7 @@ fun DiscoverDevicesContent(
     onConnectToDevice: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isScanning = uiState.isScanning
+    val isScanning = uiState.scanState == ScanState.SCANNING
     val scanResult = uiState.scanResults
 
     Column(
@@ -271,11 +272,7 @@ fun DiscoverDevicesContent(
     ) {
 
         if (scanResult.isEmpty()) {
-            if (!isScanning) {
-                Text(text = "Start scanning to find nearby devices.")
-            } else {
-                Text(text = "Searching...")
-            }
+            uiState.emptyScanResultTxt?.let { Text(text = it) }
         }
 
         Box(modifier = modifier.weight(1f)) {
@@ -289,7 +286,7 @@ fun DiscoverDevicesContent(
         }
 
         ScanButton(
-            onClick = { if (uiState.isScanning) onStopScan() else onStartScan() },
+            onClick = { if (isScanning) onStopScan() else onStartScan() },
             isScanning = isScanning
         )
     }
@@ -297,18 +294,12 @@ fun DiscoverDevicesContent(
 
 @PreviewLightDark
 @Composable
-fun DiscoverDevicesContentWithDevicesPreview() {
+fun DiscoverDevicesContentPreview() {
     LumenTheme {
         Surface {
-            val mockScanResults = listOf(
-                BleDevice(name = "LED 1", address = "00:11:22:33:44:55"),
-                BleDevice(name = "Test Device 2", address = "A:BB:CC:DD:EE:FF"),
-                BleDevice(name = null, address = "FF:EE:DD:CC:BB:AA")
-            )
-
             val state = DiscoveryUiState(
-                scanResults = mockScanResults,
-                isScanning = true,
+                scanResults = emptyList(),
+                scanState = ScanState.SCAN_PAUSED,
             )
 
             DiscoverDevicesContent(
@@ -325,12 +316,40 @@ fun DiscoverDevicesContentWithDevicesPreview() {
 
 @PreviewLightDark
 @Composable
-fun DiscoverDevicesContentWithoutDevicesPreview() {
+fun DiscoverDevicesContentSearchingPreview() {
     LumenTheme {
         Surface {
             val state = DiscoveryUiState(
                 scanResults = emptyList(),
-                isScanning = false,
+                scanState = ScanState.SCANNING,
+            )
+
+            DiscoverDevicesContent(
+                innerPadding = PaddingValues(),
+                uiState = state,
+                onStartScan = {},
+                onStopScan = {},
+                onConnectToDevice = {},
+                modifier = Modifier,
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+fun DiscoverDevicesContentDevicesFoundPreview() {
+    LumenTheme {
+        Surface {
+            val mockScanResults = listOf(
+                BleDevice(name = "LED 1", address = "00:11:22:33:44:55"),
+                BleDevice(name = "Test Device 2", address = "A:BB:CC:DD:EE:FF"),
+                BleDevice(name = null, address = "FF:EE:DD:CC:BB:AA")
+            )
+
+            val state = DiscoveryUiState(
+                scanResults = mockScanResults,
+                scanState = ScanState.SCANNING,
             )
 
             DiscoverDevicesContent(
@@ -352,7 +371,7 @@ fun DiscoverDevicesContentNoDevicesFoundPreview() {
         Surface {
             val state = DiscoveryUiState(
                 scanResults = emptyList(),
-                isScanning = true,
+                scanState = ScanState.SCAN_AUTO_PAUSED,
             )
 
             DiscoverDevicesContent(

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionResult
+import com.example.lumen.domain.ble.model.ScanState
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.discovery.DiscoveryUseCases
@@ -51,11 +52,18 @@ class DiscoveryViewModel @Inject constructor(
         discoveryUseCases.observeIsScanningUseCase(),
         observeBluetoothStateUseCase(),
         _uiState
-    ) { scanResults, isScanning, bluetoothState, state ->
+    ) { scanResults, scanState, bluetoothState, state ->
+        val emptyScanResultTxt = when(scanState) {
+            ScanState.SCANNING -> "Searching..."
+            ScanState.SCAN_PAUSED -> "Start scanning to find nearby devices."
+            ScanState.SCAN_AUTO_PAUSED -> "No devices found."
+        }
+
         state.copy(
             scanResults = scanResults,
-            isScanning = isScanning,
+            scanState = scanState,
             bluetoothState = bluetoothState,
+            emptyScanResultTxt = emptyScanResultTxt,
             isBtDisabled = bluetoothState == BluetoothState.OFF
         )
     }.stateIn(
@@ -78,7 +86,7 @@ class DiscoveryViewModel @Inject constructor(
             .onEach { stateValue ->
                 val btState = stateValue.bluetoothState
                 val btPermStatus = stateValue.btPermissionStatus
-                val isScanning = stateValue.isScanning
+                val isScanning = stateValue.scanState == ScanState.SCANNING
 
                 when {
                     btState == BluetoothState.ON && !isScanning &&
