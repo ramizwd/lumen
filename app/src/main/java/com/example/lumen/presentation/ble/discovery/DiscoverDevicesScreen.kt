@@ -285,8 +285,9 @@ fun DiscoverDevicesContent(
         }
 
         ScanButton(
-            onClick = { if (isScanning) onStopScan() else onStartScan() },
-            isScanning = isScanning
+            onStartScan = onStartScan,
+            onStopScan = onStopScan,
+            isScanning = isScanning,
         )
     }
 }
