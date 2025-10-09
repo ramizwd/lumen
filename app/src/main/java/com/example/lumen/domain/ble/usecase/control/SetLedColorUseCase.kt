@@ -6,7 +6,7 @@ import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
 import com.example.lumen.utils.hexToColorCommandBytes
 import javax.inject.Inject
 
-class SetHsvColorUseCase @Inject constructor(
+class SetLedColorUseCase @Inject constructor(
     private val bleGattController: BleGattController
 ) {
 

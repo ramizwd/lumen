@@ -9,7 +9,7 @@ import android.graphics.Color as AndroidColor
 
 @Composable
 fun MatchDeviceThemeButton(
-    onSetHsvColor: (String) -> Unit
+    onMatchWithDeviceTheme: (String) -> Unit
 ) {
     val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
 
@@ -21,7 +21,7 @@ fun MatchDeviceThemeButton(
 
     val hexPrimaryColorSaturated = AndroidColor.HSVToColor(hsv).toHexString().drop(2)
 
-    Button(onClick = { onSetHsvColor(hexPrimaryColorSaturated) }) {
+    Button(onClick = { onMatchWithDeviceTheme(hexPrimaryColorSaturated) }) {
         Text(text = "Match with device theme")
     }
 }

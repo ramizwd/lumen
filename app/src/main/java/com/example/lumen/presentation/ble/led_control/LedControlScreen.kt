@@ -17,12 +17,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.lumen.domain.ble.model.BleDevice
-import com.example.lumen.domain.ble.model.LedControllerState
-import com.example.lumen.domain.ble.model.PresetLedColors
 import com.example.lumen.presentation.ble.led_control.components.BrightnessSlider
 import com.example.lumen.presentation.ble.led_control.components.ColorPicker
 import com.example.lumen.presentation.ble.led_control.components.LedSwitch
@@ -30,8 +29,6 @@ import com.example.lumen.presentation.ble.led_control.components.MatchDeviceThem
 import com.example.lumen.presentation.ble.led_control.components.PresetColorRow
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.hexToComposeColor
-
-private const val LOG_TAG = "LedControlScreen"
 
 @Composable
 fun LedControlScreen(
@@ -41,13 +38,20 @@ fun LedControlScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val selectedDevice = uiState.selectedDevice
+    val initialColor = uiState.initialLedColor
+    val initialBrightness = uiState.controllerState?.brightness ?: 0f
+    val isOn = uiState.controllerState?.isOn ?: false
+
     LedControlContent(
         innerPadding = innerPadding,
-        uiState = uiState,
+        device = selectedDevice,
+        initialColor = initialColor,
+        initialBrightness = initialBrightness,
+        isOn = isOn,
         onTurnLedOnClick = viewModel::turnLedOn,
         onTurnLedOffClick = viewModel::turnLedOff,
-        onSetPresetColorClick = viewModel::setPresetColor,
-        onSetHsvColor = viewModel::setHsvColor,
+        setLedColor = viewModel::setLedColor,
         onChangeBrightness = viewModel::changeBrightness,
         onDisconnectClick = viewModel::disconnectFromDevice,
         modifier = modifier,
@@ -57,19 +61,18 @@ fun LedControlScreen(
 @Composable
 fun LedControlContent(
     innerPadding: PaddingValues,
-    uiState: LedControlUiState,
+    device: BleDevice?,
+    initialColor: Color?,
+    initialBrightness: Float,
+    isOn: Boolean,
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
-    onSetPresetColorClick: (PresetLedColors) -> Unit,
-    onSetHsvColor: (String) -> Unit,
+    setLedColor: (String) -> Unit,
     onChangeBrightness: (Float) -> Unit,
     onDisconnectClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var currentColor by remember { mutableStateOf(uiState.initialLedColor) }
-
-    val initialBrightness = uiState.controllerState?.brightness ?: 0f
-    val isOn = uiState.controllerState?.isOn ?: false
+    var currentColor by remember { mutableStateOf(initialColor) }
 
     Column(
         modifier = modifier
@@ -78,7 +81,7 @@ fun LedControlContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(text = "CONNECTED to ${uiState.selectedDevice?.name}")
+        Text(text = "CONNECTED to ${device?.name ?: "Unknown"}")
 
         LedSwitch(
             isOn = isOn,
@@ -92,20 +95,20 @@ fun LedControlContent(
                 .height(450.dp)
                 .padding(16.dp),
             currentColor = currentColor,
-            onSetHsvColor = onSetHsvColor,
+            onSetHsvColor = setLedColor,
         )
 
         MatchDeviceThemeButton(
-            onSetHsvColor = { color ->
-                currentColor = color.hexToComposeColor()
-                onSetHsvColor(color)
+            onMatchWithDeviceTheme = { hexColor ->
+                currentColor = hexColor.hexToComposeColor()
+                setLedColor(hexColor)
             }
         )
 
         PresetColorRow(
-            onChangePresetColorClick = { color ->
-                currentColor = color.hex.hexToComposeColor()
-                onSetPresetColorClick(color)
+            onSetPresetColor = { hexColor ->
+                currentColor = hexColor.hexToComposeColor()
+                setLedColor(hexColor)
             },
         )
 
@@ -130,33 +133,16 @@ fun LedControlScreenPreview() {
                 address = "00:11:22:33:44:55"
             )
 
-            val controllerState = LedControllerState(
-                isOn = true,
-                preset = 5.toByte(),
-                speed = 50.toByte(),
-                brightness = 180f,
-                icModel = 1.toByte(),
-                channel = 0.toByte(),
-                pixelCount = 80,
-                red = "FF",
-                green = "00",
-                blue = "00",
-                whiteLedBrightness = 0.toByte()
-            )
-
-            val state = LedControlUiState(
-                selectedDevice = connDevice,
-                controllerState = controllerState,
-            )
-
             LedControlContent(
                 innerPadding = PaddingValues(),
-                uiState = state,
+                device = connDevice,
+                initialColor = Color.White,
+                initialBrightness = 180f,
+                isOn = true,
                 onDisconnectClick = {},
                 onTurnLedOnClick = {},
                 onTurnLedOffClick = {},
-                onSetPresetColorClick = {},
-                onSetHsvColor = {},
+                setLedColor = {},
                 onChangeBrightness = {},
             )
         }

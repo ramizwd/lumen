@@ -1,7 +1,5 @@
 package com.example.lumen.domain.ble.model
 
-import com.example.lumen.utils.hexToColorCommandBytes
-
 /**
  * enum for all predefined colors the user can choose from.
  */
@@ -13,6 +11,4 @@ enum class PresetLedColors(val hex: String) {
     PURPLE("ff00ff"),
     CYAN("00ffff"),
     WHITE("ffffff");
-
-    val commandBytes: ByteArray by lazy { hex.hexToColorCommandBytes() }
 }

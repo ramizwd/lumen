@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionState
-import com.example.lumen.domain.ble.model.PresetLedColors
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
@@ -128,15 +127,9 @@ class LedControlViewModel @Inject constructor(
         }
     }
 
-    fun setPresetColor(color: PresetLedColors) {
+    fun setLedColor(hexColor: String) {
         viewModelScope.launch {
-            controlUseCases.setPresetColorUseCase(color)
-        }
-    }
-
-    fun setHsvColor(hexColor: String) {
-        viewModelScope.launch {
-            controlUseCases.setHsvColorUseCase(hexColor)
+            controlUseCases.setLedColorUseCase(hexColor)
         }
     }
 
