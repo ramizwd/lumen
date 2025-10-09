@@ -3,6 +3,7 @@ package com.example.lumen.presentation.ble.led_control.components
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,6 +25,15 @@ fun ColorPicker(
     val controller = rememberColorPickerController()
     var pickedHexColor by remember { mutableStateOf("") }
 
+    LaunchedEffect(key1 = currentColor) {
+        currentColor?.let { color ->
+            controller.selectByColor(
+                color = color,
+                fromUser = false
+            )
+        }
+    }
+
     HsvColorPicker(
         modifier = modifier,
         controller = controller,
@@ -34,7 +44,7 @@ fun ColorPicker(
 
             pickedHexColor = pickedHex
             onSetHsvColor(pickedHex)
-        }
+        },
     )
 
     Text(text = "#$pickedHexColor".uppercase())

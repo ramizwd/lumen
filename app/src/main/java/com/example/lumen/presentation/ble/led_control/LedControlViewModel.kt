@@ -1,5 +1,6 @@
 package com.example.lumen.presentation.ble.led_control
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lumen.domain.ble.model.BluetoothState
@@ -8,6 +9,7 @@ import com.example.lumen.domain.ble.model.PresetLedColors
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
+import com.example.lumen.utils.hexToComposeColor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -48,12 +50,26 @@ class LedControlViewModel @Inject constructor(
         connectionUseCases.observeConnectionStateUseCase(),
         _uiState,
     ) { connectedDevice, controllerState, connectionState, state ->
-        Timber.tag(LOG_TAG).d("collected state: $controllerState")
+        val initialLedColor = controllerState?.let {
+            val red = it.red
+            val green = it.green
+            val blue = it.blue
+            val hexColor = "$red$green$blue"
+            try {
+                hexColor.hexToComposeColor()
+            } catch (e: IllegalArgumentException) {
+                Timber.tag(LOG_TAG).e(
+                    e,"Error converting to Compose color"
+                )
+                Color.White
+            }
+        } ?: Color.White
 
         state.copy(
             selectedDevice = connectedDevice,
             controllerState = controllerState,
             connectionState = connectionState,
+            initialLedColor = initialLedColor,
         )
     }.stateIn(
         viewModelScope,
@@ -112,7 +128,7 @@ class LedControlViewModel @Inject constructor(
         }
     }
 
-    fun changePresetColor(color: PresetLedColors) {
+    fun setPresetColor(color: PresetLedColors) {
         viewModelScope.launch {
             controlUseCases.setPresetColorUseCase(color)
         }

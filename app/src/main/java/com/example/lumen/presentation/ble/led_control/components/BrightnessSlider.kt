@@ -18,10 +18,10 @@ import com.example.lumen.utils.AppConstants.BRIGHTNESS_MIN
 
 @Composable
 fun BrightnessSlider(
-    currentBrightness: Float,
+    initialBrightness: Float,
     onChangeBrightness: (Float) -> Unit,
 ) {
-    var sliderPosition by rememberSaveable { mutableFloatStateOf(currentBrightness) }
+    var sliderPosition by rememberSaveable { mutableFloatStateOf(initialBrightness) }
     val sliderPercentage = ((sliderPosition.toInt() / BRIGHTNESS_MAX) * 100).toInt()
 
     Slider(
@@ -42,7 +42,7 @@ fun BrightnessSliderPreview() {
     LumenTheme {
         Surface {
             BrightnessSlider(
-                currentBrightness = 180f,
+                initialBrightness = 180f,
                 onChangeBrightness = {}
             )
         }

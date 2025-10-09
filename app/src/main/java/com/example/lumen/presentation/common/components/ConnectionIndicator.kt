@@ -26,7 +26,7 @@ fun ConnectionIndicator(
     ) {
         val connectionStateText = when (connectionState) {
             ConnectionState.CONNECTING -> "Connecting..."
-            ConnectionState.LOADING_DEVICE_STATE -> "Loading state..."
+            ConnectionState.LOADING_DEVICE_STATE -> "Initializing..."
             ConnectionState.RETRYING -> "Connection failed, retrying..."
             ConnectionState.INVALID_DEVICE -> "Invalid device, disconnecting..."
             else -> ""
