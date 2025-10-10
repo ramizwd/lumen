@@ -18,7 +18,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,7 +27,6 @@ import com.example.lumen.presentation.ble.led_control.components.ColorPicker
 import com.example.lumen.presentation.ble.led_control.components.LedSwitch
 import com.example.lumen.presentation.ble.led_control.components.MatchDeviceThemeButton
 import com.example.lumen.presentation.ble.led_control.components.PresetColorRow
-import com.example.lumen.presentation.common.utils.ColorSaver
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.hexToComposeColor
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
@@ -42,14 +40,14 @@ fun LedControlScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val selectedDevice = uiState.selectedDevice
-    val initialColor = uiState.initialLedColor
+    val initialHexColor = uiState.controllerState?.let { "${it.red}${it.green}${it.blue}" }
     val initialBrightness = uiState.controllerState?.brightness ?: 0f
     val isOn = uiState.controllerState?.isOn ?: false
 
     LedControlContent(
         innerPadding = innerPadding,
         device = selectedDevice,
-        initialColor = initialColor,
+        initialHexColor = initialHexColor,
         initialBrightness = initialBrightness,
         isOn = isOn,
         onTurnLedOnClick = viewModel::turnLedOn,
@@ -65,7 +63,7 @@ fun LedControlScreen(
 fun LedControlContent(
     innerPadding: PaddingValues,
     device: BleDevice?,
-    initialColor: Color?,
+    initialHexColor: String?,
     initialBrightness: Float,
     isOn: Boolean,
     onTurnLedOnClick: () -> Unit,
@@ -77,14 +75,12 @@ fun LedControlContent(
 ) {
     val colorPickerController = rememberColorPickerController()
 
-    var currentColor by rememberSaveable(stateSaver = ColorSaver) {
-        mutableStateOf(initialColor)
-    }
+    var currentHexColor by rememberSaveable { mutableStateOf(initialHexColor) }
 
-    LaunchedEffect(key1 = currentColor) {
-        currentColor?.let { color ->
+    LaunchedEffect(key1 = currentHexColor) {
+        currentHexColor?.let { hexColor ->
             colorPickerController.selectByColor(
-                color = color,
+                color = hexColor.hexToComposeColor(),
                 fromUser = false
             )
         }
@@ -112,23 +108,23 @@ fun LedControlContent(
                 .padding(16.dp),
             controller = colorPickerController,
             onSetHsvColor = { hexColor ->
-                currentColor = hexColor.hexToComposeColor()
+                currentHexColor = hexColor
                 setLedColor(hexColor)
             }
         )
 
         MatchDeviceThemeButton(
-            currentColor = currentColor,
+            currentColor = currentHexColor,
             onMatchWithDeviceTheme = { hexColor ->
-                currentColor = hexColor.hexToComposeColor()
+                currentHexColor = hexColor
                 setLedColor(hexColor)
             }
         )
 
         PresetColorRow(
-            currentColor = currentColor,
+            currentColor = currentHexColor,
             onSetPresetColor = { hexColor ->
-                currentColor = hexColor.hexToComposeColor()
+                currentHexColor = hexColor
                 setLedColor(hexColor)
             },
         )
@@ -157,7 +153,7 @@ fun LedControlScreenPreview() {
             LedControlContent(
                 innerPadding = PaddingValues(),
                 device = connDevice,
-                initialColor = Color.White,
+                initialHexColor = "ffffff",
                 initialBrightness = 180f,
                 isOn = true,
                 onDisconnectClick = {},

@@ -22,12 +22,15 @@ import com.example.lumen.presentation.theme.LumenTheme
 
 @Composable
 fun PresetColorRow(
-    currentColor: Color?,
+    currentColor: String?,
     onSetPresetColor: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         PresetLedColors.entries.forEach { color ->
+            val hexColor = color.hex
+            val isColorSelected = currentColor == hexColor
+
             val bgColor = when(color) {
                 PresetLedColors.RED -> Color.Red
                 PresetLedColors.GREEN -> Color.Green
@@ -37,8 +40,6 @@ fun PresetColorRow(
                 PresetLedColors.CYAN -> Color.Cyan
                 PresetLedColors.WHITE -> Color.White
             }
-
-            val isColorSelected = currentColor == bgColor
 
             Box(
                 modifier = modifier
@@ -51,7 +52,7 @@ fun PresetColorRow(
                         color = MaterialTheme.colorScheme.onPrimary,
                         shape = CircleShape,
                     )
-                    .clickable { onSetPresetColor(color.hex) }
+                    .clickable { onSetPresetColor(hexColor) }
             )
         }
     }
@@ -63,7 +64,7 @@ fun PresetColorPreview() {
     LumenTheme {
         Surface {
             PresetColorRow(
-                currentColor = Color.White,
+                currentColor = "ffffff",
                 onSetPresetColor = {},
             )
         }

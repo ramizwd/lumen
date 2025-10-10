@@ -12,7 +12,7 @@ import android.graphics.Color as AndroidColor
 
 @Composable
 fun MatchDeviceThemeButton(
-    currentColor: Color?,
+    currentColor: String?,
     onMatchWithDeviceTheme: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -29,7 +29,7 @@ fun MatchDeviceThemeButton(
     Button(
         modifier = modifier,
         onClick = { onMatchWithDeviceTheme(hexPrimaryColorSaturated) },
-        enabled = hexPrimaryColorSaturated.hexToComposeColor() != currentColor) {
+        enabled = hexPrimaryColorSaturated != currentColor) {
         Text(text = "Match with device theme")
     }
 }
