@@ -11,9 +11,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,8 +28,10 @@ import com.example.lumen.presentation.ble.led_control.components.ColorPicker
 import com.example.lumen.presentation.ble.led_control.components.LedSwitch
 import com.example.lumen.presentation.ble.led_control.components.MatchDeviceThemeButton
 import com.example.lumen.presentation.ble.led_control.components.PresetColorRow
+import com.example.lumen.presentation.common.utils.ColorSaver
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.hexToComposeColor
+import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 
 @Composable
 fun LedControlScreen(
@@ -72,7 +75,20 @@ fun LedControlContent(
     onDisconnectClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var currentColor by remember { mutableStateOf(initialColor) }
+    val colorPickerController = rememberColorPickerController()
+
+    var currentColor by rememberSaveable(stateSaver = ColorSaver) {
+        mutableStateOf(initialColor)
+    }
+
+    LaunchedEffect(key1 = currentColor) {
+        currentColor?.let { color ->
+            colorPickerController.selectByColor(
+                color = color,
+                fromUser = false
+            )
+        }
+    }
 
     Column(
         modifier = modifier
@@ -94,11 +110,15 @@ fun LedControlContent(
                 .fillMaxWidth()
                 .height(450.dp)
                 .padding(16.dp),
-            currentColor = currentColor,
-            onSetHsvColor = setLedColor,
+            controller = colorPickerController,
+            onSetHsvColor = { hexColor ->
+                currentColor = hexColor.hexToComposeColor()
+                setLedColor(hexColor)
+            }
         )
 
         MatchDeviceThemeButton(
+            currentColor = currentColor,
             onMatchWithDeviceTheme = { hexColor ->
                 currentColor = hexColor.hexToComposeColor()
                 setLedColor(hexColor)
@@ -106,6 +126,7 @@ fun LedControlContent(
         )
 
         PresetColorRow(
+            currentColor = currentColor,
             onSetPresetColor = { hexColor ->
                 currentColor = hexColor.hexToComposeColor()
                 setLedColor(hexColor)
