@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionState
+import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
@@ -13,11 +14,15 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -59,6 +64,18 @@ class LedControlViewModel @Inject constructor(
     )
 
     init {
+        viewModelScope.launch {
+            uiState
+                .mapNotNull { it.selectedDevice?.address }
+                .distinctUntilChanged()
+                .collectLatest { deviceAddress ->
+                    controlUseCases.getCustomColorsUseCase(deviceAddress).collect { colors ->
+                        _uiState.update { it.copy(customColorSlots = colors) }
+                        Timber.tag(LOG_TAG).d("Saved colors: $colors")
+                    }
+                }
+        }
+
         viewModelScope.launch {
             // Collects the most recent value emitted within 150 milliseconds and pass it down
             // the flow. This throttling helps prevent overflowing the GATT operation queue.
@@ -112,6 +129,15 @@ class LedControlViewModel @Inject constructor(
     fun setLedColor(hexColor: String) {
         viewModelScope.launch {
             controlUseCases.setLedColorUseCase(hexColor)
+        }
+    }
+
+    fun saveCustomColor(slotId: Int, hexColor: String) {
+        viewModelScope.launch {
+            uiState.value.selectedDevice?.let { device ->
+                val colorSlot = CustomColorSlot(slotId, hexColor)
+                controlUseCases.saveCustomColorUseCase(device.address, colorSlot)
+            }
         }
     }
 
