@@ -13,10 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,12 +28,12 @@ import com.example.lumen.utils.hexToComposeColor
 fun ColorRows(
     currentHexColor: String,
     presetColors: List<String>,
+    selectedSlot: Int,
     customColorSlots: List<CustomColorSlot>,
     onSaveCustomColorSlot: (Int, String) -> Unit,
-    onColorSelected: (String) -> Unit,
+    onColorSelected: (Int, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var selectedSlot by rememberSaveable { mutableIntStateOf(0) }
 
     LaunchedEffect(key1 = currentHexColor) {
         if (selectedSlot != 0) {
@@ -59,8 +55,7 @@ fun ColorRows(
                     color = color.hexToComposeColor(),
                     isSelected = isSelected,
                     onClick = {
-                        onColorSelected(color)
-                        selectedSlot = 0
+                        onColorSelected(0, color)
                     }
                 )
             }
@@ -74,9 +69,7 @@ fun ColorRows(
                     color = slot.hexColor.hexToComposeColor(),
                     isSelected = isSlotSelected,
                     onClick = {
-                        onColorSelected(slot.hexColor)
-                        selectedSlot = slot.id
-
+                        onColorSelected(slot.id, slot.hexColor)
                     }
                 )
             }
@@ -126,7 +119,8 @@ fun PresetColorPreview() {
                 presetColors = PresetLedColors.entries.map { it.hex },
                 customColorSlots = customColorsList,
                 onSaveCustomColorSlot = { slotId, color -> },
-                onColorSelected = { },
+                onColorSelected = { slotId, color -> },
+                selectedSlot = 0,
             )
         }
     }
