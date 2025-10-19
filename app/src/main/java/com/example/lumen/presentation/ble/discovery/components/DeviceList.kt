@@ -15,28 +15,34 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.presentation.common.components.PullToRefresh
+import com.example.lumen.presentation.common.model.DeviceContent
 import com.example.lumen.presentation.theme.LumenTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun DeviceList(
-    scanResults: List<BleDevice>,
+    scanResults: List<DeviceContent>,
+    onStartScan: () -> Unit,
+    onSaveDevice: (String) -> Unit,
+    onRemoveDevice: (String) -> Unit,
     onDeviceClick: (BleDevice) -> Unit,
-    onStartScan: () -> Unit
+    modifier: Modifier = Modifier,
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     PullToRefresh(
         items = scanResults,
-        content = { device ->
+        content = { deviceContent ->
             DeviceItem(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
-                    .padding(vertical = 6.dp)
-                    .clickable { onDeviceClick(device) },
-                device = device,
+                    .padding(6.dp)
+                    .clickable { onDeviceClick(deviceContent.device) },
+                deviceContent = deviceContent,
+                onSaveDevice = onSaveDevice,
+                onRemoveDevice = onRemoveDevice,
             )
         },
         isRefreshing = isRefreshing,
@@ -57,15 +63,27 @@ fun DeviceListPreview() {
     LumenTheme {
         Surface {
             val mockScanResults = listOf(
-                BleDevice(name = "LED 1", address = "00:11:22:33:44:55"),
-                BleDevice(name = "Test Device 2", address = "A:BB:CC:DD:EE:FF"),
-                BleDevice(name = null, address = "FF:EE:DD:CC:BB:AA")
+                DeviceContent(BleDevice(
+                    name = "LED 1",
+                    address = "00:11:22:33:44:55"),
+                    isFavorite = true
+                ),
+                DeviceContent(BleDevice(
+                    name = "Test Device 2",
+                    address = "A:BB:CC:DD:EE:FF"),
+                    isFavorite = false),
+                DeviceContent(BleDevice(
+                    name = null,
+                    address = "FF:EE:DD:CC:BB:AA"),
+                    isFavorite = true),
             )
 
             DeviceList(
                 scanResults = mockScanResults,
-                onDeviceClick = {},
                 onStartScan = {},
+                onSaveDevice = {},
+                onRemoveDevice = {},
+                onDeviceClick = {},
             )
         }
     }
@@ -78,8 +96,10 @@ fun DeviceListWithoutDevicesPreview() {
         Surface {
             DeviceList(
                 scanResults = emptyList(),
-                onDeviceClick = {},
                 onStartScan = {},
+                onSaveDevice = {},
+                onRemoveDevice = {},
+                onDeviceClick = {},
             )
         }
     }

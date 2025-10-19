@@ -6,10 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionResult
+import com.example.lumen.domain.ble.model.DeviceListType
 import com.example.lumen.domain.ble.model.ScanState
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.discovery.DiscoveryUseCases
+import com.example.lumen.domain.ble.usecase.prefs.PrefsUseCases
+import com.example.lumen.presentation.common.model.DeviceContent
 import com.example.lumen.presentation.common.model.SnackbarEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -26,6 +29,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.collections.find
 
 /**
  * ViewModel responsible for managing scan UI state and
@@ -35,6 +39,7 @@ import javax.inject.Inject
 class DiscoveryViewModel @Inject constructor(
     private val discoveryUseCases: DiscoveryUseCases,
     private val connectionUseCases: ConnectionUseCases,
+    private val prefsUseCases: PrefsUseCases,
     observeBluetoothStateUseCase: ObserveBluetoothStateUseCase,
 ): ViewModel() {
 
@@ -50,21 +55,40 @@ class DiscoveryViewModel @Inject constructor(
     val uiState = combine(
         discoveryUseCases.observeScanResultsUseCase(),
         discoveryUseCases.observeIsScanningUseCase(),
-        observeBluetoothStateUseCase(),
+        prefsUseCases.getFavoriteDeviceAddressesUseCase(),
+        prefsUseCases.getDeviceListPreferenceUseCase(),
         _uiState
-    ) { scanResults, scanState, bluetoothState, state ->
-        val emptyScanResultTxt = when(scanState) {
-            ScanState.SCANNING -> "Searching..."
-            ScanState.SCAN_PAUSED -> "Start scanning to find nearby devices."
-            ScanState.SCAN_AUTO_PAUSED -> "No devices found."
+    ) { scanResults, scanState, favAddresses, listType, state ->
+        val devices = scanResults.map { device ->
+            val isFavorite = favAddresses.contains(device.address)
+            DeviceContent(device, isFavorite)
+        }
+        val favDevices = devices.filter { it.isFavorite }
+
+        val deviceList = when (listType) {
+            DeviceListType.ALL_DEVICES -> devices
+            DeviceListType.FAVORITE_DEVICES -> favDevices
         }
 
+        val emptyScanResTxt = getEmptyScanResultTxt(
+            scanResults.isEmpty(),
+            favDevices.isEmpty(),
+            scanState,
+            listType
+        )
+
         state.copy(
-            scanResults = scanResults,
+            scanResults = deviceList,
             scanState = scanState,
+            emptyScanResultTxt = emptyScanResTxt,
+            selectedListType = listType,
+        )
+    }.combine(
+        observeBluetoothStateUseCase(),
+    ) { currentState, bluetoothState ->
+        currentState.copy(
             bluetoothState = bluetoothState,
-            emptyScanResultTxt = emptyScanResultTxt,
-            isBtDisabled = bluetoothState == BluetoothState.OFF
+            isBtDisabled = bluetoothState == BluetoothState.OFF,
         )
     }.stateIn(
         viewModelScope,
@@ -191,10 +215,10 @@ class DiscoveryViewModel @Inject constructor(
 
     fun connectToDevice(address: String) {
         viewModelScope.launch {
-            val selectedDevice = uiState.value.scanResults.find { it.address == address }
-            selectedDevice?.let { device ->
-                _uiState.update { it.copy(deviceToConnect = device) }
-                connectionUseCases.connectToDeviceUseCase(device)
+            val selectedDeviceItem = uiState.value.scanResults.find { it.device.address == address }
+            selectedDeviceItem?.let { deviceItem ->
+                _uiState.update { it.copy(deviceToConnect = deviceItem.device) }
+                connectionUseCases.connectToDeviceUseCase(deviceItem.device)
             }
         }
     }
@@ -215,6 +239,41 @@ class DiscoveryViewModel @Inject constructor(
         _uiState.update { it.copy(errorMessage = null) }
     }
 
+    fun addFavDevice(address: String) {
+        viewModelScope.launch {
+            prefsUseCases.addFavoriteDeviceAddressUseCase(address)
+        }
+    }
+
+    fun removeFavDevice(address: String) {
+        viewModelScope.launch {
+            prefsUseCases.removeFavoriteDeviceAddressUseCase(address)
+        }
+    }
+
+    fun selectDeviceListType(listType: DeviceListType) {
+        viewModelScope.launch {
+            when (listType) {
+                DeviceListType.ALL_DEVICES -> {
+                    if (uiState.value.selectedListType != DeviceListType.ALL_DEVICES) {
+                        Timber.tag(LOG_TAG).d("Save All Devices list type")
+                        prefsUseCases.saveDeviceListPreferenceUseCase(
+                            DeviceListType.ALL_DEVICES
+                        )
+                    }
+                }
+                DeviceListType.FAVORITE_DEVICES -> {
+                    if (uiState.value.selectedListType != DeviceListType.FAVORITE_DEVICES) {
+                        Timber.tag(LOG_TAG).d("Save Fav Devices list type")
+                        prefsUseCases.saveDeviceListPreferenceUseCase(
+                            DeviceListType.FAVORITE_DEVICES
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     // Check BT permission and its state, trigger appropriate UI event if preconditions are not met
     private fun handleScanPreconditions(): Boolean {
         return when {
@@ -230,6 +289,34 @@ class DiscoveryViewModel @Inject constructor(
                 false
             }
             else -> true
+        }
+    }
+
+    private fun getEmptyScanResultTxt(
+        isNoDevices: Boolean,
+        isNoFavDevices: Boolean,
+        scanState: ScanState,
+        listType: DeviceListType,
+    ): String? {
+        val scanStateMsg = when (scanState) {
+            ScanState.SCANNING -> "Searching..."
+            ScanState.SCAN_PAUSED -> "Start scanning to find nearby devices."
+            ScanState.SCAN_AUTO_PAUSED -> "No devices found."
+        }
+
+        val favScanStateMsg = when (scanState) {
+            ScanState.SCANNING -> "Searching for favorites..."
+            ScanState.SCAN_PAUSED -> "Start scanning to find favorite devices."
+            ScanState.SCAN_AUTO_PAUSED -> "No favorite devices found."
+        }
+
+        return when (listType) {
+            DeviceListType.ALL_DEVICES -> {
+                if (isNoDevices) scanStateMsg else null
+            }
+            DeviceListType.FAVORITE_DEVICES -> {
+                if (isNoFavDevices) favScanStateMsg else null
+            }
         }
     }
 
