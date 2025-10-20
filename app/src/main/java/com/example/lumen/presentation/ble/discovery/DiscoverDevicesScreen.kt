@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -40,13 +42,16 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
+import com.example.lumen.domain.ble.model.DeviceListType
 import com.example.lumen.domain.ble.model.ScanState
 import com.example.lumen.presentation.ble.discovery.components.DeviceList
 import com.example.lumen.presentation.ble.discovery.components.ScanButton
 import com.example.lumen.presentation.common.components.BluetoothPermissionTextProvider
+import com.example.lumen.presentation.common.components.ChoiceChipGroup
 import com.example.lumen.presentation.common.components.EnableBluetoothTextProvider
 import com.example.lumen.presentation.common.components.OpenAppSettingsTextProvider
 import com.example.lumen.presentation.common.components.PermissionAlertDialog
+import com.example.lumen.presentation.common.model.DeviceContent
 import com.example.lumen.presentation.common.utils.showToast
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.btPermissionArray
@@ -243,9 +248,13 @@ fun DiscoverDevicesScreen(
             isScanning = uiState.scanState == ScanState.SCANNING,
             scanResults = uiState.scanResults,
             emptyScanResultTxt = uiState.emptyScanResultTxt,
+            currSelectedListType = uiState.selectedListType,
             onStartScan = viewModel::startScan,
             onStopScan = viewModel::stopScan,
+            onFavDevice = viewModel::addFavDevice,
+            onRemoveFavDevice = viewModel::removeFavDevice,
             onConnectToDevice = viewModel::connectToDevice,
+            onSelectListFilter = viewModel::selectDeviceListType,
             modifier = modifier,
         )
     }
@@ -255,10 +264,14 @@ fun DiscoverDevicesScreen(
 fun DiscoverDevicesContent(
     innerPadding: PaddingValues,
     isScanning: Boolean,
-    scanResults: List<BleDevice>,
+    scanResults: List<DeviceContent>,
     emptyScanResultTxt: String?,
+    currSelectedListType: DeviceListType,
+    onSelectListFilter: (DeviceListType) -> Unit,
     onStartScan: () -> Unit,
     onStopScan: () -> Unit,
+    onFavDevice: (String) -> Unit,
+    onRemoveFavDevice: (String) -> Unit,
     onConnectToDevice: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -269,19 +282,31 @@ fun DiscoverDevicesContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        ChoiceChipGroup(
+            choices = DeviceListType.entries.map { it.displayName },
+            selectedChoice = currSelectedListType.displayName,
+            onChoiceSelected = { selected ->
+                val selectedEnum = DeviceListType.entries.first { it.displayName == selected }
+                onSelectListFilter(selectedEnum)
+            },
+        )
 
-        if (scanResults.isEmpty() && emptyScanResultTxt != null) {
+        if (emptyScanResultTxt != null) {
             Text(text = emptyScanResultTxt)
         }
 
         Box(modifier = modifier.weight(1f)) {
-            DeviceList(
-                scanResults = scanResults,
-                onDeviceClick = {
-                    onConnectToDevice(it.address)
-                },
-                onStartScan = onStartScan,
-            )
+            Column {
+                DeviceList(
+                    scanResults = scanResults,
+                    onStartScan = onStartScan,
+                    onSaveDevice = onFavDevice,
+                    onRemoveDevice = onRemoveFavDevice,
+                    onDeviceClick = {
+                        onConnectToDevice(it.address)
+                    },
+                )
+            }
         }
 
         ScanButton(
@@ -302,11 +327,14 @@ fun DiscoverDevicesContentPreview() {
                 isScanning = false,
                 scanResults = emptyList(),
                 emptyScanResultTxt = "Start scanning to find nearby devices.",
+                currSelectedListType = DeviceListType.ALL_DEVICES,
+                onSelectListFilter = {},
                 onStartScan = {},
                 onStopScan = {},
+                onFavDevice = {},
+                onRemoveFavDevice = {},
                 onConnectToDevice = {},
                 modifier = Modifier,
-
             )
         }
     }
@@ -322,11 +350,14 @@ fun DiscoverDevicesContentSearchingPreview() {
                 isScanning = true,
                 scanResults = emptyList(),
                 emptyScanResultTxt = "Searching...",
+                currSelectedListType = DeviceListType.ALL_DEVICES,
+                onSelectListFilter = {},
                 onStartScan = {},
                 onStopScan = {},
+                onFavDevice = {},
+                onRemoveFavDevice = {},
                 onConnectToDevice = {},
                 modifier = Modifier,
-
             )
         }
     }
@@ -338,9 +369,19 @@ fun DiscoverDevicesContentDevicesFoundPreview() {
     LumenTheme {
         Surface {
             val mockScanResults = listOf(
-                BleDevice(name = "LED 1", address = "00:11:22:33:44:55"),
-                BleDevice(name = "Test Device 2", address = "A:BB:CC:DD:EE:FF"),
-                BleDevice(name = null, address = "FF:EE:DD:CC:BB:AA")
+                DeviceContent(BleDevice(
+                    name = "LED 1",
+                    address = "00:11:22:33:44:55"),
+                    isFavorite = true
+                ),
+                DeviceContent(BleDevice(
+                    name = "Test Device 2",
+                    address = "A:BB:CC:DD:EE:FF"),
+                    isFavorite = false),
+                DeviceContent(BleDevice(
+                    name = null,
+                    address = "FF:EE:DD:CC:BB:AA"),
+                    isFavorite = true),
             )
 
             DiscoverDevicesContent(
@@ -348,8 +389,12 @@ fun DiscoverDevicesContentDevicesFoundPreview() {
                 isScanning = true,
                 scanResults = mockScanResults,
                 emptyScanResultTxt = null,
+                currSelectedListType = DeviceListType.ALL_DEVICES,
+                onSelectListFilter = {},
                 onStartScan = {},
                 onStopScan = {},
+                onFavDevice = {},
+                onRemoveFavDevice = {},
                 onConnectToDevice = {},
                 modifier = Modifier,
 
@@ -368,11 +413,122 @@ fun DiscoverDevicesContentNoDevicesFoundPreview() {
                 isScanning = false,
                 scanResults = emptyList(),
                 emptyScanResultTxt = "No devices found.",
+                currSelectedListType = DeviceListType.ALL_DEVICES,
+                onSelectListFilter = {},
                 onStartScan = {},
                 onStopScan = {},
+                onFavDevice = {},
+                onRemoveFavDevice = {},
                 onConnectToDevice = {},
                 modifier = Modifier,
+            )
+        }
+    }
+}
 
+@PreviewLightDark
+@Composable
+fun DiscoverDevicesContentFavDevicesPreview() {
+    LumenTheme {
+        Surface {
+            DiscoverDevicesContent(
+                innerPadding = PaddingValues(),
+                isScanning = false,
+                scanResults = emptyList(),
+                emptyScanResultTxt = "Start scanning to find favorite devices.",
+                currSelectedListType = DeviceListType.FAVORITE_DEVICES,
+                onSelectListFilter = {},
+                onStartScan = {},
+                onStopScan = {},
+                onFavDevice = {},
+                onRemoveFavDevice = {},
+                onConnectToDevice = {},
+                modifier = Modifier,
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+fun DiscoverDevicesContentSearchingFavDevicesPreview() {
+    LumenTheme {
+        Surface {
+            DiscoverDevicesContent(
+                innerPadding = PaddingValues(),
+                isScanning = true,
+                scanResults = emptyList(),
+                emptyScanResultTxt = "Searching for favorites...",
+                currSelectedListType = DeviceListType.FAVORITE_DEVICES,
+                onSelectListFilter = {},
+                onStartScan = {},
+                onStopScan = {},
+                onFavDevice = {},
+                onRemoveFavDevice = {},
+                onConnectToDevice = {},
+                modifier = Modifier,
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+fun DiscoverDevicesContentFavDevicesFoundPreview() {
+    LumenTheme {
+        Surface {
+            val mockScanResults = listOf(
+                DeviceContent(BleDevice(
+                    name = "LED 1",
+                    address = "00:11:22:33:44:55"),
+                    isFavorite = true
+                ),
+                DeviceContent(BleDevice(
+                    name = "Test Device 2",
+                    address = "A:BB:CC:DD:EE:FF"),
+                    isFavorite = false),
+                DeviceContent(BleDevice(
+                    name = null,
+                    address = "FF:EE:DD:CC:BB:AA"),
+                    isFavorite = true),
+            )
+
+            DiscoverDevicesContent(
+                innerPadding = PaddingValues(),
+                isScanning = false,
+                scanResults = mockScanResults,
+                emptyScanResultTxt = null,
+                currSelectedListType = DeviceListType.FAVORITE_DEVICES,
+                onSelectListFilter = {},
+                onStartScan = {},
+                onStopScan = {},
+                onFavDevice = {},
+                onRemoveFavDevice = {},
+                onConnectToDevice = {},
+                modifier = Modifier,
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+fun DiscoverDevicesContentFavDevicesNoDevicesPreview() {
+    LumenTheme {
+        Surface {
+            DiscoverDevicesContent(
+                innerPadding = PaddingValues(),
+                isScanning = false,
+                scanResults = emptyList(),
+                emptyScanResultTxt = "No favorite devices found.",
+                currSelectedListType = DeviceListType.FAVORITE_DEVICES,
+                onSelectListFilter = {},
+                onStartScan = {},
+                onStopScan = {},
+                onFavDevice = {},
+                onRemoveFavDevice = {},
+                onConnectToDevice = {},
+                modifier = Modifier,
             )
         }
     }

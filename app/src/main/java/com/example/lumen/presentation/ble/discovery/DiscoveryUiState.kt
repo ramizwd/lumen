@@ -3,12 +3,17 @@ package com.example.lumen.presentation.ble.discovery
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.BluetoothState
+import com.example.lumen.domain.ble.model.DeviceListType
 import com.example.lumen.domain.ble.model.ScanState
+import com.example.lumen.presentation.common.model.DeviceContent
 
 /**
  * Data class for the BLE discovery and connection UI states
  * [scanResults] holds BLE scan result list of type BleDevice
+ * [scanState] Indicates scanning state
+ * [emptyScanResultTxt] Holds the text that represent empty scan result
  * [bluetoothState] Hold current state of Bluetooth
+ * [selectedListType] Holds the current selected type of device list
  * [btPermissionStatus] indicates the permission status of Bluetooth
  * [deviceToConnect] storing device that we want to connect to for retrying connection
  * [isBtDisabled] Indicates if Bluetooth off or on
@@ -19,10 +24,11 @@ import com.example.lumen.domain.ble.model.ScanState
  * [showOpenSettingsDialog] indicates whether to show the grant permission through settings dialog
  */
 data class DiscoveryUiState(
-    val scanResults: List<BleDevice> = emptyList(),
+    val scanResults: List<DeviceContent> = emptyList(),
     val scanState: ScanState = ScanState.SCAN_PAUSED,
-    val bluetoothState: BluetoothState = BluetoothState.UNKNOWN,
     val emptyScanResultTxt: String? = null,
+    val bluetoothState: BluetoothState = BluetoothState.UNKNOWN,
+    val selectedListType: DeviceListType = DeviceListType.ALL_DEVICES,
     val btPermissionStatus: BluetoothPermissionStatus = BluetoothPermissionStatus.UNKNOWN,
     val deviceToConnect: BleDevice? = null,
     val isBtDisabled: Boolean = false,

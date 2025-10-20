@@ -3,11 +3,14 @@ package com.example.lumen.di
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.example.lumen.data.ble.BleDevicePreferenceManagerImpl
 import com.example.lumen.data.ble.BleGattControllerImpl
 import com.example.lumen.data.ble.BleScanControllerImpl
 import com.example.lumen.data.ble.BluetoothStateManagerImpl
 import com.example.lumen.data.ble.ColorPreferenceManagerImpl
+import com.example.lumen.data.local.bleDeviceDataStore
 import com.example.lumen.data.local.colorDataStore
+import com.example.lumen.domain.ble.BleDevicePreferenceManager
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.BleScanController
 import com.example.lumen.domain.ble.BluetoothStateManager
@@ -45,6 +48,7 @@ object AppModule {
 
     @Provides
     @Singleton
+    @ColorPreferences
     fun provideColorDataStore(
         @ApplicationContext context: Context
     ): DataStore<Preferences> {
@@ -53,9 +57,26 @@ object AppModule {
 
     @Provides
     @Singleton
+    @BleDevicePreferences
+    fun provideBleDeviceDataStore(
+        @ApplicationContext context: Context
+    ): DataStore<Preferences> {
+        return context.bleDeviceDataStore
+    }
+
+    @Provides
+    @Singleton
     fun provideColorPreferenceManager(
-        dataStore: DataStore<Preferences>
+        @ColorPreferences dataStore: DataStore<Preferences>
     ): ColorPreferenceManager {
         return ColorPreferenceManagerImpl(dataStore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBleDevicePreferenceManager(
+        @BleDevicePreferences dataStore: DataStore<Preferences>
+    ): BleDevicePreferenceManager {
+        return BleDevicePreferenceManagerImpl(dataStore)
     }
 }
