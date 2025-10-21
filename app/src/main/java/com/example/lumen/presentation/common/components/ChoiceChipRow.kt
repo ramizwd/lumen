@@ -20,13 +20,14 @@ import androidx.compose.ui.unit.dp
 import com.example.lumen.presentation.theme.LumenTheme
 
 @Composable
-fun ChoiceChipGroup(
+fun ChoiceChipRow(
     choices: List<String>,
     selectedChoice: String,
     onChoiceSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -52,7 +53,7 @@ fun ChoiceChipGroupPreview() {
         var selectedItem by remember { mutableStateOf(choices.first()) }
 
         Surface {
-            ChoiceChipGroup(
+            ChoiceChipRow(
                 choices = choices,
                 selectedChoice = selectedItem,
                 onChoiceSelected = { selectedItem = it },

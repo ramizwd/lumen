@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -47,7 +45,7 @@ import com.example.lumen.domain.ble.model.ScanState
 import com.example.lumen.presentation.ble.discovery.components.DeviceList
 import com.example.lumen.presentation.ble.discovery.components.ScanButton
 import com.example.lumen.presentation.common.components.BluetoothPermissionTextProvider
-import com.example.lumen.presentation.common.components.ChoiceChipGroup
+import com.example.lumen.presentation.common.components.ChoiceChipRow
 import com.example.lumen.presentation.common.components.EnableBluetoothTextProvider
 import com.example.lumen.presentation.common.components.OpenAppSettingsTextProvider
 import com.example.lumen.presentation.common.components.PermissionAlertDialog
@@ -282,7 +280,7 @@ fun DiscoverDevicesContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        ChoiceChipGroup(
+        ChoiceChipRow(
             choices = DeviceListType.entries.map { it.displayName },
             selectedChoice = currSelectedListType.displayName,
             onChoiceSelected = { selected ->
