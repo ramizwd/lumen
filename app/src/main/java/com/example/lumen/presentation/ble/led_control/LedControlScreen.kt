@@ -45,6 +45,7 @@ fun LedControlScreen(
     val colorPickerController = rememberColorPickerController()
 
     val selectedDevice = uiState.selectedDevice
+    val pixelCount = uiState.controllerState?.pixelCount ?: 0
     val initialHexColor = uiState.controllerState?.let { "${it.red}${it.green}${it.blue}" }
     val initialBrightness = uiState.controllerState?.brightness ?: 0f
     val isOn = uiState.controllerState?.isOn ?: false
@@ -55,6 +56,7 @@ fun LedControlScreen(
         innerPadding = innerPadding,
         colorPickerController = colorPickerController,
         device = selectedDevice,
+        pixelCount = pixelCount,
         initialHexColor = initialHexColor,
         initialBrightness = initialBrightness,
         isOn = isOn,
@@ -75,6 +77,7 @@ fun LedControlContent(
     innerPadding: PaddingValues,
     colorPickerController: ColorPickerController,
     device: BleDevice?,
+    pixelCount: Int,
     initialHexColor: String?,
     initialBrightness: Float,
     isOn: Boolean,
@@ -106,6 +109,7 @@ fun LedControlContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(text = "CONNECTED to ${device?.name ?: "Unknown"}")
+        Text(text = "Controlling pixels: $pixelCount")
 
         LedSwitch(
             isOn = isOn,
@@ -182,6 +186,7 @@ fun LedControlScreenPreview() {
                 innerPadding = PaddingValues(),
                 colorPickerController = rememberColorPickerController(),
                 device = connDevice,
+                pixelCount = 26,
                 initialHexColor = "ffffff",
                 initialBrightness = 180f,
                 isOn = true,
