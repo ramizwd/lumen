@@ -300,8 +300,8 @@ fun DiscoverDevicesContent(
                     onStartScan = onStartScan,
                     onSaveDevice = onFavDevice,
                     onRemoveDevice = onRemoveFavDevice,
-                    onDeviceClick = {
-                        onConnectToDevice(it.address)
+                    onDeviceClick = { address ->
+                        onConnectToDevice(address)
                     },
                 )
             }

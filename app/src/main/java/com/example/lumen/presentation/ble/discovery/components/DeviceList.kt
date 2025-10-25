@@ -1,8 +1,6 @@
 package com.example.lumen.presentation.ble.discovery.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -12,7 +10,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.presentation.common.components.PullToRefresh
 import com.example.lumen.presentation.common.model.DeviceContent
@@ -26,7 +23,7 @@ fun DeviceList(
     onStartScan: () -> Unit,
     onSaveDevice: (String) -> Unit,
     onRemoveDevice: (String) -> Unit,
-    onDeviceClick: (BleDevice) -> Unit,
+    onDeviceClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
@@ -37,9 +34,8 @@ fun DeviceList(
         content = { deviceContent ->
             DeviceItem(
                 modifier = modifier
-                    .fillMaxWidth()
-                    .padding(6.dp)
-                    .clickable { onDeviceClick(deviceContent.device) },
+                    .fillMaxWidth(),
+                onDeviceClick = onDeviceClick,
                 deviceContent = deviceContent,
                 onSaveDevice = onSaveDevice,
                 onRemoveDevice = onRemoveDevice,
