@@ -298,7 +298,7 @@ fun DiscoverDevicesContent(
                 DeviceList(
                     scanResults = scanResults,
                     onStartScan = onStartScan,
-                    onSaveDevice = onFavDevice,
+                    onFavDevice = onFavDevice,
                     onRemoveDevice = onRemoveFavDevice,
                     onDeviceClick = { address ->
                         onConnectToDevice(address)

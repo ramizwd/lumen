@@ -1,6 +1,8 @@
 package com.example.lumen.presentation.ble.discovery.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,6 +16,7 @@ import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.presentation.common.components.PullToRefresh
 import com.example.lumen.presentation.common.model.DeviceContent
 import com.example.lumen.presentation.theme.LumenTheme
+import com.example.lumen.presentation.theme.spacing
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -21,7 +24,7 @@ import kotlinx.coroutines.launch
 fun DeviceList(
     scanResults: List<DeviceContent>,
     onStartScan: () -> Unit,
-    onSaveDevice: (String) -> Unit,
+    onFavDevice: (String) -> Unit,
     onRemoveDevice: (String) -> Unit,
     onDeviceClick: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -34,10 +37,14 @@ fun DeviceList(
         content = { deviceContent ->
             DeviceItem(
                 modifier = modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(
+                        start = MaterialTheme.spacing.large,
+                        end = MaterialTheme.spacing.large
+                    ),
                 onDeviceClick = onDeviceClick,
                 deviceContent = deviceContent,
-                onSaveDevice = onSaveDevice,
+                onFavDevice = onFavDevice,
                 onRemoveDevice = onRemoveDevice,
             )
         },
@@ -77,7 +84,7 @@ fun DeviceListPreview() {
             DeviceList(
                 scanResults = mockScanResults,
                 onStartScan = {},
-                onSaveDevice = {},
+                onFavDevice = {},
                 onRemoveDevice = {},
                 onDeviceClick = {},
             )
@@ -93,7 +100,7 @@ fun DeviceListWithoutDevicesPreview() {
             DeviceList(
                 scanResults = emptyList(),
                 onStartScan = {},
-                onSaveDevice = {},
+                onFavDevice = {},
                 onRemoveDevice = {},
                 onDeviceClick = {},
             )
