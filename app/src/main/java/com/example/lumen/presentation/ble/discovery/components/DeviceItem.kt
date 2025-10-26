@@ -64,7 +64,8 @@ fun DeviceItem(
             )
             Text(
                 text = device.address,
-                fontWeight = FontWeight.Light
+                fontWeight = FontWeight.Light,
+                color = MaterialTheme.colorScheme.secondary
             )
         }
 

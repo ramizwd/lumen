@@ -1,16 +1,20 @@
 package com.example.lumen.presentation.ble.discovery.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.presentation.common.components.PullToRefresh
@@ -23,6 +27,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun DeviceList(
     scanResults: List<DeviceContent>,
+    emptyScanResultTxt: String?,
     onStartScan: () -> Unit,
     onFavDevice: (String) -> Unit,
     onRemoveDevice: (String) -> Unit,
@@ -34,6 +39,11 @@ fun DeviceList(
 
     PullToRefresh(
         items = scanResults,
+        emptyContent = {
+          if (emptyScanResultTxt != null) {
+              EmptyScreen(emptyScanResultTxt)
+          }
+        },
         content = { deviceContent ->
             DeviceItem(
                 modifier = modifier
@@ -60,6 +70,24 @@ fun DeviceList(
     )
 }
 
+@Composable
+private fun EmptyScreen(
+    emptyScanResultTxt: String,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = emptyScanResultTxt,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Light,
+            color = MaterialTheme.colorScheme.secondary
+        )
+    }
+}
+
 @PreviewLightDark
 @Composable
 fun DeviceListPreview() {
@@ -83,6 +111,7 @@ fun DeviceListPreview() {
 
             DeviceList(
                 scanResults = mockScanResults,
+                emptyScanResultTxt = null,
                 onStartScan = {},
                 onFavDevice = {},
                 onRemoveDevice = {},
@@ -94,11 +123,12 @@ fun DeviceListPreview() {
 
 @PreviewLightDark
 @Composable
-fun DeviceListWithoutDevicesPreview() {
+fun DeviceListInitialState() {
     LumenTheme {
         Surface {
             DeviceList(
                 scanResults = emptyList(),
+                emptyScanResultTxt = "Start scanning to find nearby devices.",
                 onStartScan = {},
                 onFavDevice = {},
                 onRemoveDevice = {},

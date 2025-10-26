@@ -20,7 +20,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -289,14 +288,11 @@ fun DiscoverDevicesContent(
             },
         )
 
-        if (emptyScanResultTxt != null) {
-            Text(text = emptyScanResultTxt)
-        }
-
         Box(modifier = modifier.weight(1f)) {
             Column {
                 DeviceList(
                     scanResults = scanResults,
+                    emptyScanResultTxt = emptyScanResultTxt,
                     onStartScan = onStartScan,
                     onFavDevice = onFavDevice,
                     onRemoveDevice = onRemoveFavDevice,
