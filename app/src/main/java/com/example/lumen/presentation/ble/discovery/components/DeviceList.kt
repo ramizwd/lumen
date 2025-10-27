@@ -1,6 +1,7 @@
 package com.example.lumen.presentation.ble.discovery.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -15,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.presentation.common.components.PullToRefresh
@@ -38,15 +40,23 @@ fun DeviceList(
     val coroutineScope = rememberCoroutineScope()
 
     PullToRefresh(
+        modifier = modifier,
         items = scanResults,
         emptyContent = {
           if (emptyScanResultTxt != null) {
-              EmptyScreen(emptyScanResultTxt)
+              EmptyScreenText(
+                  modifier = Modifier
+                      .padding(
+                          start = MaterialTheme.spacing.large,
+                          end = MaterialTheme.spacing.large
+                      ),
+                  text = emptyScanResultTxt
+              )
           }
         },
         content = { deviceContent ->
             DeviceItem(
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(
                         start = MaterialTheme.spacing.large,
@@ -71,16 +81,17 @@ fun DeviceList(
 }
 
 @Composable
-private fun EmptyScreen(
-    emptyScanResultTxt: String,
+private fun EmptyScreenText(
+    text: String,
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = emptyScanResultTxt,
+            text = text,
+            textAlign = TextAlign.Center,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Light,
             color = MaterialTheme.colorScheme.secondary

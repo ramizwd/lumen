@@ -10,11 +10,13 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -51,6 +53,7 @@ import com.example.lumen.presentation.common.components.PermissionAlertDialog
 import com.example.lumen.presentation.common.model.DeviceContent
 import com.example.lumen.presentation.common.utils.showToast
 import com.example.lumen.presentation.theme.LumenTheme
+import com.example.lumen.presentation.theme.spacing
 import com.example.lumen.utils.btPermissionArray
 import com.example.lumen.utils.hasBluetoothPermissions
 import com.example.lumen.utils.shouldShowBluetoothRationale
@@ -279,34 +282,41 @@ fun DiscoverDevicesContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        ChoiceChipRow(
-            choices = DeviceListType.entries.map { it.displayName },
-            selectedChoice = currSelectedListType.displayName,
-            onChoiceSelected = { selected ->
-                val selectedEnum = DeviceListType.entries.first { it.displayName == selected }
-                onSelectListFilter(selectedEnum)
-            },
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = MaterialTheme.spacing.large,
+                    end = MaterialTheme.spacing.large
+                ),
+        ) {
+            ChoiceChipRow(
+                modifier = Modifier
+                    .weight(1f),
+                choices = DeviceListType.entries.map { it.displayName },
+                selectedChoice = currSelectedListType.displayName,
+                onChoiceSelected = { selected ->
+                    val selectedEnum = DeviceListType.entries.first { it.displayName == selected }
+                    onSelectListFilter(selectedEnum)
+                },
+            )
 
-        Box(modifier = modifier.weight(1f)) {
-            Column {
-                DeviceList(
-                    scanResults = scanResults,
-                    emptyScanResultTxt = emptyScanResultTxt,
-                    onStartScan = onStartScan,
-                    onFavDevice = onFavDevice,
-                    onRemoveDevice = onRemoveFavDevice,
-                    onDeviceClick = { address ->
-                        onConnectToDevice(address)
-                    },
-                )
-            }
+            ScanButton(
+                onStartScan = onStartScan,
+                onStopScan = onStopScan,
+                isScanning = isScanning,
+            )
         }
 
-        ScanButton(
+        DeviceList(
+            scanResults = scanResults,
+            emptyScanResultTxt = emptyScanResultTxt,
             onStartScan = onStartScan,
-            onStopScan = onStopScan,
-            isScanning = isScanning,
+            onFavDevice = onFavDevice,
+            onRemoveDevice = onRemoveFavDevice,
+            onDeviceClick = { address ->
+                onConnectToDevice(address)
+            },
         )
     }
 }
