@@ -33,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -50,6 +49,7 @@ import com.example.lumen.presentation.common.components.ChoiceChipRow
 import com.example.lumen.presentation.common.components.EnableBluetoothTextProvider
 import com.example.lumen.presentation.common.components.OpenAppSettingsTextProvider
 import com.example.lumen.presentation.common.components.PermissionAlertDialog
+import com.example.lumen.presentation.common.components.RadarScanAnimation
 import com.example.lumen.presentation.common.model.DeviceContent
 import com.example.lumen.presentation.common.utils.showToast
 import com.example.lumen.presentation.theme.LumenTheme
@@ -280,7 +280,9 @@ fun DiscoverDevicesContent(
             .fillMaxSize()
             .padding(innerPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(
+            MaterialTheme.spacing.smallIncreased
+        )
     ) {
         Row(
             modifier = Modifier
@@ -301,11 +303,20 @@ fun DiscoverDevicesContent(
                 },
             )
 
-            ScanButton(
-                onStartScan = onStartScan,
-                onStopScan = onStopScan,
-                isScanning = isScanning,
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(
+                    MaterialTheme.spacing.smallIncreased
+                )
+            ) {
+                RadarScanAnimation(isScanning = isScanning)
+
+                ScanButton(
+                    onStartScan = onStartScan,
+                    onStopScan = onStopScan,
+                    isScanning = isScanning,
+                )
+            }
         }
 
         DeviceList(
