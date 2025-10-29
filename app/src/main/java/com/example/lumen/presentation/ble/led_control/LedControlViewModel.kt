@@ -80,7 +80,7 @@ class LedControlViewModel @Inject constructor(
             // Collects the most recent value emitted within 150 milliseconds and pass it down
             // the flow. This throttling helps prevent overflowing the GATT operation queue.
             _brightnessChangeFlow
-                .sample(150L)
+                .sample(250L)
                 .collect { value ->
                     controlUseCases.changeBrightnessUseCase(value)
                 }
