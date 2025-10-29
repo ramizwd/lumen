@@ -501,7 +501,7 @@ fun DiscoverDevicesContentFavDevicesFoundPreview() {
                 DeviceContent(BleDevice(
                     name = "Test Device 2",
                     address = "A:BB:CC:DD:EE:FF"),
-                    isFavorite = false),
+                    isFavorite = true),
                 DeviceContent(BleDevice(
                     name = null,
                     address = "FF:EE:DD:CC:BB:AA"),
