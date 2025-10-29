@@ -244,7 +244,6 @@ class BleGattControllerImpl(
                 return
             }
 
-            // TODO It throws invalid device Toast because I'm cancelling before we get the service here
             // Only connect to devices that are LED controllers with specific service
             val ledControllerService = gatt?.getService(SERVICE_UUID)
             if (ledControllerService == null) {

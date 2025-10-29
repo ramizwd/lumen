@@ -13,7 +13,7 @@ import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.presentation.ble.discovery.DiscoverDevicesScreen
 import com.example.lumen.presentation.ble.led_control.LedControlScreen
 import com.example.lumen.presentation.ble.led_control.LedControlViewModel
-import com.example.lumen.presentation.common.components.ConnectionIndicator
+import com.example.lumen.presentation.common.components.LoadingOverlay
 
 /**
  * Top-level navigation graph
@@ -26,17 +26,18 @@ fun LumenNavHost(
 
     val ledControlViewModel = hiltViewModel<LedControlViewModel>()
     val ledControlUiState by ledControlViewModel.uiState.collectAsStateWithLifecycle()
+    val connectionState = ledControlUiState.connectionState
 
-    LaunchedEffect(ledControlUiState.connectionState) {
+    LaunchedEffect(key1 = connectionState) {
         val currentRoute = navController.currentBackStackEntry?.destination?.route
 
-        if (ledControlUiState.connectionState == ConnectionState.STATE_LOADED_AND_CONNECTED &&
+        if (connectionState == ConnectionState.STATE_LOADED_AND_CONNECTED &&
             currentRoute != LedControlScreen::class.qualifiedName) {
             navController.navigate(LedControlScreen) {
                 popUpTo(DiscoverDevicesScreen) { inclusive = true }
                 launchSingleTop = true
             }
-        } else if (ledControlUiState.connectionState == ConnectionState.DISCONNECTED &&
+        } else if (connectionState == ConnectionState.DISCONNECTED &&
             currentRoute != DiscoverDevicesScreen::class.qualifiedName) {
             navController.navigate(DiscoverDevicesScreen) {
                 popUpTo(LedControlScreen) { inclusive = true }
@@ -48,14 +49,29 @@ fun LumenNavHost(
     NavHost(navController = navController, startDestination = DiscoverDevicesScreen) {
 
         composable<DiscoverDevicesScreen> {
-            if (ledControlUiState.connectionState == ConnectionState.DISCONNECTED) {
-                DiscoverDevicesScreen()
-            } else {
-                ConnectionIndicator(
-                    connectionState = ledControlUiState.connectionState,
-                    onCancelConnectionClick = ledControlViewModel::disconnectFromDevice
-                )
+            DiscoverDevicesScreen()
+
+            val loadingText = when (connectionState) {
+                ConnectionState.CONNECTING -> "Connecting..."
+                ConnectionState.LOADING_DEVICE_STATE -> "Initializing..."
+                ConnectionState.RETRYING -> "Connection failed, retrying..."
+                ConnectionState.INVALID_DEVICE -> "Invalid device, disconnecting..."
+                else -> ""
             }
+
+            val showLoading = when (connectionState) {
+                ConnectionState.CONNECTING,
+                ConnectionState.LOADING_DEVICE_STATE,
+                ConnectionState.INVALID_DEVICE,
+                ConnectionState.RETRYING -> true
+                else -> false
+            }
+
+            LoadingOverlay(
+                text = loadingText,
+                isVisible = showLoading,
+                onDismiss = ledControlViewModel::disconnectFromDevice
+            )
         }
 
         composable<LedControlScreen> {

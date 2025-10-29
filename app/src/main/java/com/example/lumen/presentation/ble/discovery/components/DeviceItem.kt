@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -55,7 +54,7 @@ fun DeviceItem(
                 .weight(1f)
                 .padding(MaterialTheme.spacing.largeIncreased),
             verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
-            ) {
+        ) {
             Text(
                 modifier = Modifier
                     .horizontalScroll(scrollState),
@@ -63,6 +62,7 @@ fun DeviceItem(
                 style = MaterialTheme.typography.titleLarge,
                 maxLines = 1,
             )
+
             Text(
                 text = device.address,
                 fontWeight = FontWeight.Light,
