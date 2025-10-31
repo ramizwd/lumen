@@ -87,7 +87,7 @@ class BleGattControllerImpl(
 
     private var isInvalidDevice = false
 
-    override suspend fun connect(selectedDevice: BleDevice?) {
+    override suspend fun connect(selectedDevice: BleDevice) {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
             _connectionEvents.emit(
@@ -110,7 +110,7 @@ class BleGattControllerImpl(
                 _connectionState.value = ConnectionState.CONNECTING
                 _selectedDevice.value = selectedDevice
 
-                val device = adapter.getRemoteDevice(selectedDevice?.address)
+                val device = adapter.getRemoteDevice(selectedDevice.address)
                 bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
             } catch (e: IllegalArgumentException) {
                 Timber.tag(LOG_TAG).e(e,"Device not found")

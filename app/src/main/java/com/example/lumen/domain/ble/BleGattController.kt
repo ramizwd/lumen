@@ -17,7 +17,7 @@ interface BleGattController {
     val selectedDevice: StateFlow<BleDevice?>
     val ledControllerState: StateFlow<LedControllerState?>
 
-    suspend fun connect(selectedDevice: BleDevice?)
+    suspend fun connect(selectedDevice: BleDevice)
     fun disconnect()
 
     suspend fun writeCharacteristic(

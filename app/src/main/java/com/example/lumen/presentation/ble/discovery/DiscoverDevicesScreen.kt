@@ -272,7 +272,7 @@ fun DiscoverDevicesContent(
     onStopScan: () -> Unit,
     onFavDevice: (String) -> Unit,
     onRemoveFavDevice: (String) -> Unit,
-    onConnectToDevice: (String) -> Unit,
+    onConnectToDevice: (BleDevice) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -325,8 +325,8 @@ fun DiscoverDevicesContent(
             onStartScan = onStartScan,
             onFavDevice = onFavDevice,
             onRemoveDevice = onRemoveFavDevice,
-            onDeviceClick = { address ->
-                onConnectToDevice(address)
+            onDeviceClick = { device ->
+                onConnectToDevice(device)
             },
         )
     }

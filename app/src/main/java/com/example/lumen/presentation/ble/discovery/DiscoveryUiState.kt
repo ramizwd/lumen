@@ -1,6 +1,5 @@
 package com.example.lumen.presentation.ble.discovery
 
-import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.DeviceListType
@@ -15,7 +14,6 @@ import com.example.lumen.presentation.common.model.DeviceContent
  * [bluetoothState] Hold current state of Bluetooth
  * [selectedListType] Holds the current selected type of device list
  * [btPermissionStatus] indicates the permission status of Bluetooth
- * [deviceToConnect] storing device that we want to connect to for retrying connection
  * [isBtDisabled] Indicates if Bluetooth off or on
  * [errorMessage] holds error messages related to GATT operations
  * [infoMessage] holds success or general info messages related to GATT operations
@@ -30,7 +28,6 @@ data class DiscoveryUiState(
     val bluetoothState: BluetoothState = BluetoothState.UNKNOWN,
     val selectedListType: DeviceListType = DeviceListType.ALL_DEVICES,
     val btPermissionStatus: BluetoothPermissionStatus = BluetoothPermissionStatus.UNKNOWN,
-    val deviceToConnect: BleDevice? = null,
     val isBtDisabled: Boolean = false,
     val errorMessage: String? = null,
     val infoMessage: String? = null,

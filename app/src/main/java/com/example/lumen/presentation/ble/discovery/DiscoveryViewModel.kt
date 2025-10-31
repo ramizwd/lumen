@@ -3,6 +3,7 @@ package com.example.lumen.presentation.ble.discovery
 import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionResult
@@ -29,7 +30,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.collections.find
 
 /**
  * ViewModel responsible for managing scan UI state and
@@ -49,6 +49,8 @@ class DiscoveryViewModel @Inject constructor(
 
     private val _snackbarEvent = Channel<SnackbarEvent>(Channel.BUFFERED)
     val snackbarEvent = _snackbarEvent.receiveAsFlow()
+
+    private val _deviceToConnect = MutableStateFlow<BleDevice?>(null)
 
     private val _uiState = MutableStateFlow(DiscoveryUiState())
 
@@ -213,19 +215,16 @@ class DiscoveryViewModel @Inject constructor(
         }
     }
 
-    fun connectToDevice(address: String) {
+    fun connectToDevice(device: BleDevice) {
         viewModelScope.launch {
-            val selectedDeviceItem = uiState.value.scanResults.find { it.device.address == address }
-            selectedDeviceItem?.let { deviceItem ->
-                _uiState.update { it.copy(deviceToConnect = deviceItem.device) }
-                connectionUseCases.connectToDeviceUseCase(deviceItem.device)
-            }
+            _deviceToConnect.value = device
+            connectionUseCases.connectToDeviceUseCase(device)
         }
     }
 
     fun retryConnection() {
         viewModelScope.launch {
-            uiState.value.deviceToConnect?.let { device ->
+            _deviceToConnect.value?.let { device ->
                 connectionUseCases.connectToDeviceUseCase(device)
             } ?: _uiState.update { it.copy(errorMessage = "No device to retry connection for") }
         }

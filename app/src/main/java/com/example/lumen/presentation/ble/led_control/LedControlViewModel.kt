@@ -51,9 +51,9 @@ class LedControlViewModel @Inject constructor(
         controlUseCases.observeControllerStateUseCase(),
         connectionUseCases.observeConnectionStateUseCase(),
         _uiState,
-    ) { connectedDevice, controllerState, connectionState, state ->
+    ) { selectedDevice, controllerState, connectionState, state ->
         state.copy(
-            selectedDevice = connectedDevice,
+            selectedDevice = selectedDevice,
             controllerState = controllerState,
             connectionState = connectionState,
         )

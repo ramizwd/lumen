@@ -28,7 +28,7 @@ import com.example.lumen.presentation.theme.spacing
 @Composable
 fun DeviceItem(
     deviceContent: DeviceContent,
-    onDeviceClick: (String) -> Unit,
+    onDeviceClick: (BleDevice) -> Unit,
     onFavDevice: (String) -> Unit,
     onRemoveDevice: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -46,7 +46,7 @@ fun DeviceItem(
                 color = MaterialTheme.colorScheme.surfaceContainer
             )
             .clip(MaterialTheme.shapes.extraLarge)
-            .clickable { onDeviceClick(device.address) },
+            .clickable { onDeviceClick(device) },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(

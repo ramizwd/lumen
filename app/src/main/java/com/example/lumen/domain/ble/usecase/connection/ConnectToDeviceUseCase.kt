@@ -14,7 +14,7 @@ class ConnectToDeviceUseCase @Inject constructor(
         private const val LOG_TAG = "ConnectToDeviceUseCase"
     }
 
-    suspend operator fun invoke(selectedDevice: BleDevice?) {
+    suspend operator fun invoke(selectedDevice: BleDevice) {
         Timber.tag(LOG_TAG).d("Connect to device ($selectedDevice)")
         bleScanController.stopScan()
         bleGattController.connect(selectedDevice)

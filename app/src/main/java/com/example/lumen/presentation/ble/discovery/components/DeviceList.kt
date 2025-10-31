@@ -33,7 +33,7 @@ fun DeviceList(
     onStartScan: () -> Unit,
     onFavDevice: (String) -> Unit,
     onRemoveDevice: (String) -> Unit,
-    onDeviceClick: (String) -> Unit,
+    onDeviceClick: (BleDevice) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
