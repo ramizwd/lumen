@@ -10,9 +10,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.lumen.domain.ble.model.ConnectionState
+import com.example.lumen.presentation.MainViewModel
 import com.example.lumen.presentation.ble.discovery.DiscoverDevicesScreen
 import com.example.lumen.presentation.ble.led_control.LedControlScreen
-import com.example.lumen.presentation.ble.led_control.LedControlViewModel
 import com.example.lumen.presentation.common.components.LoadingOverlay
 
 /**
@@ -24,9 +24,8 @@ fun LumenNavHost(
 ) {
     val navController = rememberNavController()
 
-    val ledControlViewModel = hiltViewModel<LedControlViewModel>()
-    val ledControlUiState by ledControlViewModel.uiState.collectAsStateWithLifecycle()
-    val connectionState = ledControlUiState.connectionState
+    val mainViewModel = hiltViewModel<MainViewModel>()
+    val connectionState by mainViewModel.connectionState.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = connectionState) {
         val currentRoute = navController.currentBackStackEntry?.destination?.route
@@ -70,17 +69,14 @@ fun LumenNavHost(
             LoadingOverlay(
                 text = loadingText,
                 isVisible = showLoading,
-                onDismiss = ledControlViewModel::disconnectFromDevice
+                onDismiss = mainViewModel::disconnect,
             )
         }
 
         composable<LedControlScreen> {
-            if (ledControlUiState.controllerState != null) {
-                LedControlScreen(
-                    innerPadding = innerPadding,
-                    viewModel = ledControlViewModel,
-                )
-            }
+            LedControlScreen(
+                innerPadding = innerPadding,
+            )
         }
     }
 }

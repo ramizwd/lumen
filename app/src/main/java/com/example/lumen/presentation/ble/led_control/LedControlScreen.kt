@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
@@ -39,7 +40,7 @@ import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 fun LedControlScreen(
     innerPadding: PaddingValues,
     modifier: Modifier = Modifier,
-    viewModel: LedControlViewModel
+    viewModel: LedControlViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val colorPickerController = rememberColorPickerController()

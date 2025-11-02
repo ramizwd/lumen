@@ -114,14 +114,15 @@ class DiscoveryViewModel @Inject constructor(
                 val btPermStatus = stateValue.btPermissionStatus
                 val isScanning = stateValue.scanState == ScanState.SCANNING
 
-                when {
-                    btState == BluetoothState.ON && !isScanning &&
+                when (btState) {
+                    BluetoothState.ON if !isScanning &&
                             btPermStatus == BluetoothPermissionStatus.GRANTED -> {
                         startScan()
                     }
-                    btState == BluetoothState.TURNING_OFF && isScanning -> {
+                    BluetoothState.TURNING_OFF if isScanning -> {
                         stopScan()
                     }
+                    else -> {}
                 }
             }.launchIn(viewModelScope)
 
