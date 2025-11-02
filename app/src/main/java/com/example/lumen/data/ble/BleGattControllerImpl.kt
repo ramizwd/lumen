@@ -517,8 +517,6 @@ class BleGattControllerImpl(
     private fun close() {
         bluetoothGatt?.close()
         bluetoothGatt = null
-        _selectedDevice.value = null
-        _ledControllerState.value = null
         connRetryCount = 0
         connRetryJob?.cancel()
         connRetryJob = null
