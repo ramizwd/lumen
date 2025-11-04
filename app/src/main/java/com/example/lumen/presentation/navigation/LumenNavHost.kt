@@ -1,6 +1,5 @@
 package com.example.lumen.presentation.navigation
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,9 +18,7 @@ import com.example.lumen.presentation.common.components.LoadingOverlay
  * Top-level navigation graph
  */
 @Composable
-fun LumenNavHost(
-    innerPadding: PaddingValues,
-) {
+fun LumenNavHost() {
     val navController = rememberNavController()
 
     val mainViewModel = hiltViewModel<MainViewModel>()
@@ -50,6 +47,7 @@ fun LumenNavHost(
         composable<DiscoverDevicesScreen> {
             DiscoverDevicesScreen()
 
+            // TODO Move to main VM
             val loadingText = when (connectionState) {
                 ConnectionState.CONNECTING -> "Connecting..."
                 ConnectionState.LOADING_DEVICE_STATE -> "Initializing..."
@@ -74,9 +72,7 @@ fun LumenNavHost(
         }
 
         composable<LedControlScreen> {
-            LedControlScreen(
-                innerPadding = innerPadding,
-            )
+            LedControlScreen()
         }
     }
 }
