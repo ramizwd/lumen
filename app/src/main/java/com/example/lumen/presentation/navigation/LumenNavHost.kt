@@ -1,6 +1,5 @@
 package com.example.lumen.presentation.navigation
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,37 +18,36 @@ import com.example.lumen.presentation.common.components.LoadingOverlay
  * Top-level navigation graph
  */
 @Composable
-fun LumenNavHost(
-    innerPadding: PaddingValues,
-) {
-    val navController = rememberNavController()
+fun LumenNavHost() {
+    val rootNavController = rememberNavController()
 
     val mainViewModel = hiltViewModel<MainViewModel>()
     val connectionState by mainViewModel.connectionState.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = connectionState) {
-        val currentRoute = navController.currentBackStackEntry?.destination?.route
+        val currentRoute = rootNavController.currentBackStackEntry?.destination?.route
 
         if (connectionState == ConnectionState.STATE_LOADED_AND_CONNECTED &&
             currentRoute != LedControlScreen::class.qualifiedName) {
-            navController.navigate(LedControlScreen) {
-                popUpTo(DiscoverDevicesScreen) { inclusive = true }
+            rootNavController.navigate(LedControlScreen) {
+                popUpTo(DiscoverDevicesScreen)
                 launchSingleTop = true
             }
         } else if (connectionState == ConnectionState.DISCONNECTED &&
             currentRoute != DiscoverDevicesScreen::class.qualifiedName) {
-            navController.navigate(DiscoverDevicesScreen) {
-                popUpTo(LedControlScreen) { inclusive = true }
+            rootNavController.navigate(DiscoverDevicesScreen) {
+                popUpTo(LedControlScreen)
                 launchSingleTop = true
             }
         }
     }
 
-    NavHost(navController = navController, startDestination = DiscoverDevicesScreen) {
+    NavHost(navController = rootNavController, startDestination = DiscoverDevicesScreen) {
 
         composable<DiscoverDevicesScreen> {
             DiscoverDevicesScreen()
 
+            // TODO Move to main VM
             val loadingText = when (connectionState) {
                 ConnectionState.CONNECTING -> "Connecting..."
                 ConnectionState.LOADING_DEVICE_STATE -> "Initializing..."
@@ -75,7 +73,9 @@ fun LumenNavHost(
 
         composable<LedControlScreen> {
             LedControlScreen(
-                innerPadding = innerPadding,
+                rootNavController = rootNavController,
+                onDisconnect = mainViewModel::disconnect,
+                isConnected = connectionState == ConnectionState.STATE_LOADED_AND_CONNECTED
             )
         }
     }
