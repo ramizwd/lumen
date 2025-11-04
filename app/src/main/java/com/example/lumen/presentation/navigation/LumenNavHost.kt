@@ -19,30 +19,30 @@ import com.example.lumen.presentation.common.components.LoadingOverlay
  */
 @Composable
 fun LumenNavHost() {
-    val navController = rememberNavController()
+    val rootNavController = rememberNavController()
 
     val mainViewModel = hiltViewModel<MainViewModel>()
     val connectionState by mainViewModel.connectionState.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = connectionState) {
-        val currentRoute = navController.currentBackStackEntry?.destination?.route
+        val currentRoute = rootNavController.currentBackStackEntry?.destination?.route
 
         if (connectionState == ConnectionState.STATE_LOADED_AND_CONNECTED &&
             currentRoute != LedControlScreen::class.qualifiedName) {
-            navController.navigate(LedControlScreen) {
-                popUpTo(DiscoverDevicesScreen) { inclusive = true }
+            rootNavController.navigate(LedControlScreen) {
+                popUpTo(DiscoverDevicesScreen)
                 launchSingleTop = true
             }
         } else if (connectionState == ConnectionState.DISCONNECTED &&
             currentRoute != DiscoverDevicesScreen::class.qualifiedName) {
-            navController.navigate(DiscoverDevicesScreen) {
-                popUpTo(LedControlScreen) { inclusive = true }
+            rootNavController.navigate(DiscoverDevicesScreen) {
+                popUpTo(LedControlScreen)
                 launchSingleTop = true
             }
         }
     }
 
-    NavHost(navController = navController, startDestination = DiscoverDevicesScreen) {
+    NavHost(navController = rootNavController, startDestination = DiscoverDevicesScreen) {
 
         composable<DiscoverDevicesScreen> {
             DiscoverDevicesScreen()
@@ -72,7 +72,11 @@ fun LumenNavHost() {
         }
 
         composable<LedControlScreen> {
-            LedControlScreen()
+            LedControlScreen(
+                rootNavController = rootNavController,
+                onDisconnect = mainViewModel::disconnect,
+                isConnected = connectionState == ConnectionState.STATE_LOADED_AND_CONNECTED
+            )
         }
     }
 }
