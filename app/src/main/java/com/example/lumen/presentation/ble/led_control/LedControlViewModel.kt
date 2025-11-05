@@ -9,13 +9,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.sample
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -36,35 +32,38 @@ class LedControlViewModel @Inject constructor(
         private const val LOG_TAG = "LedControlViewModel"
     }
 
-    private val _uiState = MutableStateFlow(LedControlUiState())
     private val _brightnessChangeFlow = MutableSharedFlow<Float>()
 
-    val uiState = combine(
-        connectionUseCases.observeSelectedDeviceUseCase(),
-        controlUseCases.observeControllerStateUseCase(),
-        _uiState,
-    ) { selectedDevice, controllerState, state ->
-        state.copy(
-            selectedDevice = selectedDevice,
-            controllerState = controllerState,
-        )
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        _uiState.value
-    )
+    private val _uiState = MutableStateFlow(LedControlUiState())
+    val uiState = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            uiState
-                .mapNotNull { it.selectedDevice?.address }
-                .distinctUntilChanged()
-                .collectLatest { deviceAddress ->
-                    controlUseCases.getCustomColorsUseCase(deviceAddress).collect { colors ->
+            val selectedDevice = connectionUseCases.observeSelectedDeviceUseCase().first()
+            _uiState.update { it.copy(
+                selectedDevice = selectedDevice
+            ) }
+        }
+
+        viewModelScope.launch {
+            val initState = controlUseCases.observeControllerStateUseCase().first()
+            _uiState.update { state ->
+                state.copy(
+                    isLedOn = initState?.isOn ?: false,
+                    ledHexColor = initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
+                    brightnessValue = initState?.brightness ?: 0f,
+                    pixelCount = initState?.pixelCount ?: 0
+                ) }
+        }
+
+        viewModelScope.launch {
+            uiState.value.selectedDevice?.let { device ->
+                controlUseCases.getCustomColorsUseCase(device.address)
+                    .collect { colors ->
                         _uiState.update { it.copy(customColorSlots = colors) }
                         Timber.tag(LOG_TAG).d("Saved colors: $colors")
                     }
-                }
+            }
         }
 
         viewModelScope.launch {
@@ -79,18 +78,21 @@ class LedControlViewModel @Inject constructor(
     }
 
     fun turnLedOn() {
+        _uiState.update { it.copy(isLedOn = true) }
         viewModelScope.launch {
             controlUseCases.turnLedOnOffUseCase(true)
         }
     }
 
     fun turnLedOff() {
+        _uiState.update { it.copy(isLedOn = false) }
         viewModelScope.launch {
             controlUseCases.turnLedOnOffUseCase(false)
         }
     }
 
     fun setLedColor(hexColor: String) {
+        _uiState.update { it.copy(ledHexColor = hexColor) }
         viewModelScope.launch {
             controlUseCases.setLedColorUseCase(hexColor)
         }
@@ -106,6 +108,7 @@ class LedControlViewModel @Inject constructor(
     }
 
     fun changeBrightness(value: Float) {
+        _uiState.update { it.copy(brightnessValue = value) }
         viewModelScope.launch {
             _brightnessChangeFlow.emit(value)
         }

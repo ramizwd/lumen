@@ -22,27 +22,26 @@ fun ControlScreen(
     onChangeBrightness: (Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isOn = uiState.controllerState?.isOn ?: false
-    val pixelCount = uiState.controllerState?.pixelCount ?: 0
-    val initialBrightness = uiState.controllerState?.brightness ?: 0f
+    val isOn = uiState.isLedOn
+    val pixelCount = uiState.pixelCount
+    val brightnessValue = uiState.brightnessValue
 
     ControlContent(
         isOn = isOn,
         pixelCount = pixelCount,
-        initialBrightness = initialBrightness,
+        brightnessValue = brightnessValue,
         onTurnLedOnClick = onTurnLedOnClick,
         onTurnLedOffClick = onTurnLedOffClick,
         onChangeBrightness = onChangeBrightness,
         modifier = modifier,
     )
-
 }
 
 @Composable
 fun ControlContent(
     isOn: Boolean,
     pixelCount: Int,
-    initialBrightness: Float,
+    brightnessValue: Float,
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     onChangeBrightness: (Float) -> Unit,
@@ -56,7 +55,7 @@ fun ControlContent(
         Text(text = "Controlling pixels: $pixelCount")
 
         BrightnessSlider(
-            initialBrightness = initialBrightness,
+            brightnessValue = brightnessValue,
             onChangeBrightness = onChangeBrightness
         )
 
@@ -75,7 +74,7 @@ fun ControlContentPreview() {
         Surface {
             ControlContent(
                 pixelCount = 26,
-                initialBrightness = 180f,
+                brightnessValue = 180f,
                 isOn = true,
                 onTurnLedOnClick = {},
                 onTurnLedOffClick = {},

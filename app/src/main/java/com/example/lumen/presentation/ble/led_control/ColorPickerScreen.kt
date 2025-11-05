@@ -6,12 +6,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,15 +41,15 @@ fun ColorPickerScreen(
 ) {
     val colorPickerController = rememberColorPickerController()
 
-    val isOn = uiState.controllerState?.isOn ?: false
-    val initialHexColor = uiState.controllerState?.let { "${it.red}${it.green}${it.blue}" }
+    val isOn = uiState.isLedOn
+    val ledHexColor = uiState.ledHexColor
     val presetColors = PresetLedColors.entries.map { it.hex }
     val customColorSlots = uiState.customColorSlots
 
     ColorPickerContent(
         isOn = isOn,
         colorPickerController = colorPickerController,
-        initialHexColor = initialHexColor,
+        ledHexColor = ledHexColor,
         presetColors = presetColors,
         customColorSlots = customColorSlots,
         onTurnLedOnClick = onTurnLedOnClick,
@@ -63,7 +64,7 @@ fun ColorPickerScreen(
 fun ColorPickerContent(
     isOn: Boolean,
     colorPickerController: ColorPickerController,
-    initialHexColor: String?,
+    ledHexColor: String,
     presetColors: List<String>,
     customColorSlots: List<CustomColorSlot>,
     onTurnLedOnClick: () -> Unit,
@@ -72,14 +73,16 @@ fun ColorPickerContent(
     onSaveCustomColorSlot: (Int, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var currentHexColor by rememberSaveable { mutableStateOf(initialHexColor ?: "ffffff") }
+    var isUsingColorPicker by remember { mutableStateOf(false) }
     var selectedSlot by rememberSaveable { mutableIntStateOf(0) }
 
-    LaunchedEffect(key1 = currentHexColor) {
-        colorPickerController.selectByColor(
-            color = currentHexColor.hexToComposeColor(),
-            fromUser = false
-        )
+    LaunchedEffect(key1 = ledHexColor) {
+        if (!isUsingColorPicker) {
+            colorPickerController.selectByColor(
+                color = ledHexColor.hexToComposeColor(),
+                fromUser = false
+            )
+        }
     }
 
     Column(
@@ -94,29 +97,36 @@ fun ColorPickerContent(
                 .padding(16.dp),
             controller = colorPickerController,
             onSetHsvColor = { hexColor ->
-                currentHexColor = hexColor
+                isUsingColorPicker = true
                 setLedColor(hexColor)
+            },
+            onStartInteraction = {
+                isUsingColorPicker = true
+            },
+            onEndInteraction = {
+                isUsingColorPicker = false
             }
         )
 
         MatchDeviceThemeButton(
-            currentColor = currentHexColor,
+            currentColor = ledHexColor,
             onMatchWithDeviceTheme = { hexColor ->
                 selectedSlot = 0
-                currentHexColor = hexColor
+                isUsingColorPicker = false
                 setLedColor(hexColor)
+
             }
         )
 
         ColorRows(
-            currentHexColor = currentHexColor,
+            currentHexColor = ledHexColor,
             presetColors = presetColors,
             selectedSlot = selectedSlot,
             customColorSlots = customColorSlots,
             onSaveCustomColorSlot = onSaveCustomColorSlot,
             onColorSelected = { slotId, hexColor ->
                 selectedSlot = slotId
-                currentHexColor = hexColor
+                isUsingColorPicker = false
                 setLedColor(hexColor)
             },
         )
@@ -148,7 +158,7 @@ fun ColorPickerContentPreview() {
             ColorPickerContent(
                 isOn = true,
                 colorPickerController = rememberColorPickerController(),
-                initialHexColor = "ffffff",
+                ledHexColor = "ffffff",
                 presetColors = presetColors,
                 customColorSlots = customColorsList,
                 onTurnLedOnClick = { },
