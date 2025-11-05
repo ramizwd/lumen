@@ -23,6 +23,8 @@ fun LumenNavHost() {
 
     val mainViewModel = hiltViewModel<MainViewModel>()
     val connectionState by mainViewModel.connectionState.collectAsStateWithLifecycle()
+    val loadingText by mainViewModel.loadingText.collectAsStateWithLifecycle()
+    val showLoading by mainViewModel.showLoading.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = connectionState) {
         val currentRoute = rootNavController.currentBackStackEntry?.destination?.route
@@ -46,23 +48,6 @@ fun LumenNavHost() {
 
         composable<DiscoverDevicesScreen> {
             DiscoverDevicesScreen()
-
-            // TODO Move to main VM
-            val loadingText = when (connectionState) {
-                ConnectionState.CONNECTING -> "Connecting..."
-                ConnectionState.LOADING_DEVICE_STATE -> "Initializing..."
-                ConnectionState.RETRYING -> "Connection failed, retrying..."
-                ConnectionState.INVALID_DEVICE -> "Invalid device, disconnecting..."
-                else -> ""
-            }
-
-            val showLoading = when (connectionState) {
-                ConnectionState.CONNECTING,
-                ConnectionState.LOADING_DEVICE_STATE,
-                ConnectionState.INVALID_DEVICE,
-                ConnectionState.RETRYING -> true
-                else -> false
-            }
 
             LoadingOverlay(
                 text = loadingText,

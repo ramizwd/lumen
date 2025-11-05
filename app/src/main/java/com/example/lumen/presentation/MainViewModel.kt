@@ -33,10 +33,34 @@ class MainViewModel @Inject constructor(
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
     val connectionState = _connectionState.asStateFlow()
 
+    private val _loadingText = MutableStateFlow("")
+    val loadingText = _loadingText.asStateFlow()
+
+    private val _showLoading = MutableStateFlow(false)
+    val showLoading = _showLoading.asStateFlow()
+
     init {
         viewModelScope.launch {
             connectionUseCases.observeConnectionStateUseCase().collect { state ->
                 _connectionState.update { state }
+                _loadingText.update {
+                    when (state) {
+                        ConnectionState.CONNECTING -> "Connecting..."
+                        ConnectionState.LOADING_DEVICE_STATE -> "Initializing..."
+                        ConnectionState.RETRYING -> "Connection failed, retrying..."
+                        ConnectionState.INVALID_DEVICE -> "Invalid device, disconnecting..."
+                        else -> ""
+                    }
+                }
+                _showLoading.update {
+                    when (state) {
+                        ConnectionState.CONNECTING,
+                        ConnectionState.LOADING_DEVICE_STATE,
+                        ConnectionState.INVALID_DEVICE,
+                        ConnectionState.RETRYING -> true
+                        else -> false
+                    }
+                }
             }
         }
 
