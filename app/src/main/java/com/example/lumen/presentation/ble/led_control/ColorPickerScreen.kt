@@ -109,12 +109,11 @@ fun ColorPickerContent(
         )
 
         MatchDeviceThemeButton(
-            currentColor = ledHexColor,
+            currentHexColor = ledHexColor,
             onMatchWithDeviceTheme = { hexColor ->
                 selectedSlot = 0
                 isUsingColorPicker = false
                 setLedColor(hexColor)
-
             }
         )
 

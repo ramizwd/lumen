@@ -5,14 +5,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import com.example.lumen.utils.hexToComposeColor
 import android.graphics.Color as AndroidColor
 
 @Composable
 fun MatchDeviceThemeButton(
-    currentColor: String?,
+    currentHexColor: String?,
     onMatchWithDeviceTheme: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -29,7 +27,7 @@ fun MatchDeviceThemeButton(
     Button(
         modifier = modifier,
         onClick = { onMatchWithDeviceTheme(hexPrimaryColorSaturated) },
-        enabled = hexPrimaryColorSaturated != currentColor) {
+        enabled = hexPrimaryColorSaturated != currentHexColor) {
         Text(text = "Match with device theme")
     }
 }
