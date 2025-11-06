@@ -2,12 +2,7 @@ package com.example.lumen.presentation.ble.led_control.components
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -25,8 +20,6 @@ fun ColorPicker(
     onStartInteraction: () -> Unit = {},
     onEndInteraction: () -> Unit = {},
 ) {
-    var pickedHexColor by remember { mutableStateOf("") }
-
     HsvColorPicker(
         modifier = modifier
             .pointerInput(Unit) {
@@ -44,11 +37,9 @@ fun ColorPicker(
         controller = controller,
         onColorChanged = { colorEnvelope: ColorEnvelope ->
             // Drop the alpha value
-            pickedHexColor = colorEnvelope.hexCode.drop(2)
-            onSetHsvColor(pickedHexColor)
+            onSetHsvColor(colorEnvelope.hexCode.drop(2))
         },
     )
-    Text(text = "#$pickedHexColor".uppercase())
 }
 
 @PreviewLightDark
