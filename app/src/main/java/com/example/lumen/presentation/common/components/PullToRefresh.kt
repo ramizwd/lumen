@@ -27,6 +27,7 @@ fun <T> PullToRefresh(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState = rememberLazyListState(),
     scrollState: ScrollState = rememberScrollState(),
+    keySelector: ((T) -> Any)? = null,
 ) {
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -51,8 +52,14 @@ fun <T> PullToRefresh(
                 ),
                 state = lazyListState,
             ) {
-                items(items) {
-                    content(it)
+                if (keySelector != null) {
+                    items(items, key = keySelector) {
+                        content(it)
+                    }
+                } else {
+                    items(items) {
+                        content(it)
+                    }
                 }
             }
         }

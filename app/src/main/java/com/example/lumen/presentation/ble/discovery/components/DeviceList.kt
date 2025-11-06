@@ -42,6 +42,7 @@ fun DeviceList(
     PullToRefresh(
         modifier = modifier,
         items = scanResults,
+        keySelector = { it.device.address },
         emptyContent = {
           if (emptyScanResultTxt != null) {
               EmptyScreenText(
