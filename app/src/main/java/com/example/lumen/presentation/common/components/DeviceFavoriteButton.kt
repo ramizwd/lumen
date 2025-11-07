@@ -1,14 +1,14 @@
 package com.example.lumen.presentation.common.components
 
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.R
+import com.example.lumen.presentation.theme.LumenTheme
 
 @Composable
 fun DeviceFavoriteButton(
@@ -17,9 +17,10 @@ fun DeviceFavoriteButton(
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    IconButton(
+    IconToggleButton(
         modifier = modifier,
-        onClick = {
+        checked = isFavorite,
+        onCheckedChange = {
             if (isFavorite) onRemove() else onFavor()
         },
     ) {
