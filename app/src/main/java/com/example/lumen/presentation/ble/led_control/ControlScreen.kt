@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.presentation.ble.led_control.components.BrightnessSlider
-import com.example.lumen.presentation.ble.led_control.components.LedSwitch
+import com.example.lumen.presentation.ble.led_control.components.LedToggleButton
 import com.example.lumen.presentation.theme.LumenTheme
 
 @Composable
@@ -59,7 +59,7 @@ fun ControlContent(
             onChangeBrightness = onChangeBrightness
         )
 
-        LedSwitch(
+        LedToggleButton(
             isOn = isOn,
             onTurnLedOnClick = onTurnLedOnClick,
             onTurnLedOffClick = onTurnLedOffClick,

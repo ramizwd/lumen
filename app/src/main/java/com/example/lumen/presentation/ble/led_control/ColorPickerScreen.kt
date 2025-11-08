@@ -25,7 +25,7 @@ import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.PresetLedColors
 import com.example.lumen.presentation.ble.led_control.components.ColorPicker
 import com.example.lumen.presentation.ble.led_control.components.ColorRows
-import com.example.lumen.presentation.ble.led_control.components.LedSwitch
+import com.example.lumen.presentation.ble.led_control.components.LedToggleButton
 import com.example.lumen.presentation.ble.led_control.components.MatchDeviceThemeButton
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
@@ -145,7 +145,7 @@ fun ColorPickerContent(
             )
         }
 
-        LedSwitch(
+        LedToggleButton(
             isOn = isOn,
             onTurnLedOnClick = onTurnLedOnClick,
             onTurnLedOffClick = onTurnLedOffClick,

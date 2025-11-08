@@ -21,7 +21,7 @@ fun DeviceFavoriteButton(
         modifier = modifier,
         checked = isFavorite,
         onCheckedChange = {
-            if (isFavorite) onRemove() else onFavor()
+            if (it) onFavor() else onRemove()
         },
     ) {
         Icon(
