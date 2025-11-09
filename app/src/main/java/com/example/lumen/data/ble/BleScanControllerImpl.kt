@@ -63,8 +63,8 @@ class BleScanControllerImpl(
     override val scanState: StateFlow<ScanState>
         get() = _scanState.asStateFlow()
 
-    private val _scanResults = MutableStateFlow<List<BleDevice>>(emptyList())
-    override val scanResults: StateFlow<List<BleDevice>>
+    private val _scanResults = MutableStateFlow<Map<String, BleDevice>>(emptyMap())
+    override val scanResults: StateFlow<Map<String, BleDevice>>
         get() = _scanResults.asStateFlow()
 
     private val _errors = MutableSharedFlow<String>(
@@ -99,7 +99,7 @@ class BleScanControllerImpl(
         }
 
         // Clear prev results
-        _scanResults.value = emptyList()
+        _scanResults.value = emptyMap()
 
         val settings = ScanSettings.Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -186,7 +186,7 @@ class BleScanControllerImpl(
                 // Convert the results to BleDevice model and update the result with new device
                 _scanResults.update { devices ->
                     val newDevice = result.toBleDevice()
-                    if (newDevice in devices) devices else devices + newDevice
+                    devices + (newDevice.address to newDevice)
                 }
             }
         }

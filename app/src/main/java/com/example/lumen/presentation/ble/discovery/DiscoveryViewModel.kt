@@ -61,6 +61,8 @@ class DiscoveryViewModel @Inject constructor(
         prefsUseCases.getDeviceListPreferenceUseCase(),
         _uiState
     ) { scanResults, scanState, favAddresses, listType, state ->
+        Timber.tag(LOG_TAG).d("scanResults: $scanResults")
+
         val devices = scanResults.map { device ->
             val isFavorite = favAddresses.contains(device.address)
             DeviceContent(device, isFavorite)

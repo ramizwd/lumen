@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
  * Interface for controlling BLE scan operations
  */
 interface BleScanController {
-    val scanResults: StateFlow<List<BleDevice>>
+    val scanResults: StateFlow<Map<String, BleDevice>>
     val scanState: StateFlow<ScanState>
     val errors: SharedFlow<String>
 

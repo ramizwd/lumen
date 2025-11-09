@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -60,6 +61,8 @@ fun DeviceItem(
                     .horizontalScroll(scrollState),
                 text = deviceName,
                 style = MaterialTheme.typography.titleLarge,
+                color = if (device.name == null) MaterialTheme.colorScheme.outline
+                else Color.Unspecified,
                 maxLines = 1,
             )
 
@@ -87,6 +90,27 @@ fun DeviceItemPreview() {
         Surface {
             val mockDeviceContent = DeviceContent(BleDevice(
                 name = "LED Test",
+                address = "00:11:22:33:44:55"),
+                isFavorite = false
+            )
+
+            DeviceItem(
+                deviceContent = mockDeviceContent,
+                onDeviceClick = { },
+                onFavDevice = { },
+                onRemoveDevice = { },
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+fun DeviceItemNoNamePreview() {
+    LumenTheme {
+        Surface {
+            val mockDeviceContent = DeviceContent(BleDevice(
+                name = null,
                 address = "00:11:22:33:44:55"),
                 isFavorite = false
             )

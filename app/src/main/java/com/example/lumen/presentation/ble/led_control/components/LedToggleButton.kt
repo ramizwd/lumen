@@ -29,7 +29,7 @@ fun LedToggleButton(
     val hapticFeedback = LocalHapticFeedback.current
 
     val animatedCornerRadius by animateDpAsState(
-        targetValue = if (isOn) 16.dp else 28.dp,
+        targetValue = if (isOn) 22.dp else 40.dp,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessMediumLow
