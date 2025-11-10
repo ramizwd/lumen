@@ -6,13 +6,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,9 +37,10 @@ fun ColorRows(
     onColorSelected: (Int, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var isCustomColorActive by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(key1 = currentHexColor) {
-        if (selectedSlot != 0) {
+        if (selectedSlot != 0 && isCustomColorActive) {
             val currSelectedSlot = customColorSlots.find { it.id == selectedSlot }
 
             if (currSelectedSlot != null &&
@@ -55,6 +59,7 @@ fun ColorRows(
                     color = color.hexToComposeColor(),
                     isSelected = isSelected,
                     onClick = {
+                        isCustomColorActive = false
                         onColorSelected(0, color)
                     }
                 )
@@ -63,13 +68,18 @@ fun ColorRows(
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             customColorSlots.forEach { slot ->
-                val isSlotSelected = selectedSlot == slot.id
+                val isSlotSelected = selectedSlot == slot.id && isCustomColorActive
 
                 ColorCircle(
                     color = slot.hexColor.hexToComposeColor(),
                     isSelected = isSlotSelected,
                     onClick = {
-                        onColorSelected(slot.id, slot.hexColor)
+                        if (isSlotSelected) {
+                            isCustomColorActive = false
+                        } else {
+                            isCustomColorActive = true
+                            onColorSelected(slot.id, slot.hexColor)
+                        }
                     }
                 )
             }
@@ -84,24 +94,38 @@ private fun ColorCircle(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val borderColor = if (isSelected) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    else Color.Transparent
+
     Box(
-        modifier = modifier
-            .padding(4.dp)
-            .size(40.dp)
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(54.dp)
             .clip(shape = CircleShape)
-            .background(color)
             .border(
-                width = if (isSelected) 4.dp else 1.dp,
-                color = MaterialTheme.colorScheme.outline,
+                width = 2.dp,
+                color = borderColor,
                 shape = CircleShape,
             )
-            .clickable(onClick = onClick)
-    )
+    ) {
+        Box(
+            modifier = modifier
+                .size(24.dp)
+                .clip(shape = CircleShape)
+                .border(
+                    width = 0.5.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    shape = CircleShape,
+                )
+                .background(color)
+                .clickable(onClick = onClick)
+        )
+    }
 }
 
 @PreviewLightDark
 @Composable
-fun PresetColorPreview() {
+fun ColorRowsPreview() {
     LumenTheme {
         Surface {
             val customColorsList = listOf(

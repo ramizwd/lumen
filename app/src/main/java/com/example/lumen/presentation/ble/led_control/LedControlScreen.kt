@@ -13,7 +13,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -36,17 +35,8 @@ fun LedControlScreen(
     rootNavController: NavHostController,
     modifier: Modifier = Modifier,
     viewModel: LedControlViewModel = hiltViewModel(),
-    onDisconnect: () -> Unit,
-    isConnected: Boolean
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    // TODO temp code - eventually going back to discovery screen shouldn't dc
-    DisposableEffect(Unit) {
-        onDispose {
-            if (isConnected) onDisconnect()
-        }
-    }
 
     LedControlContent(
         uiState = uiState,

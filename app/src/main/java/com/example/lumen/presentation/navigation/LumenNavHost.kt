@@ -57,11 +57,7 @@ fun LumenNavHost() {
         }
 
         composable<LedControlScreen> {
-            LedControlScreen(
-                rootNavController = rootNavController,
-                onDisconnect = mainViewModel::disconnect,
-                isConnected = connectionState == ConnectionState.STATE_LOADED_AND_CONNECTED
-            )
+            LedControlScreen(rootNavController = rootNavController)
         }
     }
 }
