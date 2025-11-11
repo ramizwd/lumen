@@ -20,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.CustomColorSlot
@@ -37,6 +39,7 @@ fun ColorRows(
     onColorSelected: (Int, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
     var isCustomColorActive by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(key1 = currentHexColor) {
@@ -61,6 +64,7 @@ fun ColorRows(
                     onClick = {
                         isCustomColorActive = false
                         onColorSelected(0, color)
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                     }
                 )
             }
@@ -76,9 +80,12 @@ fun ColorRows(
                     onClick = {
                         if (isSlotSelected) {
                             isCustomColorActive = false
+                            hapticFeedback
+                                .performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                         } else {
                             isCustomColorActive = true
                             onColorSelected(slot.id, slot.hexColor)
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                         }
                     }
                 )

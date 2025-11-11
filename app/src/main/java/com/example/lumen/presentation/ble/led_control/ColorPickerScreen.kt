@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -99,43 +100,29 @@ fun ColorPickerContent(
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.tertiary
         )
-
-        ColorPicker(
-            modifier = modifier
-                .fillMaxWidth()
-                .height(340.dp),
-            controller = colorPickerController,
-            onSetHsvColor = { hexColor ->
-                isUsingColorPicker = true
-                setLedColor(hexColor)
-            },
-            onStartInteraction = {
-                isUsingColorPicker = true
-            },
-            onEndInteraction = {
-                isUsingColorPicker = false
-            }
-        )
-
         Column(
             modifier = Modifier,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.smallIncreased)
+            horizontalAlignment = Alignment.End,
         ) {
-            ColorRows(
-                currentHexColor = ledHexColor,
-                presetColors = presetColors,
-                selectedSlot = selectedSlot,
-                customColorSlots = customColorSlots,
-                onSaveCustomColorSlot = onSaveCustomColorSlot,
-                onColorSelected = { slotId, hexColor ->
-                    selectedSlot = slotId
-                    isUsingColorPicker = false
+            ColorPicker(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .height(340.dp),
+                controller = colorPickerController,
+                onSetHsvColor = { hexColor ->
+                    isUsingColorPicker = true
                     setLedColor(hexColor)
                 },
+                onStartInteraction = {
+                    isUsingColorPicker = true
+                },
+                onEndInteraction = {
+                    isUsingColorPicker = false
+                }
             )
 
             MatchDeviceThemeButton(
+                modifier = Modifier.padding(end = MaterialTheme.spacing.largeIncreased),
                 currentHexColor = ledHexColor,
                 onMatchWithDeviceTheme = { hexColor ->
                     selectedSlot = 0
@@ -144,6 +131,19 @@ fun ColorPickerContent(
                 }
             )
         }
+
+        ColorRows(
+            currentHexColor = ledHexColor,
+            presetColors = presetColors,
+            selectedSlot = selectedSlot,
+            customColorSlots = customColorSlots,
+            onSaveCustomColorSlot = onSaveCustomColorSlot,
+            onColorSelected = { slotId, hexColor ->
+                selectedSlot = slotId
+                isUsingColorPicker = false
+                setLedColor(hexColor)
+            },
+        )
 
         LedToggleButton(
             isOn = isOn,
