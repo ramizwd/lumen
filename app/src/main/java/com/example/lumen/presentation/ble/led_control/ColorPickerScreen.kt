@@ -103,7 +103,7 @@ fun ColorPickerContent(
         ColorPicker(
             modifier = modifier
                 .fillMaxWidth()
-                .height(360.dp),
+                .height(340.dp),
             controller = colorPickerController,
             onSetHsvColor = { hexColor ->
                 isUsingColorPicker = true
