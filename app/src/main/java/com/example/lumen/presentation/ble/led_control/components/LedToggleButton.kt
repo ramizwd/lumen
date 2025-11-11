@@ -5,7 +5,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FilledIconToggleButton
+import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -39,7 +39,7 @@ fun LedToggleButton(
 
     val animatedShape = RoundedCornerShape(animatedCornerRadius)
 
-    FilledIconToggleButton(
+    FilledTonalIconToggleButton(
         modifier = modifier
             .size(65.dp),
         shape = animatedShape,
