@@ -41,13 +41,12 @@ fun LumenNavHost() {
         if (connectionState == ConnectionState.STATE_LOADED_AND_CONNECTED &&
             currentRoute != LedControlScreen::class.qualifiedName) {
             rootNavController.navigate(LedControlScreen) {
-                popUpTo(DiscoverDevicesScreen)
                 launchSingleTop = true
             }
         } else if (connectionState == ConnectionState.DISCONNECTED &&
             currentRoute != DiscoverDevicesScreen::class.qualifiedName) {
             rootNavController.navigate(DiscoverDevicesScreen) {
-                popUpTo(LedControlScreen)
+                popUpTo(LedControlScreen) { inclusive = true }
                 launchSingleTop = true
             }
         }
