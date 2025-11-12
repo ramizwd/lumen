@@ -1,5 +1,7 @@
 package com.example.lumen.presentation.ble.led_control
 
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -80,6 +82,14 @@ fun ColorPickerContent(
     var isUsingColorPicker by remember { mutableStateOf(false) }
     var selectedSlot by rememberSaveable { mutableIntStateOf(0) }
 
+    val transition = updateTransition(targetState = isOn)
+    val glowRadius by transition.animateFloat { state ->
+        when (state) {
+            true -> 120f
+            false -> 0f
+        }
+    }
+
     LaunchedEffect(key1 = ledHexColor) {
         if (!isUsingColorPicker) {
             colorPickerController.selectByColor(
@@ -87,6 +97,10 @@ fun ColorPickerContent(
                 fromUser = false
             )
         }
+    }
+
+    LaunchedEffect(isOn) {
+        colorPickerController.enabled = isOn
     }
 
     Column(
@@ -118,11 +132,13 @@ fun ColorPickerContent(
                 },
                 onEndInteraction = {
                     isUsingColorPicker = false
-                }
+                },
+                glowRadius = glowRadius,
             )
 
             MatchDeviceThemeButton(
                 modifier = Modifier.padding(end = MaterialTheme.spacing.largeIncreased),
+                enabled = isOn,
                 currentHexColor = ledHexColor,
                 onMatchWithDeviceTheme = { hexColor ->
                     selectedSlot = 0
@@ -133,6 +149,7 @@ fun ColorPickerContent(
         }
 
         ColorRows(
+            enabled = isOn,
             currentHexColor = ledHexColor,
             presetColors = presetColors,
             selectedSlot = selectedSlot,

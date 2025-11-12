@@ -55,6 +55,7 @@ fun ControlContent(
         Text(text = "Controlling pixels: $pixelCount")
 
         BrightnessSlider(
+            enabled = isOn,
             brightnessValue = brightnessValue,
             onChangeBrightness = onChangeBrightness
         )

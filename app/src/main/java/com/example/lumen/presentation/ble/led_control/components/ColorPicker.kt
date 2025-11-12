@@ -70,7 +70,9 @@ fun ColorPicker(
 
                 val nativePaint = Paint().asFrameworkPaint().apply {
                     shader = sweepGradient
-                    maskFilter = BlurMaskFilter(glowRadius, BlurMaskFilter.Blur.NORMAL)
+                    if (glowRadius > 0f) {
+                        maskFilter = BlurMaskFilter(glowRadius, BlurMaskFilter.Blur.NORMAL)
+                    }
                 }
 
                 nativeCanvas.drawCircle(

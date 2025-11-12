@@ -23,6 +23,7 @@ import android.graphics.Color as AndroidColor
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchDeviceThemeButton(
+    enabled: Boolean,
     currentHexColor: String?,
     onMatchWithDeviceTheme: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -49,6 +50,7 @@ fun MatchDeviceThemeButton(
     ) {
         FilledTonalIconToggleButton(
             modifier = modifier,
+            enabled = enabled,
             checked = isSelected,
             onCheckedChange = { onMatchWithDeviceTheme(hexPrimaryColorSaturated) },
         ) {
@@ -67,6 +69,21 @@ fun MatchDeviceThemeButtonPreview() {
     LumenTheme {
         Surface {
             MatchDeviceThemeButton(
+                enabled = true,
+                currentHexColor = "ffffff",
+                onMatchWithDeviceTheme = { },
+            )
+        }
+    }
+}
+
+@PreviewDynamicColors
+@Composable
+fun MatchDeviceThemeButtonDisabledPreview() {
+    LumenTheme {
+        Surface {
+            MatchDeviceThemeButton(
+                enabled = false,
                 currentHexColor = "ffffff",
                 onMatchWithDeviceTheme = { },
             )

@@ -31,6 +31,7 @@ import com.example.lumen.utils.hexToComposeColor
 
 @Composable
 fun ColorRows(
+    enabled: Boolean,
     currentHexColor: String,
     presetColors: List<String>,
     selectedSlot: Int,
@@ -43,7 +44,7 @@ fun ColorRows(
     var isCustomColorActive by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(key1 = currentHexColor) {
-        if (selectedSlot != 0 && isCustomColorActive) {
+        if (selectedSlot != 0 && isCustomColorActive && enabled) {
             val currSelectedSlot = customColorSlots.find { it.id == selectedSlot }
 
             if (currSelectedSlot != null &&
@@ -61,6 +62,7 @@ fun ColorRows(
                 ColorCircle(
                     color = color.hexToComposeColor(),
                     isSelected = isSelected,
+                    enabled = enabled,
                     onClick = {
                         isCustomColorActive = false
                         onColorSelected(0, color)
@@ -77,6 +79,7 @@ fun ColorRows(
                 ColorCircle(
                     color = slot.hexColor.hexToComposeColor(),
                     isSelected = isSlotSelected,
+                    enabled = enabled,
                     onClick = {
                         if (isSlotSelected) {
                             isCustomColorActive = false
@@ -98,11 +101,17 @@ fun ColorRows(
 private fun ColorCircle(
     color: Color,
     isSelected: Boolean,
+    enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val borderColor = if (isSelected) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-    else Color.Transparent
+    val borderColor = if (isSelected && enabled) {
+        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    } else {
+        Color.Transparent
+    }
+
+    val color = if (enabled) color else color.copy(alpha = 0.4f)
 
     Box(
         contentAlignment = Alignment.Center,
@@ -125,7 +134,7 @@ private fun ColorCircle(
                     shape = CircleShape,
                 )
                 .background(color)
-                .clickable(onClick = onClick)
+                .clickable(enabled = enabled, onClick = onClick)
         )
     }
 }
@@ -146,6 +155,35 @@ fun ColorRowsPreview() {
             )
 
             ColorRows(
+                enabled = true,
+                currentHexColor = "ffffff",
+                presetColors = PresetLedColors.entries.map { it.hex },
+                customColorSlots = customColorsList,
+                onSaveCustomColorSlot = { slotId, color -> },
+                onColorSelected = { slotId, color -> },
+                selectedSlot = 0,
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+fun ColorRowsDisabledPreview() {
+    LumenTheme {
+        Surface {
+            val customColorsList = listOf(
+                CustomColorSlot(1, "ffffff"),
+                CustomColorSlot(2, "ffffff"),
+                CustomColorSlot(3, "32a852"),
+                CustomColorSlot(4, "ffffff"),
+                CustomColorSlot(5, "ffffff"),
+                CustomColorSlot(6, "bc77d1"),
+                CustomColorSlot(7, "ffffff"),
+            )
+
+            ColorRows(
+                enabled = false,
                 currentHexColor = "ffffff",
                 presetColors = PresetLedColors.entries.map { it.hex },
                 customColorSlots = customColorsList,

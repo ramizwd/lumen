@@ -14,6 +14,7 @@ import com.example.lumen.utils.AppConstants.BRIGHTNESS_MIN
 
 @Composable
 fun BrightnessSlider(
+    enabled: Boolean,
     brightnessValue: Float,
     onChangeBrightness: (Float) -> Unit,
 ) {
@@ -21,6 +22,7 @@ fun BrightnessSlider(
 
     Slider(
         modifier = Modifier.padding(end = 34.dp, start = 34.dp),
+        enabled = enabled,
         valueRange = BRIGHTNESS_MIN..BRIGHTNESS_MAX,
         value = brightnessValue,
         onValueChange = {
@@ -36,6 +38,7 @@ fun BrightnessSliderPreview() {
     LumenTheme {
         Surface {
             BrightnessSlider(
+                enabled = true,
                 brightnessValue = 180f,
                 onChangeBrightness = {}
             )
