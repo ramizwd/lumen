@@ -1,5 +1,14 @@
 package com.example.lumen.presentation.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.EaseInQuint
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,7 +53,11 @@ fun LumenNavHost() {
         }
     }
 
-    NavHost(navController = rootNavController, startDestination = DiscoverDevicesScreen) {
+    NavHost(
+        navController = rootNavController, startDestination = DiscoverDevicesScreen,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None }
+    ) {
 
         composable<DiscoverDevicesScreen> {
             DiscoverDevicesScreen()
@@ -56,7 +69,25 @@ fun LumenNavHost() {
             )
         }
 
-        composable<LedControlScreen> {
+        composable<LedControlScreen>(
+            enterTransition = {
+                fadeIn(
+                    animationSpec = tween(500, easing = EaseInQuint)
+                ) +
+                        slideIntoContainer(
+                    animationSpec = tween(400, easing = EaseInQuint),
+                    towards = AnimatedContentTransitionScope.SlideDirection.Start
+                )
+            },
+            exitTransition = {
+                fadeOut(
+                    animationSpec = tween(300, easing = LinearEasing)
+                ) + slideOutOfContainer(
+                    animationSpec = tween(300, easing = EaseOut),
+                    towards = AnimatedContentTransitionScope.SlideDirection.End
+                )
+            }
+        ) {
             LedControlScreen(rootNavController = rootNavController)
         }
     }

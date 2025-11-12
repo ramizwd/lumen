@@ -101,13 +101,15 @@ fun LedControlContent(
                     NavigationBarItem(
                         selected = selected,
                         onClick = {
-                            navController.navigate(item.route) {
-                                popUpTo(navController.graph.id) {
-                                    inclusive = true
-                                    saveState = true
+                            if (!selected) {
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.id) {
+                                        inclusive = true
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
                         },
                         icon = {

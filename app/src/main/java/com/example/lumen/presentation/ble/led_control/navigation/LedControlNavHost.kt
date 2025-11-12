@@ -1,5 +1,9 @@
 package com.example.lumen.presentation.ble.led_control.navigation
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -25,6 +29,8 @@ fun LedControlNavHost(
     NavHost(
         navController = navController,
         startDestination = startDestination,
+        enterTransition = { fadeIn(animationSpec = tween(140, easing = LinearEasing)) },
+        exitTransition = { fadeOut(animationSpec = tween(140, easing = LinearEasing)) },
         modifier = modifier.fillMaxSize(),
     ) {
         composable<Screen.ColorPickerScreen> {
