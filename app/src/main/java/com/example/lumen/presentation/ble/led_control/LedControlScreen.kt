@@ -169,7 +169,7 @@ fun LedControlContentPreview() {
                 onTurnLedOnClick = { },
                 onTurnLedOffClick = { },
                 setLedColor = { },
-                onSaveCustomColorSlot = { slotId, color -> },
+                onSaveCustomColorSlot = { _, _ -> },
                 onChangeBrightness = { },
                 onDisconnectClick = {},
             )

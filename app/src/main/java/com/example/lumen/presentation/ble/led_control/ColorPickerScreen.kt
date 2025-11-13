@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,11 +31,13 @@ import com.example.lumen.presentation.ble.led_control.components.ColorPicker
 import com.example.lumen.presentation.ble.led_control.components.ColorRows
 import com.example.lumen.presentation.ble.led_control.components.LedToggleButton
 import com.example.lumen.presentation.ble.led_control.components.MatchDeviceThemeButton
+import com.example.lumen.presentation.ble.led_control.components.RandomColorButton
+import com.example.lumen.presentation.common.utils.hexToComposeColor
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
-import com.example.lumen.utils.hexToComposeColor
 import com.github.skydoves.colorpicker.compose.ColorPickerController
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
+import timber.log.Timber
 
 @Composable
 fun ColorPickerScreen(
@@ -114,10 +117,8 @@ fun ColorPickerContent(
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.tertiary
         )
-        Column(
-            modifier = Modifier,
-            horizontalAlignment = Alignment.End,
-        ) {
+
+        Column {
             ColorPicker(
                 modifier = modifier
                     .fillMaxWidth()
@@ -136,16 +137,36 @@ fun ColorPickerContent(
                 glowRadius = glowRadius,
             )
 
-            MatchDeviceThemeButton(
-                modifier = Modifier.padding(end = MaterialTheme.spacing.largeIncreased),
-                enabled = isOn,
-                currentHexColor = ledHexColor,
-                onMatchWithDeviceTheme = { hexColor ->
-                    selectedSlot = 0
-                    isUsingColorPicker = false
-                    setLedColor(hexColor)
-                }
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = MaterialTheme.spacing.largeIncreased,
+                        end = MaterialTheme.spacing.largeIncreased,
+                    ),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                RandomColorButton(
+                    enabled = isOn,
+                    onClick = { hexColor ->
+                        Timber.tag("ColorPickerScreen").i("hexColor - $hexColor")
+                        selectedSlot = 0
+                        isUsingColorPicker = false
+                        setLedColor(hexColor)
+                    },
+                )
+
+                MatchDeviceThemeButton(
+                    enabled = isOn,
+                    currentHexColor = ledHexColor,
+                    onMatchWithDeviceTheme = { hexColor ->
+                        selectedSlot = 0
+                        isUsingColorPicker = false
+                        setLedColor(hexColor)
+                    }
+                )
+            }
         }
 
         ColorRows(
@@ -195,7 +216,7 @@ fun ColorPickerContentPreview() {
                 onTurnLedOnClick = { },
                 onTurnLedOffClick = { },
                 setLedColor = {},
-                onSaveCustomColorSlot = { slotId, color -> },
+                onSaveCustomColorSlot = { _, _ -> },
             )
         }
     }

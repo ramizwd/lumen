@@ -26,8 +26,8 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.PresetLedColors
+import com.example.lumen.presentation.common.utils.hexToComposeColor
 import com.example.lumen.presentation.theme.LumenTheme
-import com.example.lumen.utils.hexToComposeColor
 
 @Composable
 fun ColorRows(
