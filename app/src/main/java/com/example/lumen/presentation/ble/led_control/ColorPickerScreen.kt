@@ -37,7 +37,6 @@ import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
 import com.github.skydoves.colorpicker.compose.ColorPickerController
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
-import timber.log.Timber
 
 @Composable
 fun ColorPickerScreen(
@@ -150,7 +149,6 @@ fun ColorPickerContent(
                 RandomColorButton(
                     enabled = isOn,
                     onClick = { hexColor ->
-                        Timber.tag("ColorPickerScreen").i("hexColor - $hexColor")
                         selectedSlot = 0
                         isUsingColorPicker = false
                         setLedColor(hexColor)
