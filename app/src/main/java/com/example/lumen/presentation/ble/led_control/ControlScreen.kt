@@ -3,6 +3,8 @@ package com.example.lumen.presentation.ble.led_control
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.example.lumen.presentation.ble.led_control.components.BrightnessSlider
 import com.example.lumen.presentation.ble.led_control.components.LedToggleButton
 import com.example.lumen.presentation.theme.LumenTheme
+import com.example.lumen.presentation.theme.spacing
 
 @Composable
 fun ControlScreen(
@@ -55,6 +58,8 @@ fun ControlContent(
         Text(text = "Controlling pixels: $pixelCount")
 
         BrightnessSlider(
+            modifier = Modifier
+                .padding(MaterialTheme.spacing.large),
             enabled = isOn,
             brightnessValue = brightnessValue,
             onChangeBrightness = onChangeBrightness
