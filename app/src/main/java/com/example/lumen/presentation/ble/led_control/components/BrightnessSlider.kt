@@ -2,10 +2,7 @@ package com.example.lumen.presentation.ble.led_control.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import com.example.lumen.R
+import com.example.lumen.presentation.common.components.VerticalSlider
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.AppConstants.BRIGHTNESS_MAX
 import com.example.lumen.utils.AppConstants.BRIGHTNESS_MIN
@@ -30,34 +29,33 @@ fun BrightnessSlider(
 ) {
     val sliderPercentage = ((brightnessValue.toInt() / BRIGHTNESS_MAX) * 100).toInt()
 
+    val brightnessIcon = when(sliderPercentage) {
+        in 81..100 -> R.drawable.brightness_max_24px
+        in 21..80 -> R.drawable.brightness_medium_24px
+        in 1..20 -> R.drawable.brightness_low_24px
+        else -> R.drawable.brightness_zero_24px
+    }
+
     Column(
-        horizontalAlignment = Alignment.End,
-        modifier = modifier
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "Brightness",
-                style = MaterialTheme.typography.labelLarge
-            )
+        Text(
+            text = "${sliderPercentage}%",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold
+        )
 
-            Text(
-                text = "${sliderPercentage}%",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-
-        Slider(
+        VerticalSlider(
             enabled = enabled,
-            valueRange = BRIGHTNESS_MIN..BRIGHTNESS_MAX,
             value = brightnessValue,
+            valueRange = BRIGHTNESS_MIN..BRIGHTNESS_MAX,
             onValueChange = {
                 onChangeBrightness(it)
             },
+            icon = brightnessIcon,
+            iconDescription = "Brightness",
         )
     }
 }

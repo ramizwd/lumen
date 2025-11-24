@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
@@ -147,7 +148,8 @@ fun VerticalSlider(
                         Icon(
                             modifier = Modifier
                                 .align(Alignment.Center)
-                                .size(iconSize),
+                                .size(iconSize)
+                                .rotate(90f),
                             painter = painterResource(icon),
                             contentDescription = iconDescription,
                             tint = iconTint
@@ -177,7 +179,7 @@ fun VerticalSliderPreview() {
                     onValueChange = {
                         sliderValue = it
                     },
-                    icon = R.drawable.dice_filled_24px,
+                    icon = R.drawable.brightness_medium_24px,
                 )
 
                 Button(onClick = {isEnabled = !isEnabled}) {
@@ -203,7 +205,7 @@ fun VerticalSliderDisabledPreview() {
                 onValueChange = {
                     sliderValue = it
                 },
-                icon = R.drawable.dice_filled_24px,
+                icon = R.drawable.brightness_medium_24px,
             )
         }
     }
