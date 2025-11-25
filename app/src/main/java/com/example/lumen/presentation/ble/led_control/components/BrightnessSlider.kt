@@ -27,12 +27,17 @@ fun BrightnessSlider(
     onChangeBrightness: (Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val sliderPercentage = ((brightnessValue.toInt() / BRIGHTNESS_MAX) * 100).toInt()
+    val sliderPercentage = ((brightnessValue.toInt() / BRIGHTNESS_MAX) * 100)
+
+    val percentageFormat = when {
+        sliderPercentage == 0f || sliderPercentage == 100f -> "%.0f".format(sliderPercentage)
+        else -> "%.1f".format(sliderPercentage)
+    }
 
     val brightnessIcon = when(sliderPercentage) {
-        in 81..100 -> R.drawable.brightness_max_24px
-        in 21..80 -> R.drawable.brightness_medium_24px
-        in 1..20 -> R.drawable.brightness_low_24px
+        in 80.1f..100f -> R.drawable.brightness_max_24px
+        in 20.1f..80f -> R.drawable.brightness_medium_24px
+        in 0.1f..20f -> R.drawable.brightness_low_24px
         else -> R.drawable.brightness_zero_24px
     }
 
@@ -42,7 +47,7 @@ fun BrightnessSlider(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "${sliderPercentage}%",
+            text = "${percentageFormat}%",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold
         )
