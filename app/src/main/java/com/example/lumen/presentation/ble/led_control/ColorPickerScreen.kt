@@ -108,7 +108,7 @@ fun ColorPickerContent(
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceAround
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = "#$ledHexColor".uppercase(),
@@ -185,6 +185,7 @@ fun ColorPickerContent(
             isOn = isOn,
             onTurnLedOnClick = onTurnLedOnClick,
             onTurnLedOffClick = onTurnLedOffClick,
+            modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium)
         )
     }
 }
