@@ -1,7 +1,6 @@
 package com.example.lumen.presentation.ble.discovery.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -39,47 +37,51 @@ fun DeviceItem(
     val deviceName = device.name ?: "Unknown"
     val scrollState = rememberScrollState()
 
-    Row (
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        shape = MaterialTheme.shapes.extraLarge,
+        onClick = { onDeviceClick(device) },
         modifier = modifier
             .height(126.dp)
             .background(
                 shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.surfaceContainer
+                color = MaterialTheme.colorScheme.primaryContainer
             )
-            .clip(MaterialTheme.shapes.extraLarge)
-            .clickable { onDeviceClick(device) },
-        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(MaterialTheme.spacing.largeIncreased),
-            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
+            Column(
                 modifier = Modifier
-                    .horizontalScroll(scrollState),
-                text = deviceName,
-                style = MaterialTheme.typography.titleLarge,
-                color = if (device.name == null) MaterialTheme.colorScheme.outline
-                else Color.Unspecified,
-                maxLines = 1,
-            )
+                    .weight(1f)
+                    .padding(MaterialTheme.spacing.largeIncreased),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .horizontalScroll(scrollState),
+                    text = deviceName,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = if (device.name == null) MaterialTheme.colorScheme.outline
+                    else Color.Unspecified,
+                    maxLines = 1,
+                )
 
-            Text(
-                text = device.address,
-                fontWeight = FontWeight.Light,
-                color = MaterialTheme.colorScheme.secondary
+                Text(
+                    text = device.address,
+                    fontWeight = FontWeight.Light,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+
+            DeviceFavoriteButton(
+                isFavorite = isFavorite,
+                onFavor = { onFavDevice(device.address) },
+                onRemove = { onRemoveDevice(device.address) } ,
+                modifier = Modifier
+                    .padding(MaterialTheme.spacing.largeIncreased)
             )
         }
-
-        DeviceFavoriteButton(
-            isFavorite = isFavorite,
-            onFavor = { onFavDevice(device.address) },
-            onRemove = { onRemoveDevice(device.address) } ,
-            modifier = Modifier
-                .padding(MaterialTheme.spacing.largeIncreased)
-        )
     }
 }
 
