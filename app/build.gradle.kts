@@ -61,6 +61,7 @@ dependencies {
 
     // UI libraries
     implementation(libs.compose.colorpicker)
+    implementation(libs.androidx.compose.adaptive)
 
     // Navigation
     implementation(libs.androidx.navigation.compose)

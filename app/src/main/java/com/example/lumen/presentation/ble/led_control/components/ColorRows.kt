@@ -39,6 +39,7 @@ fun ColorRows(
     onSaveCustomColorSlot: (Int, String) -> Unit,
     onColorSelected: (Int, String) -> Unit,
     modifier: Modifier = Modifier,
+    isCompact: Boolean = false,
 ) {
     val hapticFeedback = LocalHapticFeedback.current
     var isCustomColorActive by rememberSaveable { mutableStateOf(false) }
@@ -62,6 +63,7 @@ fun ColorRows(
                 ColorCircle(
                     color = color.hexToComposeColor(),
                     isSelected = isSelected,
+                    isCompact = isCompact,
                     enabled = enabled,
                     onClick = {
                         isCustomColorActive = false
@@ -79,6 +81,7 @@ fun ColorRows(
                 ColorCircle(
                     color = slot.hexColor.hexToComposeColor(),
                     isSelected = isSlotSelected,
+                    isCompact = isCompact,
                     enabled = enabled,
                     onClick = {
                         if (isSlotSelected) {
@@ -101,6 +104,7 @@ fun ColorRows(
 private fun ColorCircle(
     color: Color,
     isSelected: Boolean,
+    isCompact: Boolean,
     enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -112,12 +116,12 @@ private fun ColorCircle(
     }
 
     val color = if (enabled) color else color.copy(alpha = 0.4f)
+    val outerBoxSize = if (isCompact) 44.dp else 54.dp
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .size(54.dp)
-            .clip(shape = CircleShape)
+            .size(outerBoxSize)
             .border(
                 width = 2.dp,
                 color = borderColor,
@@ -159,8 +163,37 @@ fun ColorRowsPreview() {
                 currentHexColor = "ffffff",
                 presetColors = PresetLedColors.entries.map { it.hex },
                 customColorSlots = customColorsList,
-                onSaveCustomColorSlot = { slotId, color -> },
-                onColorSelected = { slotId, color -> },
+                onSaveCustomColorSlot = { _, _ -> },
+                onColorSelected = { _, _ -> },
+                selectedSlot = 0,
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+fun ColorRowsCompactPreview() {
+    LumenTheme {
+        Surface {
+            val customColorsList = listOf(
+                CustomColorSlot(1, "ffffff"),
+                CustomColorSlot(2, "ffffff"),
+                CustomColorSlot(3, "32a852"),
+                CustomColorSlot(4, "ffffff"),
+                CustomColorSlot(5, "ffffff"),
+                CustomColorSlot(6, "bc77d1"),
+                CustomColorSlot(7, "ffffff"),
+            )
+
+            ColorRows(
+                enabled = true,
+                isCompact = true,
+                currentHexColor = "ffffff",
+                presetColors = PresetLedColors.entries.map { it.hex },
+                customColorSlots = customColorsList,
+                onSaveCustomColorSlot = { _, _ -> },
+                onColorSelected = { _, _ -> },
                 selectedSlot = 0,
             )
         }
@@ -187,8 +220,8 @@ fun ColorRowsDisabledPreview() {
                 currentHexColor = "ffffff",
                 presetColors = PresetLedColors.entries.map { it.hex },
                 customColorSlots = customColorsList,
-                onSaveCustomColorSlot = { slotId, color -> },
-                onColorSelected = { slotId, color -> },
+                onSaveCustomColorSlot = { _, _ -> },
+                onColorSelected = { _, _ -> },
                 selectedSlot = 0,
             )
         }

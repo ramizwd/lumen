@@ -75,7 +75,7 @@ fun DiscoverDevicesScreen(
 
     val bluetoothPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { perms ->
+    ) {
         val granted = context.hasBluetoothPermissions()
         val showRationale = activity?.shouldShowBluetoothRationale() == true
 
@@ -150,7 +150,7 @@ fun DiscoverDevicesScreen(
         uiState.errorMessage?.let { msg ->
             showToast(
                 context = context,
-                message = uiState.errorMessage!!,
+                message = msg,
                 duration = Toast.LENGTH_SHORT,
                 currentToastRef = currentToastRef
             )
