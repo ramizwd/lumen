@@ -2,6 +2,7 @@ package com.example.lumen.presentation.ble.led_control.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -15,7 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.R
-import com.example.lumen.presentation.common.components.VerticalSlider
+import com.example.lumen.presentation.common.components.CustomSlider
+import com.example.lumen.presentation.common.components.SliderOrientation
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.AppConstants.BRIGHTNESS_MAX
 import com.example.lumen.utils.AppConstants.BRIGHTNESS_MIN
@@ -26,6 +28,7 @@ fun BrightnessSlider(
     brightnessValue: Float,
     onChangeBrightness: (Float) -> Unit,
     modifier: Modifier = Modifier,
+    orientation: SliderOrientation = SliderOrientation.VERTICAL,
 ) {
     val sliderPercentage = ((brightnessValue.toInt() / BRIGHTNESS_MAX) * 100)
 
@@ -41,27 +44,56 @@ fun BrightnessSlider(
         else -> R.drawable.brightness_zero_24px
     }
 
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "${percentageFormat}%",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold
-        )
+    if (orientation == SliderOrientation.HORIZONTAL) {
+        Row(
+            modifier = modifier,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            CustomSlider(
+                enabled = enabled,
+                value = brightnessValue,
+                valueRange = BRIGHTNESS_MIN..BRIGHTNESS_MAX,
+                onValueChange = {
+                    onChangeBrightness(it)
+                },
+                icon = brightnessIcon,
+                iconDescription = "Brightness",
+                orientation = orientation,
+                modifier = Modifier.weight(1f),
+            )
 
-        VerticalSlider(
-            enabled = enabled,
-            value = brightnessValue,
-            valueRange = BRIGHTNESS_MIN..BRIGHTNESS_MAX,
-            onValueChange = {
-                onChangeBrightness(it)
-            },
-            icon = brightnessIcon,
-            iconDescription = "Brightness",
-        )
+            Text(
+                text = "${percentageFormat}%",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(0.2f)
+            )
+        }
+    } else {
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "${percentageFormat}%",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            CustomSlider(
+                enabled = enabled,
+                value = brightnessValue,
+                valueRange = BRIGHTNESS_MIN..BRIGHTNESS_MAX,
+                onValueChange = {
+                    onChangeBrightness(it)
+                },
+                icon = brightnessIcon,
+                iconDescription = "Brightness",
+                orientation = orientation,
+            )
+        }
     }
 }
 
@@ -78,6 +110,25 @@ fun BrightnessSliderPreview() {
                 onChangeBrightness = {
                     sliderValue = it
                 }
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+fun BrightnessSliderHorizontalPreview() {
+    var sliderValue by remember { mutableFloatStateOf(180f) }
+
+    LumenTheme {
+        Surface {
+            BrightnessSlider(
+                enabled = true,
+                brightnessValue = sliderValue,
+                orientation = SliderOrientation.HORIZONTAL,
+                onChangeBrightness = {
+                    sliderValue = it
+                },
             )
         }
     }

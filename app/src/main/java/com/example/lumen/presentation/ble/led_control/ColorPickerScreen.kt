@@ -5,13 +5,17 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.CustomColorSlot
@@ -32,6 +37,7 @@ import com.example.lumen.presentation.ble.led_control.components.ColorRows
 import com.example.lumen.presentation.ble.led_control.components.LedToggleButton
 import com.example.lumen.presentation.ble.led_control.components.MatchDeviceThemeButton
 import com.example.lumen.presentation.ble.led_control.components.RandomColorButton
+import com.example.lumen.presentation.common.utils.DeviceConfiguration
 import com.example.lumen.presentation.common.utils.hexToComposeColor
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
@@ -47,6 +53,9 @@ fun ColorPickerScreen(
     onSaveCustomColorSlot: (Int, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val deviceConfig = DeviceConfiguration.fromWindowSizeClass(windowSizeClass)
+
     val colorPickerController = rememberColorPickerController()
 
     val isOn = uiState.isLedOn
@@ -55,6 +64,7 @@ fun ColorPickerScreen(
     val customColorSlots = uiState.customColorSlots
 
     ColorPickerContent(
+        deviceConfig = deviceConfig,
         isOn = isOn,
         colorPickerController = colorPickerController,
         ledHexColor = ledHexColor,
@@ -70,6 +80,7 @@ fun ColorPickerScreen(
 
 @Composable
 fun ColorPickerContent(
+    deviceConfig: DeviceConfiguration,
     isOn: Boolean,
     colorPickerController: ColorPickerController,
     ledHexColor: String,
@@ -87,7 +98,9 @@ fun ColorPickerContent(
     val transition = updateTransition(targetState = isOn)
     val glowRadius by transition.animateFloat { state ->
         when (state) {
-            true -> 120f
+            true -> {
+                if (deviceConfig == DeviceConfiguration.MOBILE_LANDSCAPE) 90f else 120f
+            }
             false -> 0f
         }
     }
@@ -105,88 +118,191 @@ fun ColorPickerContent(
         colorPickerController.enabled = isOn
     }
 
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = "#$ledHexColor".uppercase(),
-            fontFamily = FontFamily.Monospace,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.tertiary
-        )
-
-        Column {
-            ColorPicker(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .height(340.dp),
-                controller = colorPickerController,
-                onSetHsvColor = { hexColor ->
-                    isUsingColorPicker = true
-                    setLedColor(hexColor)
-                },
-                onStartInteraction = {
-                    isUsingColorPicker = true
-                },
-                onEndInteraction = {
-                    isUsingColorPicker = false
-                },
-                glowRadius = glowRadius,
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = MaterialTheme.spacing.largeIncreased,
-                        end = MaterialTheme.spacing.largeIncreased,
-                    ),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+    when (deviceConfig) {
+        DeviceConfiguration.TABLET_PORTRAIT,
+        DeviceConfiguration.TABLET_LANDSCAPE,
+        DeviceConfiguration.MOBILE_PORTRAIT -> {
+            Column(
+                modifier = modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                RandomColorButton(
+                Text(
+                    text = "#$ledHexColor".uppercase(),
+                    fontFamily = FontFamily.Monospace,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+
+                Column {
+                    ColorPicker(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(340.dp),
+                        controller = colorPickerController,
+                        onSetHsvColor = { hexColor ->
+                            isUsingColorPicker = true
+                            setLedColor(hexColor)
+                        },
+                        onStartInteraction = {
+                            isUsingColorPicker = true
+                        },
+                        onEndInteraction = {
+                            isUsingColorPicker = false
+                        },
+                        glowRadius = glowRadius,
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = MaterialTheme.spacing.largeIncreased,
+                                end = MaterialTheme.spacing.largeIncreased,
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        RandomColorButton(
+                            enabled = isOn,
+                            onClick = { hexColor ->
+                                selectedSlot = 0
+                                isUsingColorPicker = false
+                                setLedColor(hexColor)
+                            },
+                        )
+                        Spacer(Modifier.width(240.dp))
+                        MatchDeviceThemeButton(
+                            enabled = isOn,
+                            currentHexColor = ledHexColor,
+                            onMatchWithDeviceTheme = { hexColor ->
+                                selectedSlot = 0
+                                isUsingColorPicker = false
+                                setLedColor(hexColor)
+                            }
+                        )
+                    }
+                }
+
+                ColorRows(
                     enabled = isOn,
-                    onClick = { hexColor ->
-                        selectedSlot = 0
+                    currentHexColor = ledHexColor,
+                    presetColors = presetColors,
+                    selectedSlot = selectedSlot,
+                    customColorSlots = customColorSlots,
+                    onSaveCustomColorSlot = onSaveCustomColorSlot,
+                    onColorSelected = { slotId, hexColor ->
+                        selectedSlot = slotId
                         isUsingColorPicker = false
                         setLedColor(hexColor)
                     },
                 )
 
-                MatchDeviceThemeButton(
-                    enabled = isOn,
-                    currentHexColor = ledHexColor,
-                    onMatchWithDeviceTheme = { hexColor ->
-                        selectedSlot = 0
-                        isUsingColorPicker = false
-                        setLedColor(hexColor)
-                    }
+                LedToggleButton(
+                    isOn = isOn,
+                    onTurnLedOnClick = onTurnLedOnClick,
+                    onTurnLedOffClick = onTurnLedOffClick,
+                    modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium)
                 )
             }
         }
 
-        ColorRows(
-            enabled = isOn,
-            currentHexColor = ledHexColor,
-            presetColors = presetColors,
-            selectedSlot = selectedSlot,
-            customColorSlots = customColorSlots,
-            onSaveCustomColorSlot = onSaveCustomColorSlot,
-            onColorSelected = { slotId, hexColor ->
-                selectedSlot = slotId
-                isUsingColorPicker = false
-                setLedColor(hexColor)
-            },
-        )
+        DeviceConfiguration.MOBILE_LANDSCAPE -> {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxHeight().weight(1f),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    ColorPicker(
+                        modifier = Modifier
+                            .width(240.dp)
+                            .height(240.dp),
+                        controller = colorPickerController,
+                        onSetHsvColor = { hexColor ->
+                            isUsingColorPicker = true
+                            setLedColor(hexColor)
+                        },
+                        onStartInteraction = {
+                            isUsingColorPicker = true
+                        },
+                        onEndInteraction = {
+                            isUsingColorPicker = false
+                        },
+                        glowRadius = glowRadius,
+                    )
+                }
 
-        LedToggleButton(
-            isOn = isOn,
-            onTurnLedOnClick = onTurnLedOnClick,
-            onTurnLedOffClick = onTurnLedOffClick,
-            modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium)
-        )
+                Column(
+                    modifier = Modifier.fillMaxHeight().weight(1.2f),
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "#$ledHexColor".uppercase(),
+                        fontFamily = FontFamily.Monospace,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+
+                    ColorRows(
+                        enabled = isOn,
+                        isCompact = true,
+                        currentHexColor = ledHexColor,
+                        presetColors = presetColors,
+                        selectedSlot = selectedSlot,
+                        customColorSlots = customColorSlots,
+                        onSaveCustomColorSlot = onSaveCustomColorSlot,
+                        onColorSelected = { slotId, hexColor ->
+                            selectedSlot = slotId
+                            isUsingColorPicker = false
+                            setLedColor(hexColor)
+                        },
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = MaterialTheme.spacing.largeIncreased,
+                                end = MaterialTheme.spacing.largeIncreased,
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        RandomColorButton(
+                            enabled = isOn,
+                            onClick = { hexColor ->
+                                selectedSlot = 0
+                                isUsingColorPicker = false
+                                setLedColor(hexColor)
+                            },
+                        )
+
+                        MatchDeviceThemeButton(
+                            enabled = isOn,
+                            currentHexColor = ledHexColor,
+                            onMatchWithDeviceTheme = { hexColor ->
+                                selectedSlot = 0
+                                isUsingColorPicker = false
+                                setLedColor(hexColor)
+                            }
+                        )
+                    }
+
+                    LedToggleButton(
+                        isOn = isOn,
+                        onTurnLedOnClick = onTurnLedOnClick,
+                        onTurnLedOffClick = onTurnLedOffClick,
+                        modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -207,6 +323,71 @@ fun ColorPickerContentPreview() {
             )
 
             ColorPickerContent(
+                deviceConfig = DeviceConfiguration.MOBILE_PORTRAIT,
+                isOn = true,
+                colorPickerController = rememberColorPickerController(),
+                ledHexColor = "ffffff",
+                presetColors = presetColors,
+                customColorSlots = customColorsList,
+                onTurnLedOnClick = { },
+                onTurnLedOffClick = { },
+                setLedColor = {},
+                onSaveCustomColorSlot = { _, _ -> },
+            )
+        }
+    }
+}
+
+@Preview(widthDp = 640, heightDp = 360)
+@Composable
+fun ColorPickerContentLandscapePreview() {
+    LumenTheme {
+        Surface {
+            val presetColors = PresetLedColors.entries.map { it.hex }
+            val customColorsList = listOf(
+                CustomColorSlot(1, "ffffff"),
+                CustomColorSlot(2, "ffffff"),
+                CustomColorSlot(3, "32a852"),
+                CustomColorSlot(4, "ffffff"),
+                CustomColorSlot(5, "ffffff"),
+                CustomColorSlot(6, "bc77d1"),
+                CustomColorSlot(7, "ffffff"),
+            )
+
+            ColorPickerContent(
+                deviceConfig = DeviceConfiguration.MOBILE_LANDSCAPE,
+                isOn = true,
+                colorPickerController = rememberColorPickerController(),
+                ledHexColor = "ffffff",
+                presetColors = presetColors,
+                customColorSlots = customColorsList,
+                onTurnLedOnClick = { },
+                onTurnLedOffClick = { },
+                setLedColor = {},
+                onSaveCustomColorSlot = { _, _ -> },
+            )
+        }
+    }
+}
+
+@Preview(widthDp = 1200, heightDp = 800)
+@Composable
+fun ColorPickerContentTabletLandscapePreview() {
+    LumenTheme {
+        Surface {
+            val presetColors = PresetLedColors.entries.map { it.hex }
+            val customColorsList = listOf(
+                CustomColorSlot(1, "ffffff"),
+                CustomColorSlot(2, "ffffff"),
+                CustomColorSlot(3, "32a852"),
+                CustomColorSlot(4, "ffffff"),
+                CustomColorSlot(5, "ffffff"),
+                CustomColorSlot(6, "bc77d1"),
+                CustomColorSlot(7, "ffffff"),
+            )
+
+            ColorPickerContent(
+                deviceConfig = DeviceConfiguration.TABLET_LANDSCAPE,
                 isOn = true,
                 colorPickerController = rememberColorPickerController(),
                 ledHexColor = "ffffff",

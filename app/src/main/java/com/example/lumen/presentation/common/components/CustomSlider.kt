@@ -43,16 +43,25 @@ import androidx.compose.ui.unit.dp
 import com.example.lumen.R
 import com.example.lumen.presentation.theme.LumenTheme
 
+enum class SliderOrientation {
+    VERTICAL,
+    HORIZONTAL
+}
+
+/**
+ * Height and Width properties are flipped in the vertical orientation
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VerticalSlider(
+fun CustomSlider(
     enabled: Boolean,
     value: Float,
     valueRange: ClosedFloatingPointRange<Float>,
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
-    width: Dp = 96.dp,
-    height: Dp = 400.dp,
+    orientation: SliderOrientation = SliderOrientation.VERTICAL,
+    height: Dp = 96.dp,
+    width: Dp = 400.dp,
     stiffness: Float = Spring.StiffnessMedium,
     @DrawableRes icon: Int? = null,
     iconDescription: String? = null,
@@ -76,6 +85,33 @@ fun VerticalSlider(
         label = "active_track_color"
     )
 
+    val modifierVertical = modifier
+        .graphicsLayer {
+            rotationZ = 270f
+            transformOrigin = TransformOrigin(0f, 0f)
+        }
+        .layout { measurable, constraints ->
+            val placeable = measurable.measure(
+                Constraints(
+                    minWidth = constraints.minHeight,
+                    maxWidth = constraints.maxHeight,
+                    minHeight = constraints.minWidth,
+                    maxHeight = constraints.maxWidth,
+                )
+            )
+            layout(placeable.height, placeable.width) {
+                placeable.place(-placeable.width, 0)
+            }
+        }
+        .width(width)
+        .height(height)
+
+    val modifierHorizontal = modifier
+        .width(width)
+        .height(height)
+
+    val iconOrientation = if (orientation == SliderOrientation.VERTICAL) 90f else 0f
+
     Slider(
         enabled = enabled,
         value = value,
@@ -83,26 +119,8 @@ fun VerticalSlider(
             onValueChange(it)
         },
         valueRange = valueRange,
-        modifier = modifier
-            .graphicsLayer {
-                rotationZ = 270f
-                transformOrigin = TransformOrigin(0f, 0f)
-            }
-            .layout { measurable, constraints ->
-                val placeable = measurable.measure(
-                    Constraints(
-                        minWidth = constraints.minHeight,
-                        maxWidth = constraints.maxHeight,
-                        minHeight = constraints.minWidth,
-                        maxHeight = constraints.maxWidth,
-                    )
-                )
-                layout(placeable.height, placeable.width) {
-                    placeable.place(-placeable.width, 0)
-                }
-            }
-            .width(height)
-            .height(width),
+        modifier = if (orientation == SliderOrientation.VERTICAL) modifierVertical
+        else modifierHorizontal,
         thumb = {},
         track = { sliderState ->
             val fraction by remember(key1 = animatedValue) {
@@ -114,7 +132,7 @@ fun VerticalSlider(
 
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .width(width)
                     .clip(shape = MaterialTheme.shapes.extraLarge)
                     .background(color = animatedInactiveTrackColor)
             ) {
@@ -123,7 +141,7 @@ fun VerticalSlider(
                         .fillMaxWidth(fraction)
                         .fillMaxHeight()
                         .clip(shape = MaterialTheme.shapes.extraLarge)
-                        .background(color =  animatedActiveTrackColor)
+                        .background(color = animatedActiveTrackColor)
                 )
 
                 if (icon != null) {
@@ -149,7 +167,7 @@ fun VerticalSlider(
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .size(iconSize)
-                                .rotate(90f),
+                                .rotate(iconOrientation),
                             painter = painterResource(icon),
                             contentDescription = iconDescription,
                             tint = iconTint
@@ -163,7 +181,7 @@ fun VerticalSlider(
 
 @PreviewLightDark
 @Composable
-fun VerticalSliderPreview() {
+fun CustomSliderPreview() {
     var sliderValue by remember { mutableFloatStateOf(70f) }
     var isEnabled by remember { mutableStateOf(true) }
 
@@ -172,7 +190,7 @@ fun VerticalSliderPreview() {
             Column(
                 verticalArrangement = Arrangement.SpaceAround
             ) {
-                VerticalSlider(
+                CustomSlider(
                     enabled = isEnabled,
                     value = sliderValue,
                     valueRange = 0f..100f,
@@ -193,12 +211,43 @@ fun VerticalSliderPreview() {
 
 @PreviewLightDark
 @Composable
-fun VerticalSliderDisabledPreview() {
+fun CustomSliderHorizontalPreview() {
+    var sliderValue by remember { mutableFloatStateOf(70f) }
+    var isEnabled by remember { mutableStateOf(true) }
+
+    LumenTheme {
+        Surface {
+            Column(
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                CustomSlider(
+                    enabled = isEnabled,
+                    value = sliderValue,
+                    valueRange = 0f..100f,
+                    onValueChange = {
+                        sliderValue = it
+                    },
+                    icon = R.drawable.brightness_medium_24px,
+                    orientation = SliderOrientation.HORIZONTAL
+                )
+
+                Button(onClick = {isEnabled = !isEnabled}) {
+                    Text(text = if (isEnabled) "Disable" else "Enable")
+                }
+            }
+
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+fun CustomSliderDisabledPreview() {
     var sliderValue by remember { mutableFloatStateOf(70f) }
 
     LumenTheme {
         Surface {
-            VerticalSlider(
+            CustomSlider(
                 enabled = false,
                 value = sliderValue,
                 valueRange = 0f..100f,

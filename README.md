@@ -21,7 +21,7 @@ You can find a comprehensive list of commands [here](https://gist.github.com/mbu
 - **Minimum SDK:** 31 (Android 12)
 - **Target SDK:** 36 (Android 16)
 - **Device Types Supported:** Phones and Tablets
-- **Orientation Supported**: Portrait
+- **Orientation Supported**: Portrait and Landscape
 
 ## Features
 The following highlights both core functionalities and new or improved features compared to the official app. 
