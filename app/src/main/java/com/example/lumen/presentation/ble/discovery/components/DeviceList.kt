@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.presentation.common.components.PullToRefresh
@@ -141,6 +142,72 @@ fun DeviceListInitialState() {
             DeviceList(
                 scanResults = emptyList(),
                 emptyScanResultTxt = "Start scanning to find nearby devices.",
+                onStartScan = {},
+                onFavDevice = {},
+                onRemoveDevice = {},
+                onDeviceClick = {},
+            )
+        }
+    }
+}
+
+@Preview(widthDp = 1200, heightDp = 800)
+@Composable
+fun DeviceListTabletLandscapePreview() {
+    LumenTheme {
+        Surface {
+            val mockScanResults = listOf(
+                DeviceContent(BleDevice(
+                    name = "LED 1",
+                    address = "00:11:22:33:44:55"),
+                    isFavorite = true
+                ),
+                DeviceContent(BleDevice(
+                    name = "Test Device 2",
+                    address = "A:BB:CC:DD:EE:FF"),
+                    isFavorite = false),
+                DeviceContent(BleDevice(
+                    name = null,
+                    address = "FF:EE:DD:CC:BB:AA"),
+                    isFavorite = true),
+            )
+
+            DeviceList(
+                scanResults = mockScanResults,
+                emptyScanResultTxt = null,
+                onStartScan = {},
+                onFavDevice = {},
+                onRemoveDevice = {},
+                onDeviceClick = {},
+            )
+        }
+    }
+}
+
+@Preview(widthDp = 800, heightDp = 1200)
+@Composable
+fun DeviceListTabletPortraitPreview() {
+    LumenTheme {
+        Surface {
+            val mockScanResults = listOf(
+                DeviceContent(BleDevice(
+                    name = "LED 1",
+                    address = "00:11:22:33:44:55"),
+                    isFavorite = true
+                ),
+                DeviceContent(BleDevice(
+                    name = "Test Device 2",
+                    address = "A:BB:CC:DD:EE:FF"),
+                    isFavorite = false),
+                DeviceContent(BleDevice(
+                    name = null,
+                    address = "FF:EE:DD:CC:BB:AA"),
+                    isFavorite = true),
+            )
+
+            DeviceList(
+                scanResults = mockScanResults,
+                emptyScanResultTxt = null,
                 onStartScan = {},
                 onFavDevice = {},
                 onRemoveDevice = {},
