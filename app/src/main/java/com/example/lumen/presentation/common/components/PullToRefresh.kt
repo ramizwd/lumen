@@ -28,7 +28,7 @@ fun <T> PullToRefresh(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
-    gridCellMinSize: Dp = 400.dp,
+    gridCellMinSize: Dp = 300.dp,
     lazyGridState: LazyGridState = rememberLazyGridState(),
     scrollState: ScrollState = rememberScrollState(),
     keySelector: ((T) -> Any)? = null,
@@ -51,9 +51,8 @@ fun <T> PullToRefresh(
         } else {
             LazyVerticalGrid(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(
-                    MaterialTheme.spacing.extraSmall
-                ),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
                 columns = GridCells.Adaptive(gridCellMinSize),
                 state = lazyGridState,
             ) {

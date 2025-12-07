@@ -41,7 +41,11 @@ fun DeviceList(
     val coroutineScope = rememberCoroutineScope()
 
     PullToRefresh(
-        modifier = modifier,
+        modifier = modifier
+            .padding(
+                start = MaterialTheme.spacing.large,
+                end = MaterialTheme.spacing.large
+            ),
         items = scanResults,
         keySelector = { it.device.address },
         emptyContent = {
@@ -58,12 +62,7 @@ fun DeviceList(
         },
         content = { deviceContent ->
             DeviceItem(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = MaterialTheme.spacing.large,
-                        end = MaterialTheme.spacing.large
-                    ),
+                modifier = Modifier.fillMaxWidth(),
                 onDeviceClick = onDeviceClick,
                 deviceContent = deviceContent,
                 onFavDevice = onFavDevice,
