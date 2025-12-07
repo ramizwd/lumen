@@ -91,3 +91,6 @@ Icons used in this project are from [Material Symbols and Icons](https://fonts.g
 ## Material
 - [Extensive SP110E API documentation](https://gist.github.com/mbullington/37957501a07ad065b67d4e8d39bfe012)
 - [Reverse Engineering a Bluetooth Light Bulb](https://blog.wokwi.com/reverse-engineering-a-bluetooth-lightbulb)
+
+## License
+This project is licensed under the [GPLv3 license](LICENSE)
