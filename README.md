@@ -33,6 +33,7 @@ The following highlights both core functionalities and new or improved features 
 - Save custom colors
 - Change brightness
 - Turn the LED on/off
+- Rename the controller
 
 **Lumen-specific Improvements & New Features:**
 - Offers vastly greater number of color combinations by using an HSV color picker instead of a
@@ -41,6 +42,7 @@ The following highlights both core functionalities and new or improved features 
 - Favor devices for quicker access
 - Overall better error and permission handling
 - Automatic reconnection when an ongoing connection attempt drops
+- Adaptive layout supporting different screen sizes and configs
 - Cancel an ongoing connection attempt
 - Match the LED colors based on your current color theme
 - Pick random colors
@@ -49,7 +51,6 @@ The following highlights both core functionalities and new or improved features 
 > The app is still in development, thus the following features that exist in the official app
 > are currently missing here.
 > - Choosing from the available 120 light effects and favoring them
-> - Renaming the controller
 > - Controlling specific amount of pixels on the LED strip
 > - Setting RGB sequence and IC type
 
