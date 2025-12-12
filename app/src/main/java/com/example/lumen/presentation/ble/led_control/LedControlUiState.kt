@@ -11,6 +11,8 @@ import com.example.lumen.domain.ble.model.CustomColorSlot
  * [ledHexColor] Holds the current hex color of the LED controller
  * [brightnessValue] Holds the current brightness value of the LED controller
  * [pixelCount] Holds the LED strip pixel count
+ * [infoMessage] holds general info messages related to write operations
+ * [showRenameDeviceDialog] toggles rename device dialog
  */
 data class LedControlUiState(
     val selectedDevice: BleDevice? = null,
@@ -18,5 +20,7 @@ data class LedControlUiState(
     val isLedOn: Boolean = false,
     val ledHexColor: String = "ffffff",
     val brightnessValue: Float = 0f,
-    val pixelCount: Int = 0
+    val pixelCount: Int = 0,
+    val infoMessage: String? = null,
+    val showRenameDeviceDialog: Boolean = false,
 )

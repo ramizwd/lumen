@@ -3,6 +3,7 @@ package com.example.lumen.presentation.ble.led_control
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lumen.domain.ble.model.CustomColorSlot
+import com.example.lumen.domain.ble.usecase.config.SetDeviceNameUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +27,7 @@ import javax.inject.Inject
 class LedControlViewModel @Inject constructor(
     private val connectionUseCases: ConnectionUseCases,
     private val controlUseCases: ControlUseCases,
+    private val setDeviceNameUseCase: SetDeviceNameUseCase,
 ): ViewModel() {
 
     companion object {
@@ -77,6 +79,14 @@ class LedControlViewModel @Inject constructor(
         }
     }
 
+    fun onEvent(event: LedControlUiEvent) {
+        when (event) {
+            is LedControlUiEvent.ToggleRenameDeviceDialog -> {
+                _uiState.update { it.copy(showRenameDeviceDialog = event.show) }
+            }
+        }
+    }
+
     fun turnLedOn() {
         _uiState.update { it.copy(isLedOn = true) }
         viewModelScope.launch {
@@ -118,6 +128,21 @@ class LedControlViewModel @Inject constructor(
         viewModelScope.launch {
             connectionUseCases.disconnectUseCase()
         }
+    }
+
+    fun setDeviceName(name: String) {
+        viewModelScope.launch {
+            val res = setDeviceNameUseCase(name)
+            res.onSuccess {
+                _uiState.update { it.copy(infoMessage = "Device renamed") }
+            }.onFailure {
+                _uiState.update { it.copy(infoMessage = "Error renaming device") }
+            }
+        }
+    }
+
+    fun clearInfoMessage() {
+        _uiState.update { it.copy(infoMessage = null) }
     }
 
     override fun onCleared() {
