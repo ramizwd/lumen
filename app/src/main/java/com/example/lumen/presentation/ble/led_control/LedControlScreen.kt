@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Scaffold
@@ -51,6 +52,7 @@ fun LedControlScreen(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val deviceName = uiState.selectedDevice?.name ?: "Unknown"
+    val textFieldState = rememberTextFieldState(initialText = deviceName)
 
     LaunchedEffect(key1 = uiState.infoMessage) {
         uiState.infoMessage?.let { msg ->
@@ -66,6 +68,7 @@ fun LedControlScreen(
 
     if (uiState.showRenameDeviceDialog) {
         TextFieldDialog(
+            state = textFieldState,
             title = "Rename Device",
             initialText = deviceName,
             maxChar = MAX_DEVICE_CHAR,
