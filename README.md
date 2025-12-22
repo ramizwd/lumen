@@ -57,6 +57,10 @@ The following highlights both core functionalities and new or improved features 
 ## Dependencies
 This project utilizes the following third-party libraries.
 
+- **Compose Material 3 Adaptive**
+  - https://developer.android.com/jetpack/androidx/releases/compose-material3-adaptive
+  - Library for creating adaptive UIs
+ 
 - **Color Picker Compose**
   - https://github.com/skydoves/colorpicker-compose
   - A color picker library for Jetpack Compose
@@ -64,6 +68,10 @@ This project utilizes the following third-party libraries.
 - **Dagger-Hilt**
   - https://github.com/google/dagger
   - Dependency injection framework for Android
+ 
+- **JUnit**
+  - https://github.com/junit-team/junit-framework
+  - Unit testing framework for Java and the JVM
 
 - **Kotlinx Coroutines**
   - https://github.com/Kotlin/kotlinx.coroutines
@@ -72,6 +80,10 @@ This project utilizes the following third-party libraries.
 - **Kotlinx Serialization JSON**
   - https://github.com/Kotlin/kotlinx.serialization
   - A multiplatform serialization library for Kotlin
+  
+- **MockK**
+  - https://github.com/mockk/mockk
+  - Mocking library for Kotlin
 
 - **Navigation Compose**
   - https://developer.android.com/jetpack/androidx/releases/navigation
