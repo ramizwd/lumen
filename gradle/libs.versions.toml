@@ -2,6 +2,7 @@
 agp = "8.13.2"
 datastorePreferences = "1.2.0"
 junitBom = "6.0.1"
+kotlinMetadataJvm = "2.3.0"
 kotlinxCoroutinesTest = "1.10.2"
 turbine = "1.2.1"
 mockk = "1.14.7"
@@ -47,6 +48,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junitBom" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+kotlin-metadata-jvm = { module = "org.jetbrains.kotlin:kotlin-metadata-jvm", version.ref = "kotlinMetadataJvm" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }

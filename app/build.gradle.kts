@@ -75,6 +75,7 @@ dependencies {
 
     // Kotlin
     implementation(libs.kotlinx.serialization.json)
+    ksp(libs.kotlin.metadata.jvm)
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
