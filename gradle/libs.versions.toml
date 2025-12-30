@@ -3,6 +3,7 @@ agp = "8.13.2"
 datastorePreferences = "1.2.0"
 junitBom = "6.0.1"
 kotlinxCoroutinesTest = "1.10.2"
+turbine = "1.2.1"
 mockk = "1.14.7"
 ksp = "2.2.0-2.0.2"
 hilt = "2.57.2"
@@ -47,6 +48,7 @@ junit-bom = { module = "org.junit:junit-bom", version.ref = "junitBom" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 compose-colorpicker = { module = "com.github.skydoves:colorpicker-compose", version.ref = "colorpicker" }
