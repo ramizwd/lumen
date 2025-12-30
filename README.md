@@ -97,6 +97,10 @@ This project utilizes the following third-party libraries.
   - https://github.com/JakeWharton/timber
   - An extensible logging library for Android
 
+- **Turbine**
+  - https://github.com/cashapp/turbine
+  - A testing library for kotlinx.coroutines Flow
+
 ## Icons
 Icons used in this project are from [Material Symbols and Icons](https://fonts.google.com/icons)
 - https://github.com/google/material-design-icons
