@@ -1,6 +1,5 @@
 package com.example.lumen.domain.ble.usecase.control
 
-import android.util.Log
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.LED_OFF_COMMAND
