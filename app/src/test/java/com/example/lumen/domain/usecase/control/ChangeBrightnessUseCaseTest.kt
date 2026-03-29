@@ -56,4 +56,36 @@ class ChangeBrightnessUseCaseTest {
         }
     }
 
+    @Test
+    fun `invoke clamps negative values to minimum brightness`() = runTest {
+        val negativeValue = -10f
+        val expectedBytes = 0f.toBrightnessCommandBytes()
+
+        changeBrightnessUseCase.invoke(negativeValue)
+
+        coVerify(exactly = 1) {
+            mockBleGattController.writeCharacteristic(
+                any(),
+                any(),
+                expectedBytes
+            )
+        }
+    }
+
+    @Test
+    fun `invoke clamps over maximum values to maximum brightness`() = runTest {
+        val hugeValue = 300f
+        val expectedBytes = 255f.toBrightnessCommandBytes()
+
+        changeBrightnessUseCase.invoke(hugeValue)
+
+        coVerify(exactly = 1) {
+            mockBleGattController.writeCharacteristic(
+                any(),
+                any(),
+                expectedBytes
+            )
+        }
+    }
+
 }
