@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * Unit tests for [com.example.lumen.domain.ble.usecase.control.TurnLedOnOffUseCase]
+ * Unit tests for [TurnLedOnOffUseCase]
  */
 class TurnLedOnOffUseCaseTest {
 
