@@ -41,7 +41,7 @@ class TurnLedOnOffUseCaseTest {
     fun `invoke with false sends correct command`() = runTest {
         turnLedOnOffUseCase.invoke(false)
 
-        coVerify {
+        coVerify(exactly = 1) {
             mockBleGattController.writeCharacteristic(
                 any(),
                 any(),
