@@ -8,11 +8,11 @@ import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -34,7 +34,12 @@ class LedControlViewModel @Inject constructor(
         private const val LOG_TAG = "LedControlViewModel"
     }
 
-    private val _brightnessChangeFlow = MutableSharedFlow<Float>()
+    private val _brightnessChangeFlow = MutableSharedFlow<Float>(
+        replay = 0,
+        // makes sure the UI thread doesn't hang if the bg coroutine processing the brightness is busy
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
 
     private val _uiState = MutableStateFlow(LedControlUiState())
     val uiState = _uiState.asStateFlow()
@@ -69,10 +74,7 @@ class LedControlViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            // Collects the most recent value emitted within 150 milliseconds and pass it down
-            // the flow. This throttling helps prevent overflowing the GATT operation queue.
-            _brightnessChangeFlow
-                .sample(250L)
+            controlUseCases.observeBrightnessUseCase(_brightnessChangeFlow)
                 .collect { value ->
                     controlUseCases.changeBrightnessUseCase(value)
                 }

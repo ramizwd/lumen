@@ -52,9 +52,9 @@ class MainViewModelTest {
         val connectionUseCases = ConnectionUseCases(
             observeConnectionStateUseCase = observeConnectionStateUseCase,
             disconnectUseCase = disconnectUseCase,
-            connectToDeviceUseCase = mockk(relaxed = true),
-            observeConnectionEventsUseCase = mockk(relaxed = true),
-            observeSelectedDeviceUseCase = mockk(relaxed = true)
+            connectToDeviceUseCase = mockk(),
+            observeConnectionEventsUseCase = mockk(),
+            observeSelectedDeviceUseCase = mockk()
         )
         
         viewModel = MainViewModel(connectionUseCases, observeBluetoothStateUseCase)
@@ -101,16 +101,7 @@ class MainViewModelTest {
     @Test
     fun `manual disconnect calls disconnectUseCase`() = runTest {
         viewModel.disconnect()
-        
+
         coVerify(exactly = 1) { disconnectUseCase() }
     }
-
-
-
-
-
-
-
-
-
 }
