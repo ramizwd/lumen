@@ -12,6 +12,9 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
+/**
+ * Unit tests for [GetCustomColorsUseCase]
+ */
 class GetCustomColorsUseCaseTest {
 
     private val colorPreferenceManager: ColorPreferenceManager = mockk()

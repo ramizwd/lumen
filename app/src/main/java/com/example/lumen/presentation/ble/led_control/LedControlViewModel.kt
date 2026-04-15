@@ -7,7 +7,6 @@ import com.example.lumen.domain.ble.usecase.config.SetDeviceNameUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +21,6 @@ import javax.inject.Inject
  * ViewModel for managing UI state related to the connected device and its state,
  * also responsible for invoking control operations.
  */
-@OptIn(FlowPreview::class)
 @HiltViewModel
 class LedControlViewModel @Inject constructor(
     private val connectionUseCases: ConnectionUseCases,

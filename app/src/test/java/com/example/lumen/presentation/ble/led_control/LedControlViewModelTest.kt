@@ -22,8 +22,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -56,16 +55,21 @@ class LedControlViewModelTest {
         whiteLedBrightness = 0
     )
 
-    private val setDeviceNameUseCase: SetDeviceNameUseCase = mockk()
-    private val observeSelectedDeviceUseCase: ObserveSelectedDeviceUseCase = mockk()
-    private val observeControllerStateUseCase: ObserveControllerStateUseCase = mockk()
-    private val observeBrightnessUseCase: ObserveBrightnessUseCase = mockk()
-    private val getCustomColorsUseCase: GetCustomColorsUseCase = mockk()
-    private val turnLedOnOffUseCase: TurnLedOnOffUseCase = mockk(relaxed = true)
-    private val changeBrightnessUseCase: ChangeBrightnessUseCase = mockk(relaxed = true)
-    private val saveCustomColorUseCase: SaveCustomColorUseCase = mockk(relaxed = true)
-    private val setLedColorUseCase: SetLedColorUseCase = mockk(relaxed = true)
-    private val disconnectUseCase: DisconnectUseCase = mockk(relaxed = true)
+    private val deviceFlow = MutableStateFlow<BleDevice?>(null)
+    private val controllerStateFlow = MutableStateFlow<LedControllerState?>(null)
+    private val brightnessFlow = MutableSharedFlow<Float>()
+    private val customColorsFlow = MutableStateFlow<List<CustomColorSlot>>(emptyList())
+
+    private lateinit var setDeviceNameUseCase: SetDeviceNameUseCase
+    private lateinit var observeSelectedDeviceUseCase: ObserveSelectedDeviceUseCase
+    private lateinit var observeControllerStateUseCase: ObserveControllerStateUseCase
+    private lateinit var observeBrightnessUseCase: ObserveBrightnessUseCase
+    private lateinit var getCustomColorsUseCase: GetCustomColorsUseCase
+    private lateinit var turnLedOnOffUseCase: TurnLedOnOffUseCase
+    private lateinit var changeBrightnessUseCase: ChangeBrightnessUseCase
+    private lateinit var saveCustomColorUseCase: SaveCustomColorUseCase
+    private lateinit var setLedColorUseCase: SetLedColorUseCase
+    private lateinit var disconnectUseCase: DisconnectUseCase
 
     private lateinit var viewModel: LedControlViewModel
 
@@ -73,11 +77,26 @@ class LedControlViewModelTest {
     fun setup() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
+        setDeviceNameUseCase = mockk()
+        observeSelectedDeviceUseCase = mockk()
+        observeControllerStateUseCase = mockk()
+        observeBrightnessUseCase = mockk()
+        getCustomColorsUseCase = mockk()
+        turnLedOnOffUseCase = mockk(relaxed = true)
+        changeBrightnessUseCase = mockk(relaxed = true)
+        saveCustomColorUseCase = mockk(relaxed = true)
+        setLedColorUseCase = mockk(relaxed = true)
+        disconnectUseCase = mockk(relaxed = true)
+
         coEvery { setDeviceNameUseCase(any()) } returns Result.success(Unit)
-        every { observeSelectedDeviceUseCase() } returns flowOf(device)
-        every { observeControllerStateUseCase() } returns flowOf(controllerState)
-        every { observeBrightnessUseCase(any()) } returns emptyFlow()
-        every { getCustomColorsUseCase(any()) } returns flowOf(emptyList())
+        every { observeSelectedDeviceUseCase() } returns deviceFlow
+        every { observeControllerStateUseCase() } returns controllerStateFlow
+        every { observeBrightnessUseCase(any()) } returns brightnessFlow
+        every { getCustomColorsUseCase(any()) } returns customColorsFlow
+
+        deviceFlow.value = device
+        controllerStateFlow.value = controllerState
+        customColorsFlow.value = emptyList()
 
         createViewModel()
     }
@@ -128,7 +147,7 @@ class LedControlViewModelTest {
     @Test
     fun `init with null controller state sets default values`() = runTest {
         // Given
-        every { observeControllerStateUseCase() } returns flowOf(null)
+        controllerStateFlow.value = null
 
         // When
         createViewModel()
@@ -142,27 +161,18 @@ class LedControlViewModelTest {
 
     @Test
     fun `init collects custom colors for device`() = runTest {
-        // Given
         val expectedState = listOf(CustomColorSlot(id = 1, hexColor = "ffffff"))
-        every { getCustomColorsUseCase(any()) } returns
-                flowOf(expectedState)
+        customColorsFlow.value = expectedState
 
-        // When
-        createViewModel()
-
-        // Then
         assertEquals(expectedState, viewModel.uiState.value.customColorSlots)
     }
 
     @Test
     fun `init collects from brightness flow and calls changeBrightnessUseCase`() = runTest {
         // Given
-        val brightnessFlow = MutableSharedFlow<Float>()
         val value = 50f
-        every { observeBrightnessUseCase(any()) } returns brightnessFlow
 
         // When
-        createViewModel()
         brightnessFlow.emit(value)
 
         // Then
@@ -270,7 +280,7 @@ class LedControlViewModelTest {
     fun `use case should NOT be called in saveCustomColor when selectedDevice is null`() = runTest {
         // Give
         val slot = CustomColorSlot(1, "ffffff")
-        every { observeSelectedDeviceUseCase() } returns flowOf(null)
+        deviceFlow.value = null
 
         // When
         createViewModel()

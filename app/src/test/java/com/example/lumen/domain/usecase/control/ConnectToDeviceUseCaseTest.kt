@@ -5,6 +5,7 @@ import com.example.lumen.domain.ble.BleScanController
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.usecase.connection.ConnectToDeviceUseCase
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -43,7 +44,7 @@ class ConnectToDeviceUseCaseTest {
     }
 
     @Test
-    fun `invoke ensures scan is stopped before connectin starts`() = runTest {
+    fun `invoke ensures scan is stopped before connection starts`() = runTest {
         //Given
         val device = BleDevice("test", "00:11:22:33:44:55")
 
@@ -51,7 +52,7 @@ class ConnectToDeviceUseCaseTest {
         connectToDeviceUseCase(device)
 
         // Then
-        io.mockk.coVerifyOrder {
+        coVerifyOrder {
             mockBleScanController.stopScan()
             mockBleGattController.connect(device)
         }
