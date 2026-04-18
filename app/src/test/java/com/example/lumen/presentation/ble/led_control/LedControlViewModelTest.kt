@@ -19,6 +19,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,6 +34,8 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
+import org.junit.jupiter.api.assertNull
 
 /**
  * Unit tests for [LedControlViewModel]
@@ -111,13 +114,13 @@ class LedControlViewModelTest {
         )
 
         val controlUseCases = ControlUseCases(
-            turnLedOnOffUseCase = turnLedOnOffUseCase,
-            setLedColorUseCase = setLedColorUseCase,
-            changeBrightnessUseCase = changeBrightnessUseCase,
-            observeBrightnessUseCase = observeBrightnessUseCase,
-            observeControllerStateUseCase = observeControllerStateUseCase,
-            saveCustomColorUseCase = saveCustomColorUseCase,
-            getCustomColorsUseCase = getCustomColorsUseCase,
+            turnLedOnOffUseCase,
+            setLedColorUseCase,
+            changeBrightnessUseCase,
+            observeBrightnessUseCase,
+            observeControllerStateUseCase,
+            saveCustomColorUseCase,
+            getCustomColorsUseCase,
         )
 
         viewModel = LedControlViewModel(connectionUseCases, controlUseCases, setDeviceNameUseCase)
@@ -130,17 +133,19 @@ class LedControlViewModelTest {
 
     @Test
     fun `init loads data into state`() = runTest {
-        assertEquals(device, viewModel.uiState.value.selectedDevice)
-        assertEquals(controllerState.isOn, viewModel.uiState.value.isLedOn)
+        val state = viewModel.uiState.value
+
+        assertEquals(device, state.selectedDevice)
+        assertEquals(controllerState.isOn, state.isLedOn)
         assertEquals(
-            controllerState.brightness, viewModel.uiState.value.brightnessValue
+            controllerState.brightness, state.brightnessValue
         )
         assertEquals(
-            controllerState.pixelCount, viewModel.uiState.value.pixelCount
+            controllerState.pixelCount, state.pixelCount
         )
         assertEquals(
             "${controllerState.red}${controllerState.green}${controllerState.blue}",
-            viewModel.uiState.value.ledHexColor
+            state.ledHexColor
         )
     }
 
@@ -219,7 +224,7 @@ class LedControlViewModelTest {
     fun `disconnectFromDevice calls disconnectUseCase`() = runTest {
         viewModel.disconnectFromDevice()
 
-        coVerify(exactly = 1) { disconnectUseCase() }
+        verify(exactly = 1) { disconnectUseCase() }
     }
 
     @Test
@@ -257,10 +262,10 @@ class LedControlViewModelTest {
     @Test
     fun `clearInfoMessage resets infoMessage state`() = runTest {
         viewModel.setDeviceName("test")
-        assertTrue(viewModel.uiState.value.infoMessage != null)
+        assertNotNull(viewModel.uiState.value.infoMessage)
 
         viewModel.clearInfoMessage()
-        assertTrue(viewModel.uiState.value.infoMessage == null)
+        assertNull(viewModel.uiState.value.infoMessage)
     }
 
     @Test

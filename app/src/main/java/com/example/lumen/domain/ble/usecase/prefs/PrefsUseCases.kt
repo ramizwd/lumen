@@ -7,8 +7,8 @@ import javax.inject.Inject
  */
 data class PrefsUseCases @Inject constructor(
     val getFavoriteDeviceAddressesUseCase: GetFavDeviceAddressesUseCase,
-    val addFavoriteDeviceAddressUseCase: AddFavDeviceAddressUseCase,
-    val removeFavoriteDeviceAddressUseCase: RemoveFavDeviceAddressUseCase,
+    val addFavDeviceAddressUseCase: AddFavDeviceAddressUseCase,
+    val removeFavDeviceAddressUseCase: RemoveFavDeviceAddressUseCase,
     val getDeviceListPreferenceUseCase: GetDeviceListPreferenceUseCase,
     val saveDeviceListPreferenceUseCase: SaveDeviceListPreferenceUseCase,
 )

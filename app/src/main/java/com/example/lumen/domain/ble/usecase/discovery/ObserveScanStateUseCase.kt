@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 import javax.inject.Inject
 
-class ObserveIsScanningUseCase @Inject constructor(
+class ObserveScanStateUseCase @Inject constructor(
     private val bleScanController: BleScanController
 ) {
     companion object {

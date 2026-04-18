@@ -56,7 +56,7 @@ class DiscoveryViewModel @Inject constructor(
 
     val uiState = combine(
         discoveryUseCases.observeScanResultsUseCase(),
-        discoveryUseCases.observeIsScanningUseCase(),
+        discoveryUseCases.observeScanStateUseCase(),
         prefsUseCases.getFavoriteDeviceAddressesUseCase(),
         prefsUseCases.getDeviceListPreferenceUseCase(),
         _uiState
@@ -243,13 +243,13 @@ class DiscoveryViewModel @Inject constructor(
 
     fun addFavDevice(address: String) {
         viewModelScope.launch {
-            prefsUseCases.addFavoriteDeviceAddressUseCase(address)
+            prefsUseCases.addFavDeviceAddressUseCase(address)
         }
     }
 
     fun removeFavDevice(address: String) {
         viewModelScope.launch {
-            prefsUseCases.removeFavoriteDeviceAddressUseCase(address)
+            prefsUseCases.removeFavDeviceAddressUseCase(address)
         }
     }
 
