@@ -1,5 +1,7 @@
 package com.example.lumen.di
 
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -27,9 +29,21 @@ import javax.inject.Singleton
 object AppModule {
 
     @Provides
+    fun provideBluetoothAdapter(@ApplicationContext context: Context): BluetoothAdapter? {
+        val manager = context.getSystemService(BluetoothManager::class.java)
+        return manager?.adapter
+    }
+
+    @Provides
     @Singleton
-    fun provideBleScanController(@ApplicationContext context: Context): BleScanController {
-        return BleScanControllerImpl(context)
+    fun provideBleScanController(
+        @ApplicationContext context: Context,
+        bluetoothAdapter: BluetoothAdapter?,
+    ): BleScanController {
+        return BleScanControllerImpl(
+            context,
+            bluetoothAdapter,
+        )
     }
 
     @Provides
