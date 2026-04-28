@@ -2,11 +2,11 @@ package com.example.lumen.data.ble
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
-import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.os.Build
@@ -42,7 +42,9 @@ import java.util.UUID
  */
 @SuppressLint("MissingPermission")
 class BleGattControllerImpl(
-    private val context: Context
+    private val context: Context,
+    private val bluetoothAdapter: BluetoothAdapter?,
+    externalScope: CoroutineScope? = null
 ): BleGattController {
 
     companion object {
@@ -52,19 +54,11 @@ class BleGattControllerImpl(
         private const val RETRY_DELAY_MILLIS: Long = 500 // half a sec
     }
 
-    private val bluetoothManager by lazy {
-        context.getSystemService(BluetoothManager::class.java)
-    }
-
-    private val bluetoothAdapter by lazy {
-        bluetoothManager?.adapter
-    }
-
     private var bluetoothGatt: BluetoothGatt? = null
 
     private var connRetryCount = 0
     private var connRetryJob: Job? = null
-    private val bleConnScope = CoroutineScope(Dispatchers.IO)
+    private val bleConnScope = externalScope ?: CoroutineScope(Dispatchers.IO)
 
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
     override val connectionState: StateFlow<ConnectionState>
@@ -105,22 +99,20 @@ class BleGattControllerImpl(
             return
         }
 
-        bluetoothAdapter?.let { adapter ->
-            try {
-                _connectionState.value = ConnectionState.CONNECTING
-                _selectedDevice.value = selectedDevice
+        try {
+            _connectionState.value = ConnectionState.CONNECTING
+            _selectedDevice.value = selectedDevice
 
-                val device = adapter.getRemoteDevice(selectedDevice.address)
-                bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
-            } catch (e: IllegalArgumentException) {
-                Timber.tag(LOG_TAG).e(e,"Device not found")
-                _connectionEvents.emit(
-                    ConnectionResult.Error("Device not found")
-                )
+            val device = bluetoothAdapter.getRemoteDevice(selectedDevice.address)
+            bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
+        } catch (e: IllegalArgumentException) {
+            Timber.tag(LOG_TAG).e(e,"Device not found")
+            _connectionEvents.emit(
+                ConnectionResult.Error("Device not found")
+            )
 
-                close()
-            }
-        } ?: Timber.tag(LOG_TAG).e("BluetoothAdapter not initialized.")
+            close()
+        }
     }
 
     override fun disconnect() {
@@ -185,8 +177,6 @@ class BleGattControllerImpl(
     private val leGattCallback = object : BluetoothGattCallback() {
 
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-            super.onConnectionStateChange(gatt, status, newState)
-
             if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
                 Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
                 return
@@ -232,8 +222,6 @@ class BleGattControllerImpl(
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-            super.onServicesDiscovered(gatt, status)
-
             if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
                 Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
                 return
@@ -296,8 +284,6 @@ class BleGattControllerImpl(
             characteristic: BluetoothGattCharacteristic,
             value: ByteArray
         ) {
-            super.onCharacteristicChanged(gatt, characteristic, value)
-
             Timber.tag(LOG_TAG).d(
                 "Notification received from %s: %s",
                 characteristic.uuid,

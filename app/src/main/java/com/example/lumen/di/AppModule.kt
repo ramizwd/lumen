@@ -48,8 +48,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideBleGattController(@ApplicationContext context: Context): BleGattController {
-        return BleGattControllerImpl(context)
+    fun provideBleGattController(
+        @ApplicationContext context: Context,
+        bluetoothAdapter: BluetoothAdapter?,
+    ): BleGattController {
+        return BleGattControllerImpl(
+            context,
+            bluetoothAdapter,
+        )
     }
 
     @Provides
