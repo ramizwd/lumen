@@ -100,6 +100,7 @@ class BleGattControllerImpl(
         }
 
         try {
+            isInvalidDevice = false
             _connectionState.value = ConnectionState.CONNECTING
             _selectedDevice.value = selectedDevice
 
@@ -139,7 +140,6 @@ class BleGattControllerImpl(
 
         // For gracefully disconnecting a connected device
         if (_connectionState.value == ConnectionState.STATE_LOADED_AND_CONNECTED) {
-            isInvalidDevice = false
             bluetoothGatt?.disconnect()
             Timber.tag(LOG_TAG).d("Device disconnected")
         }
@@ -354,8 +354,6 @@ class BleGattControllerImpl(
             descriptor: BluetoothGattDescriptor?,
             status: Int
         ) {
-            super.onDescriptorWrite(gatt, descriptor, status)
-
             if (status != BluetoothGatt.GATT_SUCCESS) {
                 return
             }
@@ -389,10 +387,7 @@ class BleGattControllerImpl(
                 )
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    gatt.writeDescriptor(
-                        descriptor,
-                        descValue
-                    )
+                    gatt.writeDescriptor(descriptor, descValue)
                 } else {
                     descriptor.value = descValue
                     gatt.writeDescriptor(descriptor)
@@ -430,8 +425,7 @@ class BleGattControllerImpl(
             _connectionState.value = ConnectionState.STATE_LOADED_AND_CONNECTED
             Timber.tag(LOG_TAG).i("Controller state: ${_ledControllerState.value}")
         } else {
-            Timber.tag(LOG_TAG)
-                .w("Expected length 12 bytes. Received: ${value.size}")
+            Timber.tag(LOG_TAG).w("Expected length 12 bytes. Received: ${value.size}")
         }
     }
 
@@ -481,8 +475,8 @@ class BleGattControllerImpl(
                 _selectedDevice.value?.let { device ->
                     connect(device)
                 } ?: run {
-                    Timber.tag(LOG_TAG)
-                        .e("Cannot retry, device to connect to is null")
+                    Timber.tag(LOG_TAG).e("Cannot retry, device to connect to is null")
+
                     _connectionEvents.emit(
                         ConnectionResult.Error("Cannot retry, no device selected")
                     )
@@ -490,12 +484,9 @@ class BleGattControllerImpl(
                 }
             }
         } else {
-            Timber.tag(LOG_TAG)
-                .e("Max connection tries reached. Connection failed")
+            Timber.tag(LOG_TAG).e("Max connection tries reached. Connection failed")
 
-            _connectionEvents.tryEmit(
-                ConnectionResult.ConnectionFailed("Connection failed")
-            )
+            _connectionEvents.tryEmit(ConnectionResult.ConnectionFailed("Connection failed"))
             close()
         }
     }
