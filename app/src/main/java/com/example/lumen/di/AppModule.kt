@@ -61,9 +61,13 @@ object AppModule {
     @Provides
     @Singleton
     fun provideBluetoothStateDataSource(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        bluetoothAdapter: BluetoothAdapter?,
     ): BluetoothStateManager {
-        return BluetoothStateManagerImpl(context)
+        return BluetoothStateManagerImpl(
+            context,
+            bluetoothAdapter
+        )
     }
 
     @Provides

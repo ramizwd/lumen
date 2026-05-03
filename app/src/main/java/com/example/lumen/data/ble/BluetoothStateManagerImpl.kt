@@ -1,7 +1,6 @@
 package com.example.lumen.data.ble
 
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -18,16 +17,9 @@ import kotlinx.coroutines.flow.asSharedFlow
  * Class to monitor Bluetooth state using a broadcast receiver
  */
 class BluetoothStateManagerImpl(
-    private val context: Context,
+    context: Context,
+    bluetoothAdapter: BluetoothAdapter?,
 ): BluetoothStateManager {
-
-    private val bluetoothManager by lazy {
-        context.getSystemService(BluetoothManager::class.java)
-    }
-
-    private val bluetoothAdapter by lazy {
-        bluetoothManager?.adapter
-    }
 
     private val _bluetoothState = MutableStateFlow(BluetoothState.UNKNOWN)
     override val bluetoothState: SharedFlow<BluetoothState>
