@@ -80,7 +80,7 @@ class BleGattControllerImplTest {
         every { btAdapter.getRemoteDevice(device.address) } returns remoteDevice
         every {
             remoteDevice.connectGatt(
-                any(),
+                any<Context>(),
                 any(),
                 capture(callbackSlot)
             )
@@ -125,7 +125,11 @@ class BleGattControllerImplTest {
             assertEquals(ConnectionState.STATE_LOADED_AND_CONNECTED, awaitItem())
 
             verify(exactly = 1) {
-                remoteDevice.connectGatt(any(), any(), any())
+                remoteDevice.connectGatt(
+                    any<Context>(),
+                    any(),
+                    any()
+                )
             }
             verify(exactly = 1) { gatt.discoverServices() }
         }
@@ -154,7 +158,11 @@ class BleGattControllerImplTest {
         }
 
         verify(exactly = 0) {
-            remoteDevice.connectGatt(any(), any(), any())
+            remoteDevice.connectGatt(
+                any<Context>(),
+                any(),
+                any()
+            )
         }
     }
 
@@ -172,7 +180,11 @@ class BleGattControllerImplTest {
         }
 
         verify(exactly = 0) {
-            remoteDevice.connectGatt(any(), any(), any())
+            remoteDevice.connectGatt(
+                any<Context>(),
+                any(),
+                any()
+            )
         }
     }
 
@@ -180,7 +192,7 @@ class BleGattControllerImplTest {
     fun `connect should emit error when connectGatt throws an exception`() = runTest {
         every {
             remoteDevice.connectGatt(
-                any(),
+                any<Context>(),
                 any(),
                 capture(callbackSlot)
             )
@@ -231,7 +243,11 @@ class BleGattControllerImplTest {
             advanceTimeBy(400)
 
             verify(exactly = 2) {
-                remoteDevice.connectGatt(any(), any(), any())
+                remoteDevice.connectGatt(
+                    any<Context>(),
+                    any(),
+                    any()
+                )
             }
 
             cancelAndIgnoreRemainingEvents()
@@ -271,7 +287,11 @@ class BleGattControllerImplTest {
         )
 
         verify(exactly = 6) {
-            remoteDevice.connectGatt(any(), any(), any())
+            remoteDevice.connectGatt(
+                any<Context>(),
+                any(),
+                any()
+            )
         }
     }
 
@@ -344,7 +364,11 @@ class BleGattControllerImplTest {
         advanceTimeBy(600) // advance time by more than retry delay
 
         verify(exactly = 1) {
-            remoteDevice.connectGatt(any(), any(), any())
+            remoteDevice.connectGatt(
+                any<Context>(),
+                any(),
+                any()
+            )
         }
     }
 
@@ -382,7 +406,11 @@ class BleGattControllerImplTest {
         advanceTimeBy(600)
 
         verify(exactly = 1) {
-            remoteDevice.connectGatt(any(), any(), any())
+            remoteDevice.connectGatt(
+                any<Context>(),
+                any(),
+                any()
+            )
         }
     }
 

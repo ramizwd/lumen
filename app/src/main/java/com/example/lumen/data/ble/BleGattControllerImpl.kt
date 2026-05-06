@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattConnectionSettings
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothProfile
 import android.content.Context
@@ -105,7 +106,16 @@ class BleGattControllerImpl(
             _selectedDevice.value = selectedDevice
 
             val device = bluetoothAdapter.getRemoteDevice(selectedDevice.address)
-            bluetoothGatt = device?.connectGatt(context, false, leGattCallback)
+
+            bluetoothGatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) {
+                val gattConnectionSettings = BluetoothGattConnectionSettings.Builder()
+                    .setAutoConnectEnabled(false)
+                    .build()
+
+                device?.connectGatt(gattConnectionSettings, context.mainExecutor, leGattCallback)
+            } else {
+                device?.connectGatt(context, false, leGattCallback)
+            }
         } catch (e: IllegalArgumentException) {
             Timber.tag(LOG_TAG).e(e,"Device not found")
             _connectionEvents.emit(
