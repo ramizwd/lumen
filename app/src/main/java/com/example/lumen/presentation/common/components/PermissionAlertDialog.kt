@@ -51,7 +51,7 @@ interface PermissionTextProvider {
     val confirmButtonText: String
 }
 
-class EnableBluetoothTextProvider() : PermissionTextProvider {
+class EnableBluetoothTextProvider: PermissionTextProvider {
     override val title: String
         get() = "Bluetooth is off"
 
