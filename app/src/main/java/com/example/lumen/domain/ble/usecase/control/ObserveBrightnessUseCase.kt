@@ -7,6 +7,5 @@ import javax.inject.Inject
 
 @OptIn(FlowPreview::class)
 class ObserveBrightnessUseCase @Inject constructor() {
-    operator fun invoke(flow: Flow<Float>) =
-        flow.sample(250)
+    operator fun invoke(flow: Flow<Float>) = flow.sample(250)
 }

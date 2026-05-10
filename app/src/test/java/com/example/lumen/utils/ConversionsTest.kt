@@ -11,13 +11,13 @@ import org.junit.jupiter.api.Test
  * Unit tests for conversion extension functions
  */
 class ConversionsTest {
-
     @Test
     fun `toBrightnessCommandBytes value above max coerces to byte array`() {
         // Given
         val value = 1000f
-        val expectedBytes = "${String.format("%02X", BRIGHTNESS_MAX.toInt())}${BRIGHTNESS_SUFFIX_HEX}"
-            .hexToByteArray()
+        val expectedBytes =
+            "${String.format("%02X", BRIGHTNESS_MAX.toInt())}${BRIGHTNESS_SUFFIX_HEX}"
+                .hexToByteArray()
 
         // When
         val result = value.toBrightnessCommandBytes()
@@ -29,8 +29,9 @@ class ConversionsTest {
     @Test
     fun `toBrightnessCommandBytes value below min coerces to byte array`() {
         val value = -1f
-        val expectedBytes = "${String.format("%02X", BRIGHTNESS_MIN.toInt())}${BRIGHTNESS_SUFFIX_HEX}"
-            .hexToByteArray()
+        val expectedBytes =
+            "${String.format("%02X", BRIGHTNESS_MIN.toInt())}${BRIGHTNESS_SUFFIX_HEX}"
+                .hexToByteArray()
 
         val result = value.toBrightnessCommandBytes()
 

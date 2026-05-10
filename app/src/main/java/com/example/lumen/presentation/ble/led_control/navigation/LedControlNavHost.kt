@@ -24,7 +24,7 @@ fun LedControlNavHost(
     onChangeBrightness: (Float) -> Unit,
     navController: NavHostController,
     startDestination: Screen,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavHost(
         navController = navController,

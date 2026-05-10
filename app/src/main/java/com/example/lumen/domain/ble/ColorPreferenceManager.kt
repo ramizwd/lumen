@@ -8,5 +8,9 @@ import kotlinx.coroutines.flow.Flow
  */
 interface ColorPreferenceManager {
     fun getCustomColors(deviceAddress: String): Flow<List<CustomColorSlot>>
-    suspend fun saveCustomColor(deviceAddress: String, slot: CustomColorSlot)
+
+    suspend fun saveCustomColor(
+        deviceAddress: String,
+        slot: CustomColorSlot,
+    )
 }

@@ -39,12 +39,14 @@ fun LumenNavHost() {
         val currentRoute = rootNavController.currentBackStackEntry?.destination?.route
 
         if (connectionState == ConnectionState.STATE_LOADED_AND_CONNECTED &&
-            currentRoute != LedControlScreen::class.qualifiedName) {
+            currentRoute != LedControlScreen::class.qualifiedName
+        ) {
             rootNavController.navigate(LedControlScreen) {
                 launchSingleTop = true
             }
         } else if (connectionState == ConnectionState.DISCONNECTED &&
-            currentRoute != DiscoverDevicesScreen::class.qualifiedName) {
+            currentRoute != DiscoverDevicesScreen::class.qualifiedName
+        ) {
             rootNavController.navigate(DiscoverDevicesScreen) {
                 popUpTo(LedControlScreen) { inclusive = true }
                 launchSingleTop = true
@@ -53,11 +55,11 @@ fun LumenNavHost() {
     }
 
     NavHost(
-        navController = rootNavController, startDestination = DiscoverDevicesScreen,
+        navController = rootNavController,
+        startDestination = DiscoverDevicesScreen,
         enterTransition = { EnterTransition.None },
-        exitTransition = { ExitTransition.None }
+        exitTransition = { ExitTransition.None },
     ) {
-
         composable<DiscoverDevicesScreen> {
             DiscoverDevicesScreen()
 
@@ -71,21 +73,22 @@ fun LumenNavHost() {
         composable<LedControlScreen>(
             enterTransition = {
                 fadeIn(
-                    animationSpec = tween(500, easing = EaseInQuint)
+                    animationSpec = tween(500, easing = EaseInQuint),
                 ) +
-                        slideIntoContainer(
-                    animationSpec = tween(400, easing = EaseInQuint),
-                    towards = AnimatedContentTransitionScope.SlideDirection.Start
-                )
+                    slideIntoContainer(
+                        animationSpec = tween(400, easing = EaseInQuint),
+                        towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                    )
             },
             exitTransition = {
                 fadeOut(
-                    animationSpec = tween(300, easing = LinearEasing)
-                ) + slideOutOfContainer(
-                    animationSpec = tween(300, easing = EaseOut),
-                    towards = AnimatedContentTransitionScope.SlideDirection.End
-                )
-            }
+                    animationSpec = tween(300, easing = LinearEasing),
+                ) +
+                    slideOutOfContainer(
+                        animationSpec = tween(300, easing = EaseOut),
+                        towards = AnimatedContentTransitionScope.SlideDirection.End,
+                    )
+            },
         ) {
             LedControlScreen(rootNavController = rootNavController)
         }

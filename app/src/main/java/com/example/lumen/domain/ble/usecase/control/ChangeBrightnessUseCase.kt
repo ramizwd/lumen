@@ -8,7 +8,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class ChangeBrightnessUseCase @Inject constructor(
-    private val bleGattController: BleGattController
+    private val bleGattController: BleGattController,
 ) {
     companion object {
         private const val LOG_TAG = "ChangeBrightnessUseCase"
@@ -20,7 +20,7 @@ class ChangeBrightnessUseCase @Inject constructor(
         bleGattController.writeCharacteristic(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
-            value.toBrightnessCommandBytes()
+            value.toBrightnessCommandBytes(),
         )
     }
 }

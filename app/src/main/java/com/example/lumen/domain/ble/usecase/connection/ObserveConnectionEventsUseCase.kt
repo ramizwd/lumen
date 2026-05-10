@@ -7,7 +7,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class ObserveConnectionEventsUseCase @Inject constructor(
-    private val bleGattController: BleGattController
+    private val bleGattController: BleGattController,
 ) {
     companion object {
         private const val LOG_TAG = "ObserveConnectionEventsUseCase"

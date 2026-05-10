@@ -43,10 +43,10 @@ fun ColorPicker(
 ) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier
+        modifier = modifier,
     ) {
         Canvas(
-            modifier = Modifier.matchParentSize()
+            modifier = Modifier.matchParentSize(),
         ) {
             drawIntoCanvas {
                 val nativeCanvas = it.nativeCanvas
@@ -58,14 +58,14 @@ fun ColorPicker(
                     Color.Cyan,
                     Color.Green,
                     Color(0xFFFFEA00),
-                    Color.Red
+                    Color.Red,
                 ).map { color -> color.copy(alpha = glowAlpha).toArgb() }.toIntArray()
 
                 val sweepGradient = SweepGradient(
                     center.x,
                     center.y,
                     argbColors,
-                    null
+                    null,
                 )
 
                 val nativePaint = Paint().asFrameworkPaint().apply {
@@ -79,7 +79,7 @@ fun ColorPicker(
                     center.x,
                     center.y,
                     size.minDimension / 2 + glowRadius / 2, // cover glow area
-                    nativePaint
+                    nativePaint,
                 )
             }
         }
@@ -95,7 +95,7 @@ fun ColorPicker(
                             } finally {
                                 onEndInteraction()
                             }
-                        }
+                        },
                     )
                 }.then(modifier),
             controller = controller,
@@ -103,7 +103,7 @@ fun ColorPicker(
                 // Drop the alpha value
                 onSetHsvColor(colorEnvelope.hexCode.drop(2))
             },
-            wheelImageBitmap = wheelBitmap()
+            wheelImageBitmap = wheelBitmap(),
         )
     }
 }
@@ -112,8 +112,11 @@ fun ColorPicker(
 private fun wheelBitmap(): ImageBitmap {
     val density = LocalDensity.current.density
 
-    val radius =  14.dp
-    val circleColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f).toArgb()
+    val radius = 14.dp
+    val circleColor =
+        MaterialTheme.colorScheme.outline
+            .copy(alpha = 0.2f)
+            .toArgb()
     val borderWidth = 2f * density
     val boarderColor = AndroidColor.WHITE
 
@@ -130,26 +133,29 @@ private fun wheelBitmap(): ImageBitmap {
     val centerX = bitmapDiameter / 2f
     val centerY = bitmapDiameter / 2f
 
-    val circlePaint = AndroidPaint().apply {
-        color = circleColor
-    }
+    val circlePaint =
+        AndroidPaint().apply {
+            color = circleColor
+        }
     canvas.drawCircle(
         centerX,
         centerY,
         contentRadiusPx - borderWidth,
-        circlePaint
+        circlePaint,
     )
 
-    val borderPaint = AndroidPaint().apply {
-        style = AndroidPaint.Style.STROKE
-        strokeWidth = borderWidth
-        color = boarderColor
-    }
+    val borderPaint =
+        AndroidPaint().apply {
+            style = AndroidPaint.Style.STROKE
+            strokeWidth = borderWidth
+            color = boarderColor
+        }
     canvas.drawCircle(
         centerX,
         centerY,
         contentRadiusPx - borderWidth / 2f, // prevent gaps between circle and its border
-        borderPaint)
+        borderPaint,
+    )
 
     return bitmap.asImageBitmap()
 }

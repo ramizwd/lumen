@@ -18,35 +18,32 @@ import timber.log.Timber
  * Handles favoring BLE devices and selected device list preferences
  */
 class BleDevicePreferenceManagerImpl(
-    private val dataStore: DataStore<Preferences>
-): BleDevicePreferenceManager {
-
+    private val dataStore: DataStore<Preferences>,
+) : BleDevicePreferenceManager {
     companion object {
         private const val LOG_TAG = "BleDevicePreferenceManagerImpl"
         private val FAVORITE_DEVICES_KEY = stringSetPreferencesKey("favorite_devices")
         private val SELECTED_LIST_KEY = stringPreferencesKey("selected_device_list")
     }
 
-    override fun getFavDeviceAddresses(): Flow<Set<String>> {
-        return dataStore.data
+    override fun getFavDeviceAddresses(): Flow<Set<String>> =
+        dataStore.data
             .catch { e ->
-                if (e is IOException){
+                if (e is IOException) {
                     Timber.tag(LOG_TAG).e(e, "Error reading from DataStore")
                     emit(emptyPreferences())
                 } else {
                     Timber.tag(LOG_TAG).e(e, "Unexpected error occurred")
                     emit(emptyPreferences())
                 }
-            }
-            .map { preferences ->
+            }.map { preferences ->
                 preferences[FAVORITE_DEVICES_KEY] ?: emptySet()
-        }
-    }
+            }
 
     override suspend fun addFavDeviceAddress(address: String) {
         try {
             dataStore.edit { preferences ->
-                val currFavAddresses= preferences[FAVORITE_DEVICES_KEY] ?: emptySet()
+                val currFavAddresses = preferences[FAVORITE_DEVICES_KEY] ?: emptySet()
                 preferences[FAVORITE_DEVICES_KEY] = currFavAddresses + address
             }
         } catch (e: Exception) {
@@ -65,22 +62,21 @@ class BleDevicePreferenceManagerImpl(
         }
     }
 
-    override fun getDeviceListPreference(): Flow<DeviceListType> {
-        return dataStore.data
+    override fun getDeviceListPreference(): Flow<DeviceListType> =
+        dataStore.data
             .catch { e ->
-                if (e is IOException){
+                if (e is IOException) {
                     Timber.tag(LOG_TAG).e(e, "Error reading from DataStore")
                     emit(emptyPreferences())
                 } else {
                     Timber.tag(LOG_TAG).e(e, "Unexpected error occurred")
                     emit(emptyPreferences())
                 }
-            }
-            .map { preferences ->
-                val listTypeString = preferences[SELECTED_LIST_KEY] ?: DeviceListType.ALL_DEVICES.name
+            }.map { preferences ->
+                val listTypeString =
+                    preferences[SELECTED_LIST_KEY] ?: DeviceListType.ALL_DEVICES.name
                 DeviceListType.valueOf(listTypeString)
-        }
-    }
+            }
 
     override suspend fun saveDeviceListPreference(listType: DeviceListType) {
         try {

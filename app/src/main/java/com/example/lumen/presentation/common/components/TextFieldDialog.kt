@@ -46,11 +46,11 @@ fun TextFieldDialog(
                         }) {
                             Icon(
                                 painter = painterResource(R.drawable.close_24px),
-                                contentDescription = "Clear text"
+                                contentDescription = "Clear text",
                             )
                         }
                     }
-                }
+                },
             )
         },
         onDismissRequest = {
@@ -59,9 +59,10 @@ fun TextFieldDialog(
         confirmButton = {
             TextButton(
                 onClick = { onConfirmation(state.text.toString()) },
-                enabled = state.text.length in minChar..maxChar
-                        && state.text.isNotBlank()
-                        && state.text != initialText
+                enabled =
+                    state.text.length in minChar..maxChar &&
+                        state.text.isNotBlank() &&
+                        state.text != initialText,
             ) {
                 Text(text = "Confirm")
             }
@@ -70,14 +71,13 @@ fun TextFieldDialog(
             TextButton(
                 onClick = {
                     onDismissRequest()
-                }
+                },
             ) {
                 Text("Dismiss")
             }
-        }
+        },
     )
 }
-
 
 @PreviewLightDark
 @Composable

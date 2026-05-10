@@ -109,7 +109,7 @@ fun ColorPickerContent(
         if (!isUsingColorPicker) {
             colorPickerController.selectByColor(
                 color = ledHexColor.hexToComposeColor(),
-                fromUser = false
+                fromUser = false,
             )
         }
     }
@@ -121,17 +121,18 @@ fun ColorPickerContent(
     when (deviceConfig) {
         DeviceConfiguration.TABLET_PORTRAIT,
         DeviceConfiguration.TABLET_LANDSCAPE,
-        DeviceConfiguration.MOBILE_PORTRAIT -> {
+        DeviceConfiguration.MOBILE_PORTRAIT,
+        -> {
             Column(
                 modifier = modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
                     text = "#$ledHexColor".uppercase(),
                     fontFamily = FontFamily.Monospace,
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.tertiary
+                    color = MaterialTheme.colorScheme.tertiary,
                 )
 
                 Column {
@@ -179,7 +180,7 @@ fun ColorPickerContent(
                                 selectedSlot = 0
                                 isUsingColorPicker = false
                                 setLedColor(hexColor)
-                            }
+                            },
                         )
                     }
                 }
@@ -202,7 +203,7 @@ fun ColorPickerContent(
                     isOn = isOn,
                     onTurnLedOnClick = onTurnLedOnClick,
                     onTurnLedOffClick = onTurnLedOffClick,
-                    modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium)
+                    modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium),
                 )
             }
         }
@@ -211,12 +212,12 @@ fun ColorPickerContent(
             Row(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Column(
                     modifier = Modifier.fillMaxHeight().weight(1f),
                     verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     ColorPicker(
                         modifier = Modifier
@@ -240,13 +241,13 @@ fun ColorPickerContent(
                 Column(
                     modifier = Modifier.fillMaxHeight().weight(1.2f),
                     verticalArrangement = Arrangement.SpaceBetween,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
                         text = "#$ledHexColor".uppercase(),
                         fontFamily = FontFamily.Monospace,
                         style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.tertiary
+                        color = MaterialTheme.colorScheme.tertiary,
                     )
 
                     ColorRows(
@@ -272,7 +273,7 @@ fun ColorPickerContent(
                                 end = MaterialTheme.spacing.largeIncreased,
                             ),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceAround
+                        horizontalArrangement = Arrangement.SpaceAround,
                     ) {
                         RandomColorButton(
                             enabled = isOn,
@@ -290,7 +291,7 @@ fun ColorPickerContent(
                                 selectedSlot = 0
                                 isUsingColorPicker = false
                                 setLedColor(hexColor)
-                            }
+                            },
                         )
                     }
 
@@ -298,7 +299,7 @@ fun ColorPickerContent(
                         isOn = isOn,
                         onTurnLedOnClick = onTurnLedOnClick,
                         onTurnLedOffClick = onTurnLedOffClick,
-                        modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium)
+                        modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium),
                     )
                 }
             }

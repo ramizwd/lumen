@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test
  * Unite tests for [BluetoothStateManagerImpl]
  */
 class BluetoothStateManagerImplTest {
-
     private val receiverSlot = slot<BroadcastReceiver>()
 
     private lateinit var context: Context
@@ -37,34 +36,36 @@ class BluetoothStateManagerImplTest {
     }
 
     @Test
-    fun `initial state reflects bluetoothAdapter state`() = runTest {
-        every { btAdapter.state } returns BluetoothAdapter.STATE_ON
+    fun `initial state reflects bluetoothAdapter state`() =
+        runTest {
+            every { btAdapter.state } returns BluetoothAdapter.STATE_ON
 
-        val manager = BluetoothStateManagerImpl(context, btAdapter)
+            val manager = BluetoothStateManagerImpl(context, btAdapter)
 
-        manager.bluetoothState.test {
-            assertEquals(BluetoothState.ON, awaitItem())
+            manager.bluetoothState.test {
+                assertEquals(BluetoothState.ON, awaitItem())
+            }
         }
-    }
 
     @Test
-    fun `receiver updates flow when BT state changes`() = runTest {
-        every { btAdapter.state } returns BluetoothAdapter.STATE_OFF
+    fun `receiver updates flow when BT state changes`() =
+        runTest {
+            every { btAdapter.state } returns BluetoothAdapter.STATE_OFF
 
-        val manager = BluetoothStateManagerImpl(context, btAdapter)
+            val manager = BluetoothStateManagerImpl(context, btAdapter)
 
-        val intent = mockk<Intent>(relaxed = true)
-        every { intent.action } returns BluetoothAdapter.ACTION_STATE_CHANGED
-        every {
-            intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, any())
-        } returns BluetoothAdapter.STATE_ON
+            val intent = mockk<Intent>(relaxed = true)
+            every { intent.action } returns BluetoothAdapter.ACTION_STATE_CHANGED
+            every {
+                intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, any())
+            } returns BluetoothAdapter.STATE_ON
 
-        receiverSlot.captured.onReceive(context, intent)
+            receiverSlot.captured.onReceive(context, intent)
 
-        manager.bluetoothState.test {
-            assertEquals(BluetoothState.ON, awaitItem())
+            manager.bluetoothState.test {
+                assertEquals(BluetoothState.ON, awaitItem())
+            }
         }
-    }
 
     @Test
     fun `verify receiver is registered on init`() {

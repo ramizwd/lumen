@@ -5,5 +5,5 @@ package com.example.lumen.domain.ble.model
  */
 data class CustomColorSlot(
     val id: Int,
-    val hexColor: String
+    val hexColor: String,
 )

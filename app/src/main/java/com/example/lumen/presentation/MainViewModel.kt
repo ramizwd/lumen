@@ -24,8 +24,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val connectionUseCases: ConnectionUseCases,
     observeBluetoothStateUseCase: ObserveBluetoothStateUseCase,
-): ViewModel() {
-
+) : ViewModel() {
     companion object {
         private const val LOG_TAG = "MainViewModel"
     }
@@ -57,39 +56,43 @@ class MainViewModel @Inject constructor(
                         ConnectionState.CONNECTING,
                         ConnectionState.LOADING_DEVICE_STATE,
                         ConnectionState.INVALID_DEVICE,
-                        ConnectionState.RETRYING -> true
+                        ConnectionState.RETRYING,
+                        -> true
                         else -> false
                     }
                 }
             }
         }
 
-        observeBluetoothStateUseCase().onEach { btState ->
-            when (btState) {
-                BluetoothState.ON -> {
-                    Timber.tag(LOG_TAG).d("BT on")
-                }
-                BluetoothState.OFF -> {
-                    Timber.tag(LOG_TAG).d("BT off")
-                }
-                BluetoothState.TURNING_ON -> {
-                    Timber.tag(LOG_TAG).d("BT turning on...")
-                }
-                BluetoothState.TURNING_OFF -> {
-                    Timber.tag(LOG_TAG).d("BT turning off...")
+        observeBluetoothStateUseCase()
+            .onEach { btState ->
+                when (btState) {
+                    BluetoothState.ON -> {
+                        Timber.tag(LOG_TAG).d("BT on")
+                    }
+                    BluetoothState.OFF -> {
+                        Timber.tag(LOG_TAG).d("BT off")
+                    }
+                    BluetoothState.TURNING_ON -> {
+                        Timber.tag(LOG_TAG).d("BT turning on...")
+                    }
+                    BluetoothState.TURNING_OFF -> {
+                        Timber.tag(LOG_TAG).d("BT turning off...")
 
-                    if (_connectionState.value == ConnectionState.STATE_LOADED_AND_CONNECTED) {
-                        Timber.tag(LOG_TAG).i("Disconnecting...")
-                        disconnect()
+                        if (_connectionState.value ==
+                            ConnectionState.STATE_LOADED_AND_CONNECTED
+                        ) {
+                            Timber.tag(LOG_TAG).i("Disconnecting...")
+                            disconnect()
+                        }
+                    }
+                    BluetoothState.UNKNOWN -> {
+                        Timber.tag(LOG_TAG).d("BT state unknown")
                     }
                 }
-                BluetoothState.UNKNOWN -> {
-                    Timber.tag(LOG_TAG).d("BT state unknown")
-                }
-            }
-        }.catch { throwable ->
-            Timber.tag(LOG_TAG).e(throwable, "BT state observation error")
-        }.launchIn(viewModelScope)
+            }.catch { throwable ->
+                Timber.tag(LOG_TAG).e(throwable, "BT state observation error")
+            }.launchIn(viewModelScope)
     }
 
     fun disconnect() {

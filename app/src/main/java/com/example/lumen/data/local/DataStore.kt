@@ -10,16 +10,18 @@ import timber.log.Timber
 
 val Context.colorDataStore: DataStore<Preferences> by preferencesDataStore(
     name = "color_prefs",
-    corruptionHandler = ReplaceFileCorruptionHandler { exception ->
-        Timber.tag("DataStore").e(exception, "colorDataStore corrupted")
-        emptyPreferences()
-    }
+    corruptionHandler =
+        ReplaceFileCorruptionHandler { exception ->
+            Timber.tag("DataStore").e(exception, "colorDataStore corrupted")
+            emptyPreferences()
+        },
 )
 
 val Context.bleDeviceDataStore: DataStore<Preferences> by preferencesDataStore(
     name = "device_prefs",
-    corruptionHandler = ReplaceFileCorruptionHandler { exception ->
-        Timber.tag("DataStore").e(exception, "bleDeviceDataStore corrupted")
-        emptyPreferences()
-    }
+    corruptionHandler =
+        ReplaceFileCorruptionHandler { exception ->
+            Timber.tag("DataStore").e(exception, "bleDeviceDataStore corrupted")
+            emptyPreferences()
+        },
 )

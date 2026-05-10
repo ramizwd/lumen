@@ -17,7 +17,8 @@ fun PlainTooltip(
     text: String,
     modifier: Modifier = Modifier,
 ) {
-    val positionProvider = rememberTooltipPositionProvider(positioning = TooltipAnchorPosition.Above)
+    val positionProvider =
+        rememberTooltipPositionProvider(positioning = TooltipAnchorPosition.Above)
 
     TooltipBox(
         modifier = modifier,
@@ -25,7 +26,7 @@ fun PlainTooltip(
         tooltip = {
             PlainTooltip { Text(text = text) }
         },
-        state = rememberTooltipState()
+        state = rememberTooltipState(),
     ) {
         content()
     }

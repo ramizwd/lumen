@@ -23,11 +23,12 @@ fun String.hexToComposeColor(): Color {
  * Generates random 6 digit hex color string with random saturation and max brightness
  */
 fun Random.nextColorHexString(): String {
-    val hsv = floatArrayOf(
-        nextFloat() * 360f,
-        nextFloat(),
-        1.0f
-    )
+    val hsv =
+        floatArrayOf(
+            nextFloat() * 360f,
+            nextFloat(),
+            1.0f,
+        )
 
     // convert HSV to an ARGB int color
     val colorInt = AndroidColor.HSVToColor(hsv)
@@ -39,6 +40,4 @@ fun Random.nextColorHexString(): String {
  * Converts an ARGB int color to 6 digit hex string, dropping first two digits that are
  * associated with the alpha value
  */
-fun @receiver:ColorInt Int.toNoAlphaHexString(): String {
-    return String.format("%02X", this).drop(2)
-}
+fun @receiver:ColorInt Int.toNoAlphaHexString(): String = String.format("%02X", this).drop(2)

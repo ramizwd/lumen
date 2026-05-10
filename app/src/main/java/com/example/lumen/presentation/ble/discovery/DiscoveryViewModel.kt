@@ -41,8 +41,7 @@ class DiscoveryViewModel @Inject constructor(
     private val connectionUseCases: ConnectionUseCases,
     private val prefsUseCases: PrefsUseCases,
     observeBluetoothStateUseCase: ObserveBluetoothStateUseCase,
-): ViewModel() {
-
+) : ViewModel() {
     companion object {
         private const val LOG_TAG = "DiscoveryViewModel"
     }
@@ -54,71 +53,78 @@ class DiscoveryViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(DiscoveryUiState())
 
-    val uiState = combine(
-        discoveryUseCases.observeScanResultsUseCase(),
-        discoveryUseCases.observeScanStateUseCase(),
-        prefsUseCases.getFavoriteDeviceAddressesUseCase(),
-        prefsUseCases.getDeviceListPreferenceUseCase(),
-        _uiState
-    ) { scanResults, scanState, favAddresses, listType, state ->
-        Timber.tag(LOG_TAG).d("scanResults: $scanResults")
+    val uiState =
+        combine(
+            discoveryUseCases.observeScanResultsUseCase(),
+            discoveryUseCases.observeScanStateUseCase(),
+            prefsUseCases.getFavoriteDeviceAddressesUseCase(),
+            prefsUseCases.getDeviceListPreferenceUseCase(),
+            _uiState,
+        ) { scanResults, scanState, favAddresses, listType, state ->
+            Timber.tag(LOG_TAG).d("scanResults: $scanResults")
 
-        val devices = scanResults.map { device ->
-            val isFavorite = favAddresses.contains(device.address)
-            DeviceContent(device, isFavorite)
-        }
-        val favDevices = devices.filter { it.isFavorite }
+            val devices =
+                scanResults.map { device ->
+                    val isFavorite = favAddresses.contains(device.address)
+                    DeviceContent(device, isFavorite)
+                }
+            val favDevices = devices.filter { it.isFavorite }
 
-        val deviceList = when (listType) {
-            DeviceListType.ALL_DEVICES -> devices
-            DeviceListType.FAVORITE_DEVICES -> favDevices
-        }
+            val deviceList =
+                when (listType) {
+                    DeviceListType.ALL_DEVICES -> devices
+                    DeviceListType.FAVORITE_DEVICES -> favDevices
+                }
 
-        val emptyScanResTxt = getEmptyScanResultTxt(
-            scanResults.isEmpty(),
-            favDevices.isEmpty(),
-            scanState,
-            listType
+            val emptyScanResTxt =
+                getEmptyScanResultTxt(
+                    scanResults.isEmpty(),
+                    favDevices.isEmpty(),
+                    scanState,
+                    listType,
+                )
+
+            state.copy(
+                scanResults = deviceList,
+                scanState = scanState,
+                emptyScanResultTxt = emptyScanResTxt,
+                selectedListType = listType,
+            )
+        }.combine(
+            observeBluetoothStateUseCase(),
+        ) { currentState, bluetoothState ->
+            currentState.copy(
+                bluetoothState = bluetoothState,
+                isBtDisabled = bluetoothState == BluetoothState.OFF,
+            )
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            _uiState.value,
         )
-
-        state.copy(
-            scanResults = deviceList,
-            scanState = scanState,
-            emptyScanResultTxt = emptyScanResTxt,
-            selectedListType = listType,
-        )
-    }.combine(
-        observeBluetoothStateUseCase(),
-    ) { currentState, bluetoothState ->
-        currentState.copy(
-            bluetoothState = bluetoothState,
-            isBtDisabled = bluetoothState == BluetoothState.OFF,
-        )
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        _uiState.value
-    )
 
     init {
-        discoveryUseCases.observeScanErrorsUseCase().onEach { error ->
-            _uiState.update { it.copy(
-                errorMessage = error
-            ) }
-        }.launchIn(viewModelScope)
+        discoveryUseCases
+            .observeScanErrorsUseCase()
+            .onEach { error ->
+                _uiState.update {
+                    it.copy(
+                        errorMessage = error,
+                    )
+                }
+            }.launchIn(viewModelScope)
 
         uiState
             .distinctUntilChangedBy {
                 Pair(it.bluetoothState, it.btPermissionStatus)
-            }
-            .onEach { stateValue ->
+            }.onEach { stateValue ->
                 val btState = stateValue.bluetoothState
                 val btPermStatus = stateValue.btPermissionStatus
                 val isScanning = stateValue.scanState == ScanState.SCANNING
 
                 when (btState) {
                     BluetoothState.ON if !isScanning &&
-                            btPermStatus == BluetoothPermissionStatus.GRANTED -> {
+                        btPermStatus == BluetoothPermissionStatus.GRANTED -> {
                         startScan()
                     }
                     BluetoothState.TURNING_OFF if isScanning -> {
@@ -128,47 +134,56 @@ class DiscoveryViewModel @Inject constructor(
                 }
             }.launchIn(viewModelScope)
 
-        connectionUseCases.observeConnectionEventsUseCase().onEach { result ->
-            when(result) {
-                ConnectionResult.ConnectionEstablished -> {
-                    _uiState.update { it.copy(
-                        infoMessage = null,
-                        errorMessage = null,
-                    ) }
-                }
-                ConnectionResult.Disconnected -> {
-                    _uiState.update { it.copy(infoMessage = "Disconnected") }
-                }
-                ConnectionResult.InvalidDevice -> {
-                    _uiState.update { it.copy(infoMessage = "Invalid device") }
-                }
-                ConnectionResult.ConnectionCanceled -> {
-                    _uiState.update { it.copy(infoMessage = "Connection canceled") }
-                }
+        connectionUseCases
+            .observeConnectionEventsUseCase()
+            .onEach { result ->
+                when (result) {
+                    ConnectionResult.ConnectionEstablished -> {
+                        _uiState.update {
+                            it.copy(
+                                infoMessage = null,
+                                errorMessage = null,
+                            )
+                        }
+                    }
+                    ConnectionResult.Disconnected -> {
+                        _uiState.update { it.copy(infoMessage = "Disconnected") }
+                    }
+                    ConnectionResult.InvalidDevice -> {
+                        _uiState.update { it.copy(infoMessage = "Invalid device") }
+                    }
+                    ConnectionResult.ConnectionCanceled -> {
+                        _uiState.update { it.copy(infoMessage = "Connection canceled") }
+                    }
 
-                is ConnectionResult.Error -> {
-                    _uiState.update { it.copy(
-                        errorMessage = result.message
-                    ) }
-                }
-                is ConnectionResult.ConnectionFailed -> {
-                    _snackbarEvent.send(
-                        SnackbarEvent(
-                            message = result.message,
-                            actionLabel = "RETRY",
-                            duration = SnackbarDuration.Long,
+                    is ConnectionResult.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                errorMessage = result.message,
+                            )
+                        }
+                    }
+                    is ConnectionResult.ConnectionFailed -> {
+                        _snackbarEvent.send(
+                            SnackbarEvent(
+                                message = result.message,
+                                actionLabel = "RETRY",
+                                duration = SnackbarDuration.Long,
+                            ),
                         )
-                    )
+                    }
                 }
-
-            }
-        }.catch { throwable ->
-            Timber.tag(LOG_TAG)
-                .e(throwable, "Connection event observation error")
-        }.launchIn(viewModelScope)
+            }.catch { throwable ->
+                Timber
+                    .tag(LOG_TAG)
+                    .e(throwable, "Connection event observation error")
+            }.launchIn(viewModelScope)
     }
 
-    fun onBtPermissionResult(granted: Boolean, showRationale: Boolean) {
+    fun onBtPermissionResult(
+        granted: Boolean,
+        showRationale: Boolean,
+    ) {
         when {
             granted -> {
                 _uiState.update {
@@ -177,7 +192,9 @@ class DiscoveryViewModel @Inject constructor(
             }
             showRationale -> {
                 _uiState.update {
-                    it.copy(btPermissionStatus = BluetoothPermissionStatus.DENIED_RATIONALE_REQUIRED)
+                    it.copy(
+                        btPermissionStatus = BluetoothPermissionStatus.DENIED_RATIONALE_REQUIRED,
+                    )
                 }
             }
             else -> {
@@ -260,7 +277,7 @@ class DiscoveryViewModel @Inject constructor(
                     if (uiState.value.selectedListType != DeviceListType.ALL_DEVICES) {
                         Timber.tag(LOG_TAG).d("Save All Devices list type")
                         prefsUseCases.saveDeviceListPreferenceUseCase(
-                            DeviceListType.ALL_DEVICES
+                            DeviceListType.ALL_DEVICES,
                         )
                     }
                 }
@@ -268,7 +285,7 @@ class DiscoveryViewModel @Inject constructor(
                     if (uiState.value.selectedListType != DeviceListType.FAVORITE_DEVICES) {
                         Timber.tag(LOG_TAG).d("Save Fav Devices list type")
                         prefsUseCases.saveDeviceListPreferenceUseCase(
-                            DeviceListType.FAVORITE_DEVICES
+                            DeviceListType.FAVORITE_DEVICES,
                         )
                     }
                 }
@@ -277,22 +294,22 @@ class DiscoveryViewModel @Inject constructor(
     }
 
     // Check BT permission and its state, trigger appropriate UI event if preconditions are not met
-    private fun handleScanPreconditions(): Boolean {
-        return when {
-            uiState.value.btPermissionStatus == BluetoothPermissionStatus.DENIED_RATIONALE_REQUIRED -> {
+    private fun handleScanPreconditions(): Boolean =
+        when {
+            uiState.value.btPermissionStatus ==
+                BluetoothPermissionStatus.DENIED_RATIONALE_REQUIRED -> {
                 onEvent(DiscoverDevicesUiEvent.TogglePermissionDialog(true))
                 false
             } uiState.value.btPermissionStatus == BluetoothPermissionStatus.DENIED_PERMANENTLY -> {
                 onEvent(DiscoverDevicesUiEvent.ToggleOpenSettingsDialog(true))
                 false
             }
-            uiState.value.isBtDisabled-> {
+            uiState.value.isBtDisabled -> {
                 onEvent(DiscoverDevicesUiEvent.ToggleEnableBtDialog(true))
                 false
             }
             else -> true
         }
-    }
 
     private fun getEmptyScanResultTxt(
         isNoDevices: Boolean,
@@ -300,17 +317,19 @@ class DiscoveryViewModel @Inject constructor(
         scanState: ScanState,
         listType: DeviceListType,
     ): String? {
-        val scanStateMsg = when (scanState) {
-            ScanState.SCANNING -> "Searching..."
-            ScanState.SCAN_PAUSED -> "Start scanning to find nearby devices."
-            ScanState.SCAN_AUTO_PAUSED -> "No devices found."
-        }
+        val scanStateMsg =
+            when (scanState) {
+                ScanState.SCANNING -> "Searching..."
+                ScanState.SCAN_PAUSED -> "Start scanning to find nearby devices."
+                ScanState.SCAN_AUTO_PAUSED -> "No devices found."
+            }
 
-        val favScanStateMsg = when (scanState) {
-            ScanState.SCANNING -> "Searching for favorites..."
-            ScanState.SCAN_PAUSED -> "Start scanning to find favorite devices."
-            ScanState.SCAN_AUTO_PAUSED -> "No favorite devices found."
-        }
+        val favScanStateMsg =
+            when (scanState) {
+                ScanState.SCANNING -> "Searching for favorites..."
+                ScanState.SCAN_PAUSED -> "Start scanning to find favorite devices."
+                ScanState.SCAN_AUTO_PAUSED -> "No favorite devices found."
+            }
 
         return when (listType) {
             DeviceListType.ALL_DEVICES -> {

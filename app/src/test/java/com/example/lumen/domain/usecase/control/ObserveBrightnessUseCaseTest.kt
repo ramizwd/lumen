@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ObserveBrightnessUseCaseTest {
-
     private lateinit var flow: MutableSharedFlow<Float>
     private lateinit var useCase: ObserveBrightnessUseCase
 
@@ -27,37 +26,39 @@ class ObserveBrightnessUseCaseTest {
     }
 
     @Test
-    fun `should only emit once when multiple emissions happen within 250ms`() = runTest {
-        useCase(flow).test {
-            flow.tryEmit(10f)
-            flow.tryEmit(50f)
-            flow.tryEmit(90f)
+    fun `should only emit once when multiple emissions happen within 250ms`() =
+        runTest {
+            useCase(flow).test {
+                flow.tryEmit(10f)
+                flow.tryEmit(50f)
+                flow.tryEmit(90f)
 
-            runCurrent()
-            expectNoEvents()
+                runCurrent()
+                expectNoEvents()
 
-            advanceTimeBy(100)
-            expectNoEvents()
+                advanceTimeBy(100)
+                expectNoEvents()
 
-            advanceTimeBy(150)
-            runCurrent()
+                advanceTimeBy(150)
+                runCurrent()
 
-            assertEquals(90f, expectMostRecentItem())
+                assertEquals(90f, expectMostRecentItem())
+            }
         }
-    }
 
     @Test
-    fun `should emit multiple values if they fall in different windows`() = runTest {
-        useCase(flow).test {
-            flow.tryEmit(10f)
-            advanceTimeBy(250)
-            runCurrent()
-            assertEquals(10f, expectMostRecentItem())
+    fun `should emit multiple values if they fall in different windows`() =
+        runTest {
+            useCase(flow).test {
+                flow.tryEmit(10f)
+                advanceTimeBy(250)
+                runCurrent()
+                assertEquals(10f, expectMostRecentItem())
 
-            flow.tryEmit(50f)
-            advanceTimeBy(250)
-            runCurrent()
-            assertEquals(50f, expectMostRecentItem())
+                flow.tryEmit(50f)
+                advanceTimeBy(250)
+                runCurrent()
+                assertEquals(50f, expectMostRecentItem())
+            }
         }
-    }
 }

@@ -6,13 +6,16 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class SaveCustomColorUseCase @Inject constructor(
-    private val colorPreferenceManager: ColorPreferenceManager
+    private val colorPreferenceManager: ColorPreferenceManager,
 ) {
     companion object {
         private const val LOG_TAG = "SaveCustomColorUseCase"
     }
 
-    suspend operator fun invoke(deviceAddress: String, slot: CustomColorSlot) {
+    suspend operator fun invoke(
+        deviceAddress: String,
+        slot: CustomColorSlot,
+    ) {
         try {
             colorPreferenceManager.saveCustomColor(deviceAddress, slot)
         } catch (e: IllegalArgumentException) {

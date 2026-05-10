@@ -11,10 +11,8 @@ val btPermissionArray =
         Manifest.permission.BLUETOOTH_CONNECT,
     )
 
-
-fun Context.hasPermission(permission: String): Boolean {
-    return this.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
-}
+fun Context.hasPermission(permission: String): Boolean =
+    this.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
 
 fun Context.hasBluetoothPermissions(): Boolean {
     return btPermissionArray.all { perms ->
@@ -22,8 +20,7 @@ fun Context.hasBluetoothPermissions(): Boolean {
     }
 }
 
-fun Activity.shouldShowBluetoothRationale(): Boolean {
-    return btPermissionArray.any { perm ->
+fun Activity.shouldShowBluetoothRationale(): Boolean =
+    btPermissionArray.any { perm ->
         shouldShowRequestPermissionRationale(perm)
     }
-}

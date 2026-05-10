@@ -25,11 +25,11 @@ fun RandomColorButton(
             FilledTonalIconButton(
                 modifier = modifier,
                 enabled = enabled,
-                onClick = { onClick(Random().nextColorHexString()) }
+                onClick = { onClick(Random().nextColorHexString()) },
             ) {
                 Icon(
                     painter = painterResource(R.drawable.dice_filled_24px),
-                    contentDescription = "Pick random color"
+                    contentDescription = "Pick random color",
                 )
             }
         },

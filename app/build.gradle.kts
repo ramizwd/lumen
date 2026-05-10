@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ktlint)
 }
 
 android {
@@ -27,7 +28,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -53,6 +54,21 @@ kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_11
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
+    }
+}
+
+ktlint {
+    verbose.set(true)
+    android.set(true)
+
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+    }
+
+    filter {
+        exclude("**/generated/**")
+        include("**/kotlin/**")
     }
 }
 

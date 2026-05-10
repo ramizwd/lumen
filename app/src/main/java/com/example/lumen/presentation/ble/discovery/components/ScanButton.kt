@@ -14,7 +14,7 @@ fun ScanButton(
     onStopScan: () -> Unit,
 ) {
     TextButton(
-        onClick = { if (isScanning) onStopScan() else onStartScan() }
+        onClick = { if (isScanning) onStopScan() else onStartScan() },
     ) {
         Text(text = if (isScanning) "Stop Scanning" else "Scan")
     }
@@ -28,7 +28,7 @@ fun ScanButtonPreview() {
             ScanButton(
                 isScanning = false,
                 onStartScan = {},
-                onStopScan = {}
+                onStopScan = {},
             )
         }
     }
@@ -42,7 +42,7 @@ fun ScanButtonScanningPreview() {
             ScanButton(
                 isScanning = true,
                 onStartScan = {},
-                onStopScan = {}
+                onStopScan = {},
             )
         }
     }

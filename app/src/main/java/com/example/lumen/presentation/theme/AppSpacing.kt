@@ -21,6 +21,6 @@ data class AppSpacing(
 val LocalAppSpacing = compositionLocalOf { AppSpacing() }
 
 val MaterialTheme.spacing: AppSpacing
-@Composable
-@ReadOnlyComposable
-get() = LocalAppSpacing.current
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAppSpacing.current

@@ -8,7 +8,7 @@ fun showToast(
     context: Context,
     message: String,
     duration: Int = Toast.LENGTH_SHORT,
-    currentToastRef: MutableState<Toast?>
+    currentToastRef: MutableState<Toast?>,
 ): Toast {
     currentToastRef.value?.cancel()
     val newToast = Toast.makeText(context, message, duration)

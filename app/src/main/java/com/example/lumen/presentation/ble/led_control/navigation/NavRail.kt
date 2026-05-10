@@ -29,12 +29,12 @@ fun NavRail(
     currentDestination: NavDestination?,
     windowInsets: WindowInsets,
     containerColor: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavigationRail(
         windowInsets = windowInsets,
         containerColor = containerColor,
-        modifier = modifier
+        modifier = modifier,
     ) {
         Column(
             modifier = Modifier.fillMaxHeight(),
@@ -42,9 +42,10 @@ fun NavRail(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             BottomNavItem.entries.forEach { item ->
-                val selected = currentDestination?.hierarchy?.any {
-                    it.route == item.route::class.qualifiedName
-                } == true
+                val selected =
+                    currentDestination?.hierarchy?.any {
+                        it.route == item.route::class.qualifiedName
+                    } == true
 
                 NavigationRailItem(
                     selected = selected,
@@ -62,12 +63,16 @@ fun NavRail(
                     },
                     icon = {
                         Icon(
-                            painter = if (selected) painterResource( item.iconSelected)
-                            else painterResource( item.icon),
-                            contentDescription = item.contentDescription
+                            painter =
+                                if (selected) {
+                                    painterResource(item.iconSelected)
+                                } else {
+                                    painterResource(item.icon)
+                                },
+                            contentDescription = item.contentDescription,
                         )
                     },
-                    label = { Text(text = item.label) }
+                    label = { Text(text = item.label) },
                 )
             }
         }
@@ -83,7 +88,7 @@ fun NavRailPreview() {
                 navController = rememberNavController(),
                 currentDestination = null,
                 windowInsets = NavigationBarDefaults.windowInsets,
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
             )
         }
     }

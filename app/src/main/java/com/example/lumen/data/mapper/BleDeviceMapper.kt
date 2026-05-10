@@ -5,9 +5,8 @@ import android.bluetooth.le.ScanResult
 import com.example.lumen.domain.ble.model.BleDevice
 
 @SuppressLint("MissingPermission")
-fun ScanResult.toBleDevice(): BleDevice {
-    return BleDevice(
+fun ScanResult.toBleDevice(): BleDevice =
+    BleDevice(
         name = device.name,
-        address = device.address
+        address = device.address,
     )
-}

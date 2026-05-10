@@ -40,46 +40,53 @@ fun RadarScanAnimation(
     val infiniteTransition = rememberInfiniteTransition(label = "radar_rings_transition")
     val density = LocalDensity.current
 
-    val maxRadiusPx = remember(key1 = density, key2 = maxRadius) {
-        with(receiver = density) { maxRadius.toPx() }
-    }
+    val maxRadiusPx =
+        remember(key1 = density, key2 = maxRadius) {
+            with(receiver = density) { maxRadius.toPx() }
+        }
 
-    val ringRadii = List(size = numberOfRings) { i ->
-        val delay = (animationDurationMillis / numberOfRings) * i
-        infiniteTransition.animateFloat(
-            initialValue = 0f,
-            targetValue = maxRadiusPx,
-            animationSpec = infiniteRepeatable(
-                animation = tween(
-                    durationMillis = animationDurationMillis,
-                    delayMillis = delay,
-                    easing = LinearEasing,
-                ),
-                repeatMode = RepeatMode.Restart
-            ),
-            label = "radar_ring_${i}_radius"
-        )
-    }
+    val ringRadii =
+        List(size = numberOfRings) { i ->
+            val delay = (animationDurationMillis / numberOfRings) * i
+            infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = maxRadiusPx,
+                animationSpec =
+                    infiniteRepeatable(
+                        animation =
+                            tween(
+                                durationMillis = animationDurationMillis,
+                                delayMillis = delay,
+                                easing = LinearEasing,
+                            ),
+                        repeatMode = RepeatMode.Restart,
+                    ),
+                label = "radar_ring_${i}_radius",
+            )
+        }
 
-    val ringAlphas = List(size = numberOfRings) { i ->
-        val delay = (animationDurationMillis / numberOfRings) * i
-        infiniteTransition.animateFloat(
-            initialValue = 1f,
-            targetValue = 0f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(
-                    durationMillis = animationDurationMillis,
-                    delayMillis = delay,
-                    easing = LinearEasing,
-                ),
-                repeatMode = RepeatMode.Restart
-            ),
-            label = "radar_ring_${i}_alpha"
-        )
-    }
+    val ringAlphas =
+        List(size = numberOfRings) { i ->
+            val delay = (animationDurationMillis / numberOfRings) * i
+            infiniteTransition.animateFloat(
+                initialValue = 1f,
+                targetValue = 0f,
+                animationSpec =
+                    infiniteRepeatable(
+                        animation =
+                            tween(
+                                durationMillis = animationDurationMillis,
+                                delayMillis = delay,
+                                easing = LinearEasing,
+                            ),
+                        repeatMode = RepeatMode.Restart,
+                    ),
+                label = "radar_ring_${i}_alpha",
+            )
+        }
 
     Box(
-        modifier = modifier.size(maxRadius)
+        modifier = modifier.size(maxRadius),
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val centerCircleRadius = maxRadiusPx * 0.1f
@@ -98,7 +105,7 @@ fun RadarScanAnimation(
                     drawCircle(
                         color = animationColor.copy(alpha = alpha),
                         radius = radius,
-                        style = Stroke(width = strokeWidth.toPx())
+                        style = Stroke(width = strokeWidth.toPx()),
                     )
                 }
             }

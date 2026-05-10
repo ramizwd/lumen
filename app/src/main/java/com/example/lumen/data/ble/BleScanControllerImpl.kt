@@ -37,9 +37,8 @@ import timber.log.Timber
 class BleScanControllerImpl(
     private val context: Context,
     private val bluetoothAdapter: BluetoothAdapter?,
-    externalScope: CoroutineScope? = null
-): BleScanController {
-
+    externalScope: CoroutineScope? = null,
+) : BleScanController {
     companion object {
         private const val LOG_TAG = "BleScanControllerImpl"
 
@@ -51,8 +50,8 @@ class BleScanControllerImpl(
         get() = bluetoothAdapter?.bluetoothLeScanner
 
     private var scanJob: Job? = null
-    private val bleScanScope = externalScope ?:
-    CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val bleScanScope =
+        externalScope ?: CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private val _scanState = MutableStateFlow(ScanState.SCAN_PAUSED)
     override val scanState: StateFlow<ScanState>
@@ -62,10 +61,11 @@ class BleScanControllerImpl(
     override val scanResults: StateFlow<Map<String, BleDevice>>
         get() = _scanResults.asStateFlow()
 
-    private val _errors = MutableSharedFlow<String>(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
+    private val _errors =
+        MutableSharedFlow<String>(
+            replay = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
     override val errors: SharedFlow<String>
         get() = _errors.asSharedFlow()
 
@@ -77,17 +77,19 @@ class BleScanControllerImpl(
         }
 
         if (bluetoothAdapter?.isEnabled != true) {
-            Timber.tag(LOG_TAG)
+            Timber
+                .tag(LOG_TAG)
                 .e("bluetoothAdapter is null or not enabled - startScan()")
             _errors.emit("Bluetooth is not enabled")
             return
         }
 
-        val scanner = bleScanner ?: run {
-            Timber.tag(LOG_TAG).e("BluetoothLeScanner is null - startScan()")
-            _errors.emit("BLE scanning not supported")
-            return
-        }
+        val scanner =
+            bleScanner ?: run {
+                Timber.tag(LOG_TAG).e("BluetoothLeScanner is null - startScan()")
+                _errors.emit("BLE scanning not supported")
+                return
+            }
 
         if (_scanState.value == ScanState.SCANNING) {
             stopScan()
@@ -96,10 +98,12 @@ class BleScanControllerImpl(
         // Clear prev results
         _scanResults.value = emptyMap()
 
-        val settings = ScanSettings.Builder()
-            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-            .setReportDelay(REPOT_DELAY_MILLIS)
-            .build()
+        val settings =
+            ScanSettings
+                .Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .setReportDelay(REPOT_DELAY_MILLIS)
+                .build()
 
         try {
             scanner.startScan(null, settings, leScanCallback)
@@ -107,14 +111,15 @@ class BleScanControllerImpl(
             Timber.tag(LOG_TAG).d("Scan started...")
 
             // Start a coroutine to stop scanning after a period
-            scanJob = bleScanScope.launch {
-                delay(SCAN_PERIOD_MILLIS)
-                stopScan()
-                _scanState.value = ScanState.SCAN_AUTO_PAUSED
-                Timber.tag(LOG_TAG).i("Scan stopped automatically")
-            }
+            scanJob =
+                bleScanScope.launch {
+                    delay(SCAN_PERIOD_MILLIS)
+                    stopScan()
+                    _scanState.value = ScanState.SCAN_AUTO_PAUSED
+                    Timber.tag(LOG_TAG).i("Scan stopped automatically")
+                }
         } catch (e: Exception) {
-            Timber.tag(LOG_TAG).e(e,"Exception during scan start")
+            Timber.tag(LOG_TAG).e(e, "Exception during scan start")
             _errors.emit("Scan failed")
             _scanState.value = ScanState.SCAN_PAUSED
         }
@@ -128,30 +133,33 @@ class BleScanControllerImpl(
         }
 
         if (_scanState.value == ScanState.SCAN_PAUSED ||
-            _scanState.value == ScanState.SCAN_AUTO_PAUSED) {
+            _scanState.value == ScanState.SCAN_AUTO_PAUSED
+        ) {
             return
         }
 
         if (bluetoothAdapter?.isEnabled != true) {
-            Timber.tag(LOG_TAG)
+            Timber
+                .tag(LOG_TAG)
                 .e("bluetoothAdapter is null or not enabled - stopScan()")
             clearScanState()
             _errors.tryEmit("Bluetooth is not enabled")
             return
         }
 
-        val scanner = bleScanner ?: run {
-            Timber.tag(LOG_TAG).e("BluetoothLeScanner is null - startScan()")
-            clearScanState()
-            _errors.tryEmit("BLE scanning not supported")
-            return
-        }
+        val scanner =
+            bleScanner ?: run {
+                Timber.tag(LOG_TAG).e("BluetoothLeScanner is null - startScan()")
+                clearScanState()
+                _errors.tryEmit("BLE scanning not supported")
+                return
+            }
 
         try {
             scanner.stopScan(leScanCallback)
             Timber.tag(LOG_TAG).i("Scan stopped")
         } catch (e: Exception) {
-            Timber.tag(LOG_TAG).e(e,"Exception during scan stop")
+            Timber.tag(LOG_TAG).e(e, "Exception during scan stop")
             _errors.tryEmit("Pausing scan failed")
         } finally {
             Timber.tag(LOG_TAG).i("Scan state cleared - stopScan()")
@@ -160,34 +168,37 @@ class BleScanControllerImpl(
     }
 
     // Anonymous object for receiving and processing the scan results
-    private val leScanCallback = object : ScanCallback() {
-
-        override fun onScanResult(callbackType: Int, result: ScanResult) {
-            // makes testing difficult and is kinda unnecessary
+    private val leScanCallback =
+        object : ScanCallback() {
+            override fun onScanResult(
+                callbackType: Int,
+                result: ScanResult,
+            ) {
+                // makes testing difficult and is kinda unnecessary
 //            super.onScanResult(callbackType, result)
 
-            if (result.isConnectable) {
-                // Convert the results to BleDevice model and update the result with new device
-                _scanResults.update { devices ->
-                    val newDevice = result.toBleDevice()
-                    devices + (newDevice.address to newDevice)
+                if (result.isConnectable) {
+                    // Convert the results to BleDevice model and update the result with new device
+                    _scanResults.update { devices ->
+                        val newDevice = result.toBleDevice()
+                        devices + (newDevice.address to newDevice)
+                    }
                 }
             }
-        }
 
-        // Used if setReportDelay() is set to a non-zero value
-        override fun onBatchScanResults(results: MutableList<ScanResult>?) {
-            super.onBatchScanResults(results)
-            Timber.tag(LOG_TAG).d("onBatchScanResults: ${results?.size} results")
-        }
+            // Used if setReportDelay() is set to a non-zero value
+            override fun onBatchScanResults(results: MutableList<ScanResult>?) {
+                super.onBatchScanResults(results)
+                Timber.tag(LOG_TAG).d("onBatchScanResults: ${results?.size} results")
+            }
 
-        override fun onScanFailed(errorCode: Int) {
-            super.onScanFailed(errorCode)
-            Timber.tag(LOG_TAG).e("BLE Scan failed with error: $errorCode")
-            _errors.tryEmit("Stopping scan failed")
-            clearScanState()
+            override fun onScanFailed(errorCode: Int) {
+                super.onScanFailed(errorCode)
+                Timber.tag(LOG_TAG).e("BLE Scan failed with error: $errorCode")
+                _errors.tryEmit("Stopping scan failed")
+                clearScanState()
+            }
         }
-    }
 
     private fun clearScanState() {
         _scanState.value = ScanState.SCAN_PAUSED

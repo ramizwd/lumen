@@ -9,25 +9,26 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class TurnLedOnOffUseCase @Inject constructor(
-    private val bleGattController: BleGattController
-){
+    private val bleGattController: BleGattController,
+) {
     companion object {
         private const val LOG_TAG = "TurnLedOnOffUseCase"
     }
 
     suspend operator fun invoke(isLedOn: Boolean) {
-        val command = if (isLedOn) {
-            Timber.tag(LOG_TAG).d("Turn LED on")
-            LED_ON_COMMAND
-        } else {
-            Timber.tag(LOG_TAG).d("Turn LED off")
-            LED_OFF_COMMAND
-        }
+        val command =
+            if (isLedOn) {
+                Timber.tag(LOG_TAG).d("Turn LED on")
+                LED_ON_COMMAND
+            } else {
+                Timber.tag(LOG_TAG).d("Turn LED off")
+                LED_OFF_COMMAND
+            }
 
         bleGattController.writeCharacteristic(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
-            command
+            command,
         )
     }
 }

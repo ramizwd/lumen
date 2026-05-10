@@ -14,5 +14,5 @@ data class LedControllerState(
     val red: String,
     val green: String,
     val blue: String,
-    val whiteLedBrightness: Byte
+    val whiteLedBrightness: Byte,
 )

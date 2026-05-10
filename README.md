@@ -80,6 +80,10 @@ This project utilizes the following third-party libraries.
 - **Kotlinx Serialization JSON**
   - https://github.com/Kotlin/kotlinx.serialization
   - A multiplatform serialization library for Kotlin
+
+- **Ktlint Gradle**
+  - https://github.com/JLLeitschuh/ktlint-gradle
+  - A Gradle plugin that provides ktlint integration for code formatting
   
 - **MockK**
   - https://github.com/mockk/mockk
@@ -91,7 +95,7 @@ This project utilizes the following third-party libraries.
 
 - **Preferences DataStore**
   - https://developer.android.com/jetpack/androidx/releases/datastore
-  - Jetpack DataStore for storing key-value paris
+  - Jetpack DataStore for storing key-value pairs
 
 - **Timber**
   - https://github.com/JakeWharton/timber

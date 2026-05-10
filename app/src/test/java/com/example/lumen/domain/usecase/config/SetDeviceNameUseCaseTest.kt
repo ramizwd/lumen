@@ -27,81 +27,91 @@ class SetDeviceNameUseCaseTest {
     fun setup() {
         mockBleGattController = mockk(relaxed = true)
         mockBleScanController = mockk(relaxed = true)
-        setDeviceNameUseCase = SetDeviceNameUseCase(
-            mockBleGattController,
-            mockBleScanController
-        )
+        setDeviceNameUseCase =
+            SetDeviceNameUseCase(
+                mockBleGattController,
+                mockBleScanController,
+            )
     }
 
     @Test
-    fun `successful rename follows correct function invocations`() = runTest {
-        // Given
-        val name = "Test"
-        val nameBytes = name.toByteArray()
-        val expectedBytes = byteArrayOf(nameBytes.size.toByte()) + RENAME_DEVICE_COMMAND + nameBytes
+    fun `successful rename follows correct function invocations`() =
+        runTest {
+            // Given
+            val name = "Test"
+            val nameBytes = name.toByteArray()
+            val expectedBytes =
+                byteArrayOf(nameBytes.size.toByte()) + RENAME_DEVICE_COMMAND + nameBytes
 
-        // When
-        val result = setDeviceNameUseCase(name)
+            // When
+            val result = setDeviceNameUseCase(name)
 
-        // Then
-        assertTrue(result.isSuccess)
-        coVerifyOrder {
-            mockBleGattController.writeCharacteristic(
-                GattConstants.SERVICE_UUID,
-                GattConstants.CHARACTERISTIC_UUID,
-                expectedBytes
-            )
-            mockBleGattController.disconnect()
-            mockBleScanController.startScan()
+            // Then
+            assertTrue(result.isSuccess)
+            coVerifyOrder {
+                mockBleGattController.writeCharacteristic(
+                    GattConstants.SERVICE_UUID,
+                    GattConstants.CHARACTERISTIC_UUID,
+                    expectedBytes,
+                )
+                mockBleGattController.disconnect()
+                mockBleScanController.startScan()
+            }
         }
-    }
 
     @Test
-    fun `when name is too long, returns failure with IllegalArgumentException`() = runTest {
-        // When
-        val result = setDeviceNameUseCase("longDeviceName")
+    fun `when name is too long, returns failure with IllegalArgumentException`() =
+        runTest {
+            // When
+            val result = setDeviceNameUseCase("longDeviceName")
 
-        // Then
-        assertTrue(result.isFailure)
-        val ex = result.exceptionOrNull()
-        assertTrue(ex is IllegalArgumentException)
-        assertEquals("Device name must be between 1 and 10 characters", ex?.message)
+            // Then
+            assertTrue(result.isFailure)
+            val ex = result.exceptionOrNull()
+            assertTrue(ex is IllegalArgumentException)
+            assertEquals("Device name must be between 1 and 10 characters", ex?.message)
 
-        coVerify(exactly = 0) {
-            mockBleGattController.writeCharacteristic(
-                any(), any(), any()
-            )
+            coVerify(exactly = 0) {
+                mockBleGattController.writeCharacteristic(
+                    any(),
+                    any(),
+                    any(),
+                )
+            }
         }
-    }
 
     @Test
-    fun `when name is blank, returns failure`() = runTest {
-        // When
-        val result = setDeviceNameUseCase(" ")
+    fun `when name is blank, returns failure`() =
+        runTest {
+            // When
+            val result = setDeviceNameUseCase(" ")
 
-        // Then
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull() is IllegalArgumentException)
-    }
+            // Then
+            assertTrue(result.isFailure)
+            assertTrue(result.exceptionOrNull() is IllegalArgumentException)
+        }
 
     @Test
-    fun `when writeCharacteristic fails, returns failure`() = runTest {
-        // Given
-        val errMsg = "BLE error"
-        coEvery {
-            mockBleGattController.writeCharacteristic(
-                any(), any(), any()
-            )
-        } throws Exception(errMsg)
+    fun `when writeCharacteristic fails, returns failure`() =
+        runTest {
+            // Given
+            val errMsg = "BLE error"
+            coEvery {
+                mockBleGattController.writeCharacteristic(
+                    any(),
+                    any(),
+                    any(),
+                )
+            } throws Exception(errMsg)
 
-        // When
-        val result = setDeviceNameUseCase("Test")
+            // When
+            val result = setDeviceNameUseCase("Test")
 
-        // Then
-        assertTrue(result.isFailure)
-        assertEquals(errMsg, result.exceptionOrNull()?.message)
+            // Then
+            assertTrue(result.isFailure)
+            assertEquals(errMsg, result.exceptionOrNull()?.message)
 
-        coVerify(exactly = 0) { mockBleGattController.disconnect() }
-        coVerify(exactly = 0) { mockBleScanController.startScan() }
-    }
+            coVerify(exactly = 0) { mockBleGattController.disconnect() }
+            coVerify(exactly = 0) { mockBleScanController.startScan() }
+        }
 }

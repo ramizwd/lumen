@@ -13,7 +13,8 @@ enum class DeviceConfiguration {
     MOBILE_PORTRAIT,
     MOBILE_LANDSCAPE,
     TABLET_PORTRAIT,
-    TABLET_LANDSCAPE;
+    TABLET_LANDSCAPE,
+    ;
 
     companion object {
         fun fromWindowSizeClass(windowSizeClass: WindowSizeClass): DeviceConfiguration {

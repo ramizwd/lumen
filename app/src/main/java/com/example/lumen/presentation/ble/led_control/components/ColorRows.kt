@@ -49,7 +49,8 @@ fun ColorRows(
             val currSelectedSlot = customColorSlots.find { it.id == selectedSlot }
 
             if (currSelectedSlot != null &&
-                currSelectedSlot.hexColor != currentHexColor) {
+                currSelectedSlot.hexColor != currentHexColor
+            ) {
                 onSaveCustomColorSlot(selectedSlot, currentHexColor)
             }
         }
@@ -69,7 +70,7 @@ fun ColorRows(
                         isCustomColorActive = false
                         onColorSelected(0, color)
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                    }
+                    },
                 )
             }
         }
@@ -93,7 +94,7 @@ fun ColorRows(
                             onColorSelected(slot.id, slot.hexColor)
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                         }
-                    }
+                    },
                 )
             }
         }
@@ -109,11 +110,12 @@ private fun ColorCircle(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val borderColor = if (isSelected && enabled) {
-        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-    } else {
-        Color.Transparent
-    }
+    val borderColor =
+        if (isSelected && enabled) {
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        } else {
+            Color.Transparent
+        }
 
     val color = if (enabled) color else color.copy(alpha = 0.4f)
     val outerBoxSize = if (isCompact) 44.dp else 54.dp
@@ -126,7 +128,7 @@ private fun ColorCircle(
                 width = 2.dp,
                 color = borderColor,
                 shape = CircleShape,
-            )
+            ),
     ) {
         Box(
             modifier = modifier
@@ -136,9 +138,8 @@ private fun ColorCircle(
                     width = 0.5.dp,
                     color = MaterialTheme.colorScheme.outlineVariant,
                     shape = CircleShape,
-                )
-                .background(color)
-                .clickable(enabled = enabled, onClick = onClick)
+                ).background(color)
+                .clickable(enabled = enabled, onClick = onClick),
         )
     }
 }

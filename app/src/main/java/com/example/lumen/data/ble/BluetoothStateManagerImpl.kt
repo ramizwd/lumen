@@ -19,51 +19,57 @@ import kotlinx.coroutines.flow.asSharedFlow
 class BluetoothStateManagerImpl(
     context: Context,
     bluetoothAdapter: BluetoothAdapter?,
-): BluetoothStateManager {
-
+) : BluetoothStateManager {
     private val _bluetoothState = MutableStateFlow(BluetoothState.UNKNOWN)
     override val bluetoothState: SharedFlow<BluetoothState>
         get() = _bluetoothState.asSharedFlow()
 
     init {
-        val bluetoothStateReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.action == BluetoothAdapter.ACTION_STATE_CHANGED) {
-                    val state = intent.getIntExtra(
-                        BluetoothAdapter.EXTRA_STATE,
-                        BluetoothAdapter.ERROR
-                    )
+        val bluetoothStateReceiver =
+            object : BroadcastReceiver() {
+                override fun onReceive(
+                    context: Context?,
+                    intent: Intent?,
+                ) {
+                    if (intent?.action == BluetoothAdapter.ACTION_STATE_CHANGED) {
+                        val state =
+                            intent.getIntExtra(
+                                BluetoothAdapter.EXTRA_STATE,
+                                BluetoothAdapter.ERROR,
+                            )
 
-                    val newState = when (state) {
-                        BluetoothAdapter.STATE_ON -> BluetoothState.ON
-                        BluetoothAdapter.STATE_OFF -> BluetoothState.OFF
-                        BluetoothAdapter.STATE_TURNING_ON -> BluetoothState.TURNING_ON
-                        BluetoothAdapter.STATE_TURNING_OFF -> BluetoothState.TURNING_OFF
-                        else -> BluetoothState.UNKNOWN
+                        val newState =
+                            when (state) {
+                                BluetoothAdapter.STATE_ON -> BluetoothState.ON
+                                BluetoothAdapter.STATE_OFF -> BluetoothState.OFF
+                                BluetoothAdapter.STATE_TURNING_ON -> BluetoothState.TURNING_ON
+                                BluetoothAdapter.STATE_TURNING_OFF -> BluetoothState.TURNING_OFF
+                                else -> BluetoothState.UNKNOWN
+                            }
+                        _bluetoothState.value = newState
                     }
-                    _bluetoothState.value = newState
                 }
             }
-        }
 
         val intentFilter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             context.registerReceiver(
                 bluetoothStateReceiver,
                 intentFilter,
-                Context.RECEIVER_NOT_EXPORTED
+                Context.RECEIVER_NOT_EXPORTED,
             )
         } else {
             context.registerReceiver(bluetoothStateReceiver, intentFilter)
         }
 
-        val initialState = when (bluetoothAdapter?.state) {
-            BluetoothAdapter.STATE_ON -> BluetoothState.ON
-            BluetoothAdapter.STATE_OFF -> BluetoothState.OFF
-            BluetoothAdapter.STATE_TURNING_ON -> BluetoothState.TURNING_ON
-            BluetoothAdapter.STATE_TURNING_OFF -> BluetoothState.TURNING_OFF
-            else -> BluetoothState.UNKNOWN
-        }
+        val initialState =
+            when (bluetoothAdapter?.state) {
+                BluetoothAdapter.STATE_ON -> BluetoothState.ON
+                BluetoothAdapter.STATE_OFF -> BluetoothState.OFF
+                BluetoothAdapter.STATE_TURNING_ON -> BluetoothState.TURNING_ON
+                BluetoothAdapter.STATE_TURNING_OFF -> BluetoothState.TURNING_OFF
+                else -> BluetoothState.UNKNOWN
+            }
         _bluetoothState.value = initialState
     }
 }

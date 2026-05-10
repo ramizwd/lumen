@@ -7,14 +7,13 @@ import com.example.lumen.utils.hexToColorCommandBytes
 import javax.inject.Inject
 
 class SetLedColorUseCase @Inject constructor(
-    private val bleGattController: BleGattController
+    private val bleGattController: BleGattController,
 ) {
-
     suspend operator fun invoke(hexColor: String) {
         bleGattController.writeCharacteristic(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
-            hexColor.hexToColorCommandBytes()
+            hexColor.hexToColorCommandBytes(),
         )
     }
 }

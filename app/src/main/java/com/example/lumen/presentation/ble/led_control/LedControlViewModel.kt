@@ -26,18 +26,18 @@ class LedControlViewModel @Inject constructor(
     private val connectionUseCases: ConnectionUseCases,
     private val controlUseCases: ControlUseCases,
     private val setDeviceNameUseCase: SetDeviceNameUseCase,
-): ViewModel() {
-
+) : ViewModel() {
     companion object {
         private const val LOG_TAG = "LedControlViewModel"
     }
 
-    private val _brightnessChangeFlow = MutableSharedFlow<Float>(
-        replay = 0,
-        // makes sure the UI thread doesn't hang if the bg coroutine processing the brightness is busy
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
+    private val _brightnessChangeFlow =
+        MutableSharedFlow<Float>(
+            replay = 0,
+            // makes sure the UI thread doesn't hang if the bg coroutine processing the brightness is busy
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
 
     private val _uiState = MutableStateFlow(LedControlUiState())
     val uiState = _uiState.asStateFlow()
@@ -45,9 +45,11 @@ class LedControlViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val selectedDevice = connectionUseCases.observeSelectedDeviceUseCase().first()
-            _uiState.update { it.copy(
-                selectedDevice = selectedDevice
-            ) }
+            _uiState.update {
+                it.copy(
+                    selectedDevice = selectedDevice,
+                )
+            }
         }
 
         viewModelScope.launch {
@@ -55,15 +57,18 @@ class LedControlViewModel @Inject constructor(
             _uiState.update { state ->
                 state.copy(
                     isLedOn = initState?.isOn ?: false,
-                    ledHexColor = initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
+                    ledHexColor =
+                        initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
                     brightnessValue = initState?.brightness ?: 0f,
-                    pixelCount = initState?.pixelCount ?: 0
-                ) }
+                    pixelCount = initState?.pixelCount ?: 0,
+                )
+            }
         }
 
         viewModelScope.launch {
             uiState.value.selectedDevice?.let { device ->
-                controlUseCases.getCustomColorsUseCase(device.address)
+                controlUseCases
+                    .getCustomColorsUseCase(device.address)
                     .collect { colors ->
                         _uiState.update { it.copy(customColorSlots = colors) }
                         Timber.tag(LOG_TAG).d("Saved colors: $colors")
@@ -72,7 +77,8 @@ class LedControlViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            controlUseCases.observeBrightnessUseCase(_brightnessChangeFlow)
+            controlUseCases
+                .observeBrightnessUseCase(_brightnessChangeFlow)
                 .collect { value ->
                     controlUseCases.changeBrightnessUseCase(value)
                 }
@@ -108,7 +114,10 @@ class LedControlViewModel @Inject constructor(
         }
     }
 
-    fun saveCustomColor(slotId: Int, hexColor: String) {
+    fun saveCustomColor(
+        slotId: Int,
+        hexColor: String,
+    ) {
         viewModelScope.launch {
             uiState.value.selectedDevice?.let { device ->
                 val colorSlot = CustomColorSlot(slotId, hexColor)
@@ -133,11 +142,12 @@ class LedControlViewModel @Inject constructor(
     fun setDeviceName(name: String) {
         viewModelScope.launch {
             val res = setDeviceNameUseCase(name)
-            res.onSuccess {
-                _uiState.update { it.copy(infoMessage = "Device renamed") }
-            }.onFailure {
-                _uiState.update { it.copy(infoMessage = "Error renaming device") }
-            }
+            res
+                .onSuccess {
+                    _uiState.update { it.copy(infoMessage = "Device renamed") }
+                }.onFailure {
+                    _uiState.update { it.copy(infoMessage = "Error renaming device") }
+                }
         }
     }
 

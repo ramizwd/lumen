@@ -28,7 +28,7 @@ fun PermissionAlertDialog(
             TextButton(
                 onClick = {
                     onConfirmation()
-                }
+                },
             ) {
                 Text(permissionTextProvider.confirmButtonText)
             }
@@ -37,11 +37,11 @@ fun PermissionAlertDialog(
             TextButton(
                 onClick = {
                     onDismissRequest()
-                }
+                },
             ) {
                 Text("Dismiss")
             }
-        }
+        },
     )
 }
 
@@ -51,7 +51,7 @@ interface PermissionTextProvider {
     val confirmButtonText: String
 }
 
-class EnableBluetoothTextProvider: PermissionTextProvider {
+class EnableBluetoothTextProvider : PermissionTextProvider {
     override val title: String
         get() = "Bluetooth is off"
 
@@ -62,7 +62,7 @@ class EnableBluetoothTextProvider: PermissionTextProvider {
         get() = "Enable"
 }
 
-class BluetoothPermissionTextProvider: PermissionTextProvider {
+class BluetoothPermissionTextProvider : PermissionTextProvider {
     override val title: String
         get() = "Permission request"
 
@@ -73,7 +73,7 @@ class BluetoothPermissionTextProvider: PermissionTextProvider {
         get() = "Allow"
 }
 
-class OpenAppSettingsTextProvider: PermissionTextProvider {
+class OpenAppSettingsTextProvider : PermissionTextProvider {
     override val title: String
         get() = "Permission request"
 

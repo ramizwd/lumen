@@ -12,7 +12,6 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     companion object MainActivity {
         private const val LOG_TAG = "MainActivityLog"
     }
@@ -22,10 +21,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val bluetoothLeAvailable = packageManager.hasSystemFeature(
-            PackageManager.FEATURE_BLUETOOTH_LE
+            PackageManager.FEATURE_BLUETOOTH_LE,
         )
 
-        if (!bluetoothLeAvailable){
+        if (!bluetoothLeAvailable) {
             Timber.tag(LOG_TAG).d("BLE not available.")
             return
         }

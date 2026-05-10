@@ -35,6 +35,6 @@ fun ByteArray.toLedControllerState(): LedControllerState {
         red = red,
         green = green,
         blue = blue,
-        whiteLedBrightness = whiteLedBrightness
+        whiteLedBrightness = whiteLedBrightness,
     )
 }

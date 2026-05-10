@@ -8,5 +8,5 @@ enum class BluetoothState {
     OFF,
     TURNING_ON,
     TURNING_OFF,
-    UNKNOWN
+    UNKNOWN,
 }

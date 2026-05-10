@@ -60,7 +60,7 @@ fun LedControlScreen(
                 context = context,
                 message = msg,
                 duration = Toast.LENGTH_SHORT,
-                currentToastRef = currToastRef
+                currentToastRef = currToastRef,
             )
         }
         viewModel.clearInfoMessage()
@@ -79,7 +79,7 @@ fun LedControlScreen(
             },
             onDismissRequest = {
                 viewModel.onEvent(LedControlUiEvent.ToggleRenameDeviceDialog(false))
-            }
+            },
         )
     }
 
@@ -133,10 +133,14 @@ fun LedControlContent(
                 onClickTitle = {
                     showToast(
                         context = context,
-                        message = if (uiState.isLedOn) "Long press to rename"
-                        else "Turn the device on to rename it",
+                        message =
+                            if (uiState.isLedOn) {
+                                "Long press to rename"
+                            } else {
+                                "Turn the device on to rename it"
+                            },
                         duration = Toast.LENGTH_SHORT,
-                        currentToastRef = currToastRef
+                        currentToastRef = currToastRef,
                     )
                 },
                 onLongClickTitle = {
@@ -147,25 +151,27 @@ fun LedControlContent(
                             context = context,
                             message = "Turn the device on to rename it",
                             duration = Toast.LENGTH_LONG,
-                            currentToastRef = currToastRef
+                            currentToastRef = currToastRef,
                         )
                     }
-                }
+                },
             )
         },
         bottomBar = {
             if (deviceConfig == DeviceConfiguration.TABLET_PORTRAIT ||
-                deviceConfig == DeviceConfiguration.MOBILE_PORTRAIT) {
+                deviceConfig == DeviceConfiguration.MOBILE_PORTRAIT
+            ) {
                 BottomNavBar(
                     navController = navController,
                     currentDestination = currentDestination,
                     windowInsets = NavigationBarDefaults.windowInsets,
                 )
             }
-        }
+        },
     ) { contentPadding ->
         if (deviceConfig == DeviceConfiguration.TABLET_LANDSCAPE ||
-            deviceConfig == DeviceConfiguration.MOBILE_LANDSCAPE) {
+            deviceConfig == DeviceConfiguration.MOBILE_LANDSCAPE
+        ) {
             Row(modifier = Modifier.padding(top = contentPadding.calculateTopPadding())) {
                 NavRail(
                     navController = navController,
@@ -196,7 +202,7 @@ fun LedControlContent(
                 onChangeBrightness = onChangeBrightness,
                 navController = navController,
                 startDestination = startDestination,
-                modifier = Modifier.padding(contentPadding)
+                modifier = Modifier.padding(contentPadding),
             )
         }
     }
@@ -211,7 +217,7 @@ fun LedControlContentPreview() {
         Surface {
             val connDevice = BleDevice(
                 name = "Test device",
-                address = "00:11:22:33:44:55"
+                address = "00:11:22:33:44:55",
             )
             val customColorsList = listOf(
                 CustomColorSlot(1, "ffffff"),
@@ -241,7 +247,7 @@ fun LedControlContentPreview() {
                 onSaveCustomColorSlot = { _, _ -> },
                 onChangeBrightness = { },
                 onDisconnectClick = {},
-                onEvent = { _ ->  }
+                onEvent = { _ -> },
             )
         }
     }
@@ -256,7 +262,7 @@ fun LedControlContentLandscapePreview() {
         Surface {
             val connDevice = BleDevice(
                 name = "Test device",
-                address = "00:11:22:33:44:55"
+                address = "00:11:22:33:44:55",
             )
             val customColorsList = listOf(
                 CustomColorSlot(1, "ffffff"),
@@ -286,8 +292,7 @@ fun LedControlContentLandscapePreview() {
                 onSaveCustomColorSlot = { _, _ -> },
                 onChangeBrightness = { },
                 onDisconnectClick = {},
-                onEvent = { _ ->  }
-
+                onEvent = { _ -> },
             )
         }
     }
@@ -302,7 +307,7 @@ fun LedControlContentTabletLandscapePreview() {
         Surface {
             val connDevice = BleDevice(
                 name = "Test device",
-                address = "00:11:22:33:44:55"
+                address = "00:11:22:33:44:55",
             )
             val customColorsList = listOf(
                 CustomColorSlot(1, "ffffff"),
@@ -332,7 +337,7 @@ fun LedControlContentTabletLandscapePreview() {
                 onSaveCustomColorSlot = { _, _ -> },
                 onChangeBrightness = { },
                 onDisconnectClick = {},
-                onEvent = { _ ->  }
+                onEvent = { _ -> },
             )
         }
     }

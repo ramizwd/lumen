@@ -34,13 +34,13 @@ fun ChoiceChipRow(
             .fillMaxWidth()
             .horizontalScroll(scrollState),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.smallIncreased)
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.smallIncreased),
     ) {
         choices.forEach { choice ->
             FilterChip(
                 selected = choice == selectedChoice,
                 onClick = { onChoiceSelected(choice) },
-                label = { Text(text = choice) }
+                label = { Text(text = choice) },
             )
         }
     }
