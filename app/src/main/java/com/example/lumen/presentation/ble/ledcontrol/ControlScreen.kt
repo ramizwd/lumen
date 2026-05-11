@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control
+package com.example.lumen.presentation.ble.ledcontrol
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,8 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import com.example.lumen.presentation.ble.led_control.components.BrightnessSlider
-import com.example.lumen.presentation.ble.led_control.components.LedToggleButton
+import com.example.lumen.presentation.ble.ledcontrol.components.BrightnessSlider
+import com.example.lumen.presentation.ble.ledcontrol.components.LedToggleButton
 import com.example.lumen.presentation.common.components.SliderOrientation
 import com.example.lumen.presentation.common.utils.DeviceConfiguration
 import com.example.lumen.presentation.theme.LumenTheme

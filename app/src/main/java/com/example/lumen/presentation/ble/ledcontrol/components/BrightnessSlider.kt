@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control.components
+package com.example.lumen.presentation.ble.ledcontrol.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

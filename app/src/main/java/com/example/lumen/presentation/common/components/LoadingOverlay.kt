@@ -42,8 +42,8 @@ fun LoadingOverlay(
                 .height(160.dp)
                 .clip(MaterialTheme.shapes.large)
                 .background(
-                    MaterialTheme.colorScheme.surfaceContainerHigh
-                )
+                    MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),

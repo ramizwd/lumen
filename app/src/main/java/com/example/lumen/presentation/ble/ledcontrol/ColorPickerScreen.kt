@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control
+package com.example.lumen.presentation.ble.ledcontrol
 
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
@@ -32,11 +32,11 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.PresetLedColors
-import com.example.lumen.presentation.ble.led_control.components.ColorPicker
-import com.example.lumen.presentation.ble.led_control.components.ColorRows
-import com.example.lumen.presentation.ble.led_control.components.LedToggleButton
-import com.example.lumen.presentation.ble.led_control.components.MatchDeviceThemeButton
-import com.example.lumen.presentation.ble.led_control.components.RandomColorButton
+import com.example.lumen.presentation.ble.ledcontrol.components.ColorPicker
+import com.example.lumen.presentation.ble.ledcontrol.components.ColorRows
+import com.example.lumen.presentation.ble.ledcontrol.components.LedToggleButton
+import com.example.lumen.presentation.ble.ledcontrol.components.MatchDeviceThemeButton
+import com.example.lumen.presentation.ble.ledcontrol.components.RandomColorButton
 import com.example.lumen.presentation.common.utils.DeviceConfiguration
 import com.example.lumen.presentation.common.utils.hexToComposeColor
 import com.example.lumen.presentation.theme.LumenTheme

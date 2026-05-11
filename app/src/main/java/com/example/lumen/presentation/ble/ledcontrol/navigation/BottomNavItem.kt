@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control.navigation
+package com.example.lumen.presentation.ble.ledcontrol.navigation
 
 import androidx.annotation.DrawableRes
 import com.example.lumen.R

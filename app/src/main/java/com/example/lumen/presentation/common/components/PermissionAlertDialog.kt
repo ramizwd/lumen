@@ -67,7 +67,8 @@ class BluetoothPermissionTextProvider : PermissionTextProvider {
         get() = "Permission request"
 
     override val description: String
-        get() = "Nearby devices permission is required to scan for and connect to Bluetooth devices."
+        get() = "Nearby devices permission is required to scan for and" +
+            " connect to Bluetooth devices."
 
     override val confirmButtonText: String
         get() = "Allow"
@@ -78,7 +79,8 @@ class OpenAppSettingsTextProvider : PermissionTextProvider {
         get() = "Permission request"
 
     override val description: String
-        get() = "Please allow nearby devices permission in app settings to scan for and connect to Bluetooth devices."
+        get() = "Please allow nearby devices permission in app settings to scan for and " +
+            "connect to Bluetooth devices."
 
     override val confirmButtonText: String
         get() = "Settings"

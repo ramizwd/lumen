@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control
+package com.example.lumen.presentation.ble.ledcontrol
 
 import android.content.Context
 import android.widget.Toast
@@ -28,11 +28,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
-import com.example.lumen.presentation.ble.led_control.navigation.BottomNavBar
-import com.example.lumen.presentation.ble.led_control.navigation.BottomNavItem
-import com.example.lumen.presentation.ble.led_control.navigation.LedControlNavHost
-import com.example.lumen.presentation.ble.led_control.navigation.NavRail
-import com.example.lumen.presentation.ble.led_control.navigation.TopAppBar
+import com.example.lumen.presentation.ble.ledcontrol.navigation.BottomNavBar
+import com.example.lumen.presentation.ble.ledcontrol.navigation.BottomNavItem
+import com.example.lumen.presentation.ble.ledcontrol.navigation.LedControlNavHost
+import com.example.lumen.presentation.ble.ledcontrol.navigation.NavRail
+import com.example.lumen.presentation.ble.ledcontrol.navigation.TopAppBar
 import com.example.lumen.presentation.common.components.TextFieldDialog
 import com.example.lumen.presentation.common.utils.DeviceConfiguration
 import com.example.lumen.presentation.common.utils.showToast

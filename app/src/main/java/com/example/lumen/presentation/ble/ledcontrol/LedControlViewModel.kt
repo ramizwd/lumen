@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control
+package com.example.lumen.presentation.ble.ledcontrol
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -31,7 +31,7 @@ class LedControlViewModel @Inject constructor(
         private const val LOG_TAG = "LedControlViewModel"
     }
 
-    private val _brightnessChangeFlow =
+    private val brightnessChangeFlow =
         MutableSharedFlow<Float>(
             replay = 0,
             // makes sure the UI thread doesn't hang if the bg coroutine processing the brightness is busy
@@ -78,7 +78,7 @@ class LedControlViewModel @Inject constructor(
 
         viewModelScope.launch {
             controlUseCases
-                .observeBrightnessUseCase(_brightnessChangeFlow)
+                .observeBrightnessUseCase(brightnessChangeFlow)
                 .collect { value ->
                     controlUseCases.changeBrightnessUseCase(value)
                 }
@@ -129,7 +129,7 @@ class LedControlViewModel @Inject constructor(
     fun changeBrightness(value: Float) {
         _uiState.update { it.copy(brightnessValue = value) }
         viewModelScope.launch {
-            _brightnessChangeFlow.emit(value)
+            brightnessChangeFlow.emit(value)
         }
     }
 

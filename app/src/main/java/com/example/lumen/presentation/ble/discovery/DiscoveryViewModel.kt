@@ -49,7 +49,7 @@ class DiscoveryViewModel @Inject constructor(
     private val _snackbarEvent = Channel<SnackbarEvent>(Channel.BUFFERED)
     val snackbarEvent = _snackbarEvent.receiveAsFlow()
 
-    private val _deviceToConnect = MutableStateFlow<BleDevice?>(null)
+    private val deviceToConnect = MutableStateFlow<BleDevice?>(null)
 
     private val _uiState = MutableStateFlow(DiscoveryUiState())
 
@@ -237,14 +237,14 @@ class DiscoveryViewModel @Inject constructor(
 
     fun connectToDevice(device: BleDevice) {
         viewModelScope.launch {
-            _deviceToConnect.value = device
+            deviceToConnect.value = device
             connectionUseCases.connectToDeviceUseCase(device)
         }
     }
 
     fun retryConnection() {
         viewModelScope.launch {
-            _deviceToConnect.value?.let { device ->
+            deviceToConnect.value?.let { device ->
                 connectionUseCases.connectToDeviceUseCase(device)
             } ?: _uiState.update { it.copy(errorMessage = "No device to retry connection for") }
         }

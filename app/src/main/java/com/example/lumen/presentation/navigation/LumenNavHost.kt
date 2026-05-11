@@ -20,7 +20,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.presentation.MainViewModel
 import com.example.lumen.presentation.ble.discovery.DiscoverDevicesScreen
-import com.example.lumen.presentation.ble.led_control.LedControlScreen
+import com.example.lumen.presentation.ble.ledcontrol.LedControlScreen
 import com.example.lumen.presentation.common.components.LoadingOverlay
 
 /**

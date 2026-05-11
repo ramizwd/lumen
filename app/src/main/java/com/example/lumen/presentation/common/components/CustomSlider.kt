@@ -146,14 +146,14 @@ fun CustomSlider(
                 modifier = Modifier
                     .width(width)
                     .clip(shape = MaterialTheme.shapes.extraLarge)
-                    .background(color = animatedInactiveTrackColor)
+                    .background(color = animatedInactiveTrackColor),
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(fraction)
                         .fillMaxHeight()
                         .clip(shape = MaterialTheme.shapes.extraLarge)
-                        .background(color = animatedActiveTrackColor)
+                        .background(color = animatedActiveTrackColor),
                 )
 
                 if (icon != null) {
@@ -178,7 +178,7 @@ fun CustomSlider(
                     Box(
                         modifier = Modifier
                             .align(Alignment.CenterStart)
-                            .size(64.dp)
+                            .size(64.dp),
                     ) {
                         Icon(
                             modifier = Modifier
