@@ -52,7 +52,6 @@ fun LedControlScreen(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val deviceName = uiState.selectedDevice?.name ?: "Unknown"
-    val textFieldState = rememberTextFieldState(initialText = deviceName)
 
     LaunchedEffect(key1 = uiState.infoMessage) {
         uiState.infoMessage?.let { msg ->
@@ -67,6 +66,8 @@ fun LedControlScreen(
     }
 
     if (uiState.showRenameDeviceDialog) {
+        val textFieldState = rememberTextFieldState(initialText = deviceName)
+
         TextFieldDialog(
             state = textFieldState,
             title = "Rename Device",
