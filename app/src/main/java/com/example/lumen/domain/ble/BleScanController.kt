@@ -14,5 +14,6 @@ interface BleScanController {
     val errors: SharedFlow<String>
 
     suspend fun startScan()
+
     fun stopScan()
 }

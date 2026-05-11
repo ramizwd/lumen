@@ -34,7 +34,7 @@ fun LoadingOverlay(
     if (!isVisible) return
 
     Dialog(
-        onDismissRequest = { onDismiss() }
+        onDismissRequest = { onDismiss() },
     ) {
         Box(
             modifier = modifier
@@ -42,8 +42,8 @@ fun LoadingOverlay(
                 .height(160.dp)
                 .clip(MaterialTheme.shapes.large)
                 .background(
-                    MaterialTheme.colorScheme.surfaceContainerHigh
-                )
+                    MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -52,7 +52,7 @@ fun LoadingOverlay(
             ) {
                 CircularProgressIndicator(
                     strokeWidth = 6.dp,
-                    trackColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    trackColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.smallIncreased))
@@ -66,9 +66,10 @@ fun LoadingOverlay(
 
             TextButton(
                 onClick = { onDismiss() },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(MaterialTheme.spacing.smallIncreased)
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(MaterialTheme.spacing.smallIncreased),
             ) {
                 Text(text = "Cancel")
             }
@@ -84,7 +85,7 @@ fun LoadingOverlayPreview() {
             LoadingOverlay(
                 isVisible = true,
                 text = "Connecting...",
-                onDismiss = {}
+                onDismiss = {},
             )
         }
     }

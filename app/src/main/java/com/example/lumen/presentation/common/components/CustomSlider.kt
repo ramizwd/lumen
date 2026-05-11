@@ -45,7 +45,7 @@ import com.example.lumen.presentation.theme.LumenTheme
 
 enum class SliderOrientation {
     VERTICAL,
-    HORIZONTAL
+    HORIZONTAL,
 }
 
 /**
@@ -65,46 +65,54 @@ fun CustomSlider(
     stiffness: Float = Spring.StiffnessMedium,
     @DrawableRes icon: Int? = null,
     iconDescription: String? = null,
-    iconSize: Dp = 32.dp
+    iconSize: Dp = 32.dp,
 ) {
     val animatedValue by animateFloatAsState(
         targetValue = value,
         animationSpec = spring(stiffness = stiffness),
-        label = "value"
+        label = "value",
     )
 
     val animatedInactiveTrackColor by animateColorAsState(
-        targetValue = if (enabled) MaterialTheme.colorScheme.primaryContainer
-        else MaterialTheme.colorScheme.outlineVariant,
-        label = "inactive_track_color"
+        targetValue =
+            if (enabled) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.outlineVariant
+            },
+        label = "inactive_track_color",
     )
 
     val animatedActiveTrackColor by animateColorAsState(
-        targetValue = if (enabled) MaterialTheme.colorScheme.onPrimaryContainer
-        else MaterialTheme.colorScheme.outline,
-        label = "active_track_color"
+        targetValue =
+            if (enabled) {
+                MaterialTheme.colorScheme.onPrimaryContainer
+            } else {
+                MaterialTheme.colorScheme.outline
+            },
+        label = "active_track_color",
     )
 
-    val modifierVertical = modifier
-        .graphicsLayer {
-            rotationZ = 270f
-            transformOrigin = TransformOrigin(0f, 0f)
-        }
-        .layout { measurable, constraints ->
-            val placeable = measurable.measure(
-                Constraints(
-                    minWidth = constraints.minHeight,
-                    maxWidth = constraints.maxHeight,
-                    minHeight = constraints.minWidth,
-                    maxHeight = constraints.maxWidth,
-                )
-            )
-            layout(placeable.height, placeable.width) {
-                placeable.place(-placeable.width, 0)
-            }
-        }
-        .width(width)
-        .height(height)
+    val modifierVertical =
+        modifier
+            .graphicsLayer {
+                rotationZ = 270f
+                transformOrigin = TransformOrigin(0f, 0f)
+            }.layout { measurable, constraints ->
+                val placeable =
+                    measurable.measure(
+                        Constraints(
+                            minWidth = constraints.minHeight,
+                            maxWidth = constraints.maxHeight,
+                            minHeight = constraints.minWidth,
+                            maxHeight = constraints.maxWidth,
+                        ),
+                    )
+                layout(placeable.height, placeable.width) {
+                    placeable.place(-placeable.width, 0)
+                }
+            }.width(width)
+            .height(height)
 
     val modifierHorizontal = modifier
         .width(width)
@@ -119,14 +127,18 @@ fun CustomSlider(
             onValueChange(it)
         },
         valueRange = valueRange,
-        modifier = if (orientation == SliderOrientation.VERTICAL) modifierVertical
-        else modifierHorizontal,
+        modifier =
+            if (orientation == SliderOrientation.VERTICAL) {
+                modifierVertical
+            } else {
+                modifierHorizontal
+            },
         thumb = {},
         track = { sliderState ->
             val fraction by remember(key1 = animatedValue) {
                 derivedStateOf {
                     (animatedValue - sliderState.valueRange.start) /
-                            (sliderState.valueRange.endInclusive - sliderState.valueRange.start)
+                        (sliderState.valueRange.endInclusive - sliderState.valueRange.start)
                 }
             }
 
@@ -134,34 +146,39 @@ fun CustomSlider(
                 modifier = Modifier
                     .width(width)
                     .clip(shape = MaterialTheme.shapes.extraLarge)
-                    .background(color = animatedInactiveTrackColor)
+                    .background(color = animatedInactiveTrackColor),
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(fraction)
                         .fillMaxHeight()
                         .clip(shape = MaterialTheme.shapes.extraLarge)
-                        .background(color = animatedActiveTrackColor)
+                        .background(color = animatedActiveTrackColor),
                 )
 
                 if (icon != null) {
                     val isIconCovered = fraction > 0.08f
 
                     val iconTint by animateColorAsState(
-                        targetValue = when {
-                            isIconCovered && enabled -> MaterialTheme.colorScheme.inversePrimary
-                            isIconCovered && !enabled -> MaterialTheme.colorScheme.outlineVariant
-                            !isIconCovered && enabled -> MaterialTheme.colorScheme.onPrimaryContainer
-                            !isIconCovered && !enabled -> MaterialTheme.colorScheme.outline
-                            else -> MaterialTheme.colorScheme.error
-                        },
-                        label = "icon_tint"
+                        targetValue =
+                            when {
+                                isIconCovered && enabled ->
+                                    MaterialTheme.colorScheme.inversePrimary
+                                isIconCovered && !enabled ->
+                                    MaterialTheme.colorScheme.outlineVariant
+                                !isIconCovered && enabled ->
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                !isIconCovered && !enabled ->
+                                    MaterialTheme.colorScheme.outline
+                                else -> MaterialTheme.colorScheme.error
+                            },
+                        label = "icon_tint",
                     )
 
                     Box(
                         modifier = Modifier
                             .align(Alignment.CenterStart)
-                            .size(64.dp)
+                            .size(64.dp),
                     ) {
                         Icon(
                             modifier = Modifier
@@ -170,12 +187,12 @@ fun CustomSlider(
                                 .rotate(iconOrientation),
                             painter = painterResource(icon),
                             contentDescription = iconDescription,
-                            tint = iconTint
+                            tint = iconTint,
                         )
                     }
                 }
             }
-        }
+        },
     )
 }
 
@@ -188,7 +205,7 @@ fun CustomSliderPreview() {
     LumenTheme {
         Surface {
             Column(
-                verticalArrangement = Arrangement.SpaceAround
+                verticalArrangement = Arrangement.SpaceAround,
             ) {
                 CustomSlider(
                     enabled = isEnabled,
@@ -200,11 +217,10 @@ fun CustomSliderPreview() {
                     icon = R.drawable.brightness_medium_24px,
                 )
 
-                Button(onClick = {isEnabled = !isEnabled}) {
+                Button(onClick = { isEnabled = !isEnabled }) {
                     Text(text = if (isEnabled) "Disable" else "Enable")
                 }
             }
-
         }
     }
 }
@@ -218,7 +234,7 @@ fun CustomSliderHorizontalPreview() {
     LumenTheme {
         Surface {
             Column(
-                verticalArrangement = Arrangement.SpaceAround
+                verticalArrangement = Arrangement.SpaceAround,
             ) {
                 CustomSlider(
                     enabled = isEnabled,
@@ -228,14 +244,13 @@ fun CustomSliderHorizontalPreview() {
                         sliderValue = it
                     },
                     icon = R.drawable.brightness_medium_24px,
-                    orientation = SliderOrientation.HORIZONTAL
+                    orientation = SliderOrientation.HORIZONTAL,
                 )
 
-                Button(onClick = {isEnabled = !isEnabled}) {
+                Button(onClick = { isEnabled = !isEnabled }) {
                     Text(text = if (isEnabled) "Disable" else "Enable")
                 }
             }
-
         }
     }
 }

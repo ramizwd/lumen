@@ -11,18 +11,18 @@ import javax.inject.Inject
 
 class SetDeviceNameUseCase @Inject constructor(
     private val bleGattController: BleGattController,
-    private val bleScanController: BleScanController
+    private val bleScanController: BleScanController,
 ) {
     companion object {
         private const val LOG_TAG = "SetDeviceNameUseCase"
     }
 
-    suspend operator fun invoke(name: String): Result<Unit> {
-        return try {
-            require (name.length <= MAX_DEVICE_CHAR && name.isNotBlank()) {
+    suspend operator fun invoke(name: String): Result<Unit> =
+        try {
+            require(name.length <= MAX_DEVICE_CHAR && name.isNotBlank()) {
                 "Device name must be between 1 and 10 characters"
             }
-            
+
             val nameBytes = name.toByteArray()
             val lengthByte = nameBytes.size.toByte()
             val commandBytes = byteArrayOf(lengthByte) + RENAME_DEVICE_COMMAND + nameBytes
@@ -32,7 +32,7 @@ class SetDeviceNameUseCase @Inject constructor(
             bleGattController.writeCharacteristic(
                 SERVICE_UUID,
                 CHARACTERISTIC_UUID,
-                commandBytes
+                commandBytes,
             )
 
             bleGattController.disconnect()
@@ -43,5 +43,4 @@ class SetDeviceNameUseCase @Inject constructor(
             Timber.tag(LOG_TAG).e(e, "Failed to set device name")
             Result.failure(e)
         }
-    }
 }

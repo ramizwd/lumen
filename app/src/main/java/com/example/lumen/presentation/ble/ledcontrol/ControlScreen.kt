@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control
+package com.example.lumen.presentation.ble.ledcontrol
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,8 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import com.example.lumen.presentation.ble.led_control.components.BrightnessSlider
-import com.example.lumen.presentation.ble.led_control.components.LedToggleButton
+import com.example.lumen.presentation.ble.ledcontrol.components.BrightnessSlider
+import com.example.lumen.presentation.ble.ledcontrol.components.LedToggleButton
 import com.example.lumen.presentation.common.components.SliderOrientation
 import com.example.lumen.presentation.common.utils.DeviceConfiguration
 import com.example.lumen.presentation.theme.LumenTheme
@@ -65,11 +65,12 @@ fun ControlContent(
     when (deviceConfig) {
         DeviceConfiguration.TABLET_PORTRAIT,
         DeviceConfiguration.TABLET_LANDSCAPE,
-        DeviceConfiguration.MOBILE_PORTRAIT -> {
+        DeviceConfiguration.MOBILE_PORTRAIT,
+        -> {
             Column(
                 modifier = modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 PixelCountText(pixelCount)
 
@@ -83,35 +84,35 @@ fun ControlContent(
                     isOn = isOn,
                     onTurnLedOnClick = onTurnLedOnClick,
                     onTurnLedOffClick = onTurnLedOffClick,
-                    modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium)
+                    modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium),
                 )
             }
         }
-        
+
         DeviceConfiguration.MOBILE_LANDSCAPE -> {
             Column(
                 modifier = modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceAround
+                verticalArrangement = Arrangement.SpaceAround,
             ) {
                 PixelCountText(pixelCount)
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     LedToggleButton(
                         isOn = isOn,
                         onTurnLedOnClick = onTurnLedOnClick,
                         onTurnLedOffClick = onTurnLedOffClick,
-                        modifier = Modifier.padding(start = MaterialTheme.spacing.medium)
+                        modifier = Modifier.padding(start = MaterialTheme.spacing.medium),
                     )
 
                     BrightnessSlider(
                         enabled = isOn,
                         brightnessValue = brightnessValue,
                         onChangeBrightness = onChangeBrightness,
-                        orientation = SliderOrientation.HORIZONTAL
+                        orientation = SliderOrientation.HORIZONTAL,
                     )
                 }
             }
@@ -121,13 +122,13 @@ fun ControlContent(
 
 @Composable
 private fun PixelCountText(pixelCount: Int) {
-    Row (
+    Row(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = "$pixelCount",
             style = MaterialTheme.typography.displayMedium,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
         )
 
         Spacer(Modifier.width(MaterialTheme.spacing.smallIncreased))
@@ -135,11 +136,11 @@ private fun PixelCountText(pixelCount: Int) {
         Column {
             Text(
                 text = "Pixels",
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
             )
             Text(
                 text = "in control",
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
             )
         }
     }

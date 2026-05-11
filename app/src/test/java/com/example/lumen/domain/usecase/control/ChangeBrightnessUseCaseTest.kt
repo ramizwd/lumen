@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test
  * Unit tests for [ChangeBrightnessUseCase]
  */
 class ChangeBrightnessUseCaseTest {
-
     private lateinit var mockBleGattController: BleGattController
     private lateinit var changeBrightnessUseCase: ChangeBrightnessUseCase
 
@@ -25,67 +24,70 @@ class ChangeBrightnessUseCaseTest {
     }
 
     @Test
-    fun `invoke calls writeCharacteristic with correct UUIDs and converted value`() = runTest {
-        val testBrightnessValue = 100f
-        val expectedBytes = testBrightnessValue.toBrightnessCommandBytes()
+    fun `invoke calls writeCharacteristic with correct UUIDs and converted value`() =
+        runTest {
+            val testBrightnessValue = 100f
+            val expectedBytes = testBrightnessValue.toBrightnessCommandBytes()
 
-        changeBrightnessUseCase.invoke(testBrightnessValue)
+            changeBrightnessUseCase.invoke(testBrightnessValue)
 
-        coVerify(exactly = 1) {
-            mockBleGattController.writeCharacteristic(
-                GattConstants.SERVICE_UUID,
-                GattConstants.CHARACTERISTIC_UUID,
-                expectedBytes
-            )
+            coVerify(exactly = 1) {
+                mockBleGattController.writeCharacteristic(
+                    GattConstants.SERVICE_UUID,
+                    GattConstants.CHARACTERISTIC_UUID,
+                    expectedBytes,
+                )
+            }
         }
-    }
 
     @Test
-    fun `invoke calls writeCharacteristic with zero for 0 percent brightness`() = runTest {
-        val testBrightnessValue = 0f
-        val expectedBytes = testBrightnessValue.toBrightnessCommandBytes()
+    fun `invoke calls writeCharacteristic with zero for 0 percent brightness`() =
+        runTest {
+            val testBrightnessValue = 0f
+            val expectedBytes = testBrightnessValue.toBrightnessCommandBytes()
 
-        changeBrightnessUseCase.invoke(testBrightnessValue)
+            changeBrightnessUseCase.invoke(testBrightnessValue)
 
-        coVerify(exactly = 1) {
-            mockBleGattController.writeCharacteristic(
-                GattConstants.SERVICE_UUID,
-                GattConstants.CHARACTERISTIC_UUID,
-                expectedBytes
-            )
+            coVerify(exactly = 1) {
+                mockBleGattController.writeCharacteristic(
+                    GattConstants.SERVICE_UUID,
+                    GattConstants.CHARACTERISTIC_UUID,
+                    expectedBytes,
+                )
+            }
         }
-    }
 
     @Test
-    fun `invoke clamps negative values to minimum brightness`() = runTest {
-        val negativeValue = -10f
-        val expectedBytes = 0f.toBrightnessCommandBytes()
+    fun `invoke clamps negative values to minimum brightness`() =
+        runTest {
+            val negativeValue = -10f
+            val expectedBytes = 0f.toBrightnessCommandBytes()
 
-        changeBrightnessUseCase.invoke(negativeValue)
+            changeBrightnessUseCase.invoke(negativeValue)
 
-        coVerify(exactly = 1) {
-            mockBleGattController.writeCharacteristic(
-                any(),
-                any(),
-                expectedBytes
-            )
+            coVerify(exactly = 1) {
+                mockBleGattController.writeCharacteristic(
+                    any(),
+                    any(),
+                    expectedBytes,
+                )
+            }
         }
-    }
 
     @Test
-    fun `invoke clamps over maximum values to maximum brightness`() = runTest {
-        val hugeValue = 300f
-        val expectedBytes = 255f.toBrightnessCommandBytes()
+    fun `invoke clamps over maximum values to maximum brightness`() =
+        runTest {
+            val hugeValue = 300f
+            val expectedBytes = 255f.toBrightnessCommandBytes()
 
-        changeBrightnessUseCase.invoke(hugeValue)
+            changeBrightnessUseCase.invoke(hugeValue)
 
-        coVerify(exactly = 1) {
-            mockBleGattController.writeCharacteristic(
-                any(),
-                any(),
-                expectedBytes
-            )
+            coVerify(exactly = 1) {
+                mockBleGattController.writeCharacteristic(
+                    any(),
+                    any(),
+                    expectedBytes,
+                )
+            }
         }
-    }
-
 }

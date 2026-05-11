@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test
  * Unit tests for [TurnLedOnOffUseCase]
  */
 class TurnLedOnOffUseCaseTest {
-
     private lateinit var mockBleGattController: BleGattController
     private lateinit var turnLedOnOffUseCase: TurnLedOnOffUseCase
 
@@ -25,28 +24,30 @@ class TurnLedOnOffUseCaseTest {
     }
 
     @Test
-    fun `invoke with true sends correct command`() = runTest {
-        turnLedOnOffUseCase.invoke(true)
+    fun `invoke with true sends correct command`() =
+        runTest {
+            turnLedOnOffUseCase.invoke(true)
 
-        coVerify(exactly = 1) {
-            mockBleGattController.writeCharacteristic(
-                any(),
-                any(),
-                LED_ON_COMMAND
-            )
+            coVerify(exactly = 1) {
+                mockBleGattController.writeCharacteristic(
+                    any(),
+                    any(),
+                    LED_ON_COMMAND,
+                )
+            }
         }
-    }
 
     @Test
-    fun `invoke with false sends correct command`() = runTest {
-        turnLedOnOffUseCase.invoke(false)
+    fun `invoke with false sends correct command`() =
+        runTest {
+            turnLedOnOffUseCase.invoke(false)
 
-        coVerify(exactly = 1) {
-            mockBleGattController.writeCharacteristic(
-                any(),
-                any(),
-                LED_OFF_COMMAND
-            )
+            coVerify(exactly = 1) {
+                mockBleGattController.writeCharacteristic(
+                    any(),
+                    any(),
+                    LED_OFF_COMMAND,
+                )
+            }
         }
-    }
 }

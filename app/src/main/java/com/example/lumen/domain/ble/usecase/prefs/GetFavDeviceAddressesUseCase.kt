@@ -5,9 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetFavDeviceAddressesUseCase @Inject constructor(
-    private val bleDevicePreferenceManager: BleDevicePreferenceManager
-){
-    operator fun invoke(): Flow<Set<String>> {
-        return bleDevicePreferenceManager.getFavDeviceAddresses()
-    }
+    private val bleDevicePreferenceManager: BleDevicePreferenceManager,
+) {
+    operator fun invoke(): Flow<Set<String>> = bleDevicePreferenceManager.getFavDeviceAddresses()
 }

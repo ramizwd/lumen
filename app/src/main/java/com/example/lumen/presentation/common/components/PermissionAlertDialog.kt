@@ -28,7 +28,7 @@ fun PermissionAlertDialog(
             TextButton(
                 onClick = {
                     onConfirmation()
-                }
+                },
             ) {
                 Text(permissionTextProvider.confirmButtonText)
             }
@@ -37,11 +37,11 @@ fun PermissionAlertDialog(
             TextButton(
                 onClick = {
                     onDismissRequest()
-                }
+                },
             ) {
                 Text("Dismiss")
             }
-        }
+        },
     )
 }
 
@@ -51,7 +51,7 @@ interface PermissionTextProvider {
     val confirmButtonText: String
 }
 
-class EnableBluetoothTextProvider: PermissionTextProvider {
+class EnableBluetoothTextProvider : PermissionTextProvider {
     override val title: String
         get() = "Bluetooth is off"
 
@@ -62,23 +62,25 @@ class EnableBluetoothTextProvider: PermissionTextProvider {
         get() = "Enable"
 }
 
-class BluetoothPermissionTextProvider: PermissionTextProvider {
+class BluetoothPermissionTextProvider : PermissionTextProvider {
     override val title: String
         get() = "Permission request"
 
     override val description: String
-        get() = "Nearby devices permission is required to scan for and connect to Bluetooth devices."
+        get() = "Nearby devices permission is required to scan for and" +
+            " connect to Bluetooth devices."
 
     override val confirmButtonText: String
         get() = "Allow"
 }
 
-class OpenAppSettingsTextProvider: PermissionTextProvider {
+class OpenAppSettingsTextProvider : PermissionTextProvider {
     override val title: String
         get() = "Permission request"
 
     override val description: String
-        get() = "Please allow nearby devices permission in app settings to scan for and connect to Bluetooth devices."
+        get() = "Please allow nearby devices permission in app settings to scan for and " +
+            "connect to Bluetooth devices."
 
     override val confirmButtonText: String
         get() = "Settings"

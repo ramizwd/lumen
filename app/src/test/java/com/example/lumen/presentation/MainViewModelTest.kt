@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModelTest {
-
     private lateinit var observeConnectionStateUseCase: ObserveConnectionStateUseCase
     private lateinit var disconnectUseCase: DisconnectUseCase
     private lateinit var observeBluetoothStateUseCase: ObserveBluetoothStateUseCase
@@ -48,15 +47,16 @@ class MainViewModelTest {
 
         every { observeConnectionStateUseCase() } returns connectionFlow
         every { observeBluetoothStateUseCase() } returns bluetoothFlow
-        
-        val connectionUseCases = ConnectionUseCases(
-            observeConnectionStateUseCase = observeConnectionStateUseCase,
-            disconnectUseCase = disconnectUseCase,
-            connectToDeviceUseCase = mockk(),
-            observeConnectionEventsUseCase = mockk(),
-            observeSelectedDeviceUseCase = mockk()
-        )
-        
+
+        val connectionUseCases =
+            ConnectionUseCases(
+                observeConnectionStateUseCase = observeConnectionStateUseCase,
+                disconnectUseCase = disconnectUseCase,
+                connectToDeviceUseCase = mockk(),
+                observeConnectionEventsUseCase = mockk(),
+                observeSelectedDeviceUseCase = mockk(),
+            )
+
         viewModel = MainViewModel(connectionUseCases, observeBluetoothStateUseCase)
     }
 
@@ -66,42 +66,47 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `when connection state is CONNECTING, loading state is true`() = runTest {
-        viewModel.showLoading.test {
-            connectionFlow.emit(ConnectionState.CONNECTING)
-            assertTrue(expectMostRecentItem())
+    fun `when connection state is CONNECTING, loading state is true`() =
+        runTest {
+            viewModel.showLoading.test {
+                connectionFlow.emit(ConnectionState.CONNECTING)
+                assertTrue(expectMostRecentItem())
+            }
         }
-    }
 
     @Test
-    fun `when connection state is CONNECTING, loading text is correct`() = runTest {
-        viewModel.loadingText.test {
-            connectionFlow.emit(ConnectionState.CONNECTING)
-            assertEquals("Connecting...", expectMostRecentItem())
+    fun `when connection state is CONNECTING, loading text is correct`() =
+        runTest {
+            viewModel.loadingText.test {
+                connectionFlow.emit(ConnectionState.CONNECTING)
+                assertEquals("Connecting...", expectMostRecentItem())
+            }
         }
-    }
 
     @Test
-    fun `when connection state is DISCONNECTED, loading text is empty`() = runTest {
-        viewModel.loadingText.test {
-            connectionFlow.emit(ConnectionState.DISCONNECTED)
-            assertEquals("", expectMostRecentItem())
+    fun `when connection state is DISCONNECTED, loading text is empty`() =
+        runTest {
+            viewModel.loadingText.test {
+                connectionFlow.emit(ConnectionState.DISCONNECTED)
+                assertEquals("", expectMostRecentItem())
+            }
         }
-    }
 
     @Test
-    fun `when bluetooth turns off while connected, disconnect is called`() = runTest {
-        connectionFlow.emit(ConnectionState.STATE_LOADED_AND_CONNECTED)
+    fun `when bluetooth turns off while connected, disconnect is called`() =
+        runTest {
+            connectionFlow.emit(ConnectionState.STATE_LOADED_AND_CONNECTED)
 
-        bluetoothFlow.emit(BluetoothState.TURNING_OFF)
+            bluetoothFlow.emit(BluetoothState.TURNING_OFF)
 
-        coVerify(exactly = 1) { disconnectUseCase() }
-    }
+            coVerify(exactly = 1) { disconnectUseCase() }
+        }
 
     @Test
-    fun `manual disconnect calls disconnectUseCase`() = runTest {
-        viewModel.disconnect()
+    fun `manual disconnect calls disconnectUseCase`() =
+        runTest {
+            viewModel.disconnect()
 
-        coVerify(exactly = 1) { disconnectUseCase() }
-    }
+            coVerify(exactly = 1) { disconnectUseCase() }
+        }
 }

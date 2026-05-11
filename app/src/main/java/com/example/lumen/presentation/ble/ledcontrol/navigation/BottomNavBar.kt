@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control.navigation
+package com.example.lumen.presentation.ble.ledcontrol.navigation
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.Icon
@@ -22,16 +22,17 @@ fun BottomNavBar(
     navController: NavController,
     currentDestination: NavDestination?,
     windowInsets: WindowInsets,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavigationBar(
         windowInsets = windowInsets,
-        modifier = modifier
+        modifier = modifier,
     ) {
         BottomNavItem.entries.forEach { item ->
-            val selected = currentDestination?.hierarchy?.any {
-                it.route == item.route::class.qualifiedName
-            } == true
+            val selected =
+                currentDestination?.hierarchy?.any {
+                    it.route == item.route::class.qualifiedName
+                } == true
 
             NavigationBarItem(
                 selected = selected,
@@ -49,12 +50,16 @@ fun BottomNavBar(
                 },
                 icon = {
                     Icon(
-                        painter = if (selected) painterResource( item.iconSelected)
-                        else painterResource( item.icon),
-                        contentDescription = item.contentDescription
+                        painter =
+                            if (selected) {
+                                painterResource(item.iconSelected)
+                            } else {
+                                painterResource(item.icon)
+                            },
+                        contentDescription = item.contentDescription,
                     )
                 },
-                label = { Text(text = item.label) }
+                label = { Text(text = item.label) },
             )
         }
     }

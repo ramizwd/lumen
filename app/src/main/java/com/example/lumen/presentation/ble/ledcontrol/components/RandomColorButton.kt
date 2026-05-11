@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control.components
+package com.example.lumen.presentation.ble.ledcontrol.components
 
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
@@ -25,11 +25,11 @@ fun RandomColorButton(
             FilledTonalIconButton(
                 modifier = modifier,
                 enabled = enabled,
-                onClick = { onClick(Random().nextColorHexString()) }
+                onClick = { onClick(Random().nextColorHexString()) },
             ) {
                 Icon(
                     painter = painterResource(R.drawable.dice_filled_24px),
-                    contentDescription = "Pick random color"
+                    contentDescription = "Pick random color",
                 )
             }
         },

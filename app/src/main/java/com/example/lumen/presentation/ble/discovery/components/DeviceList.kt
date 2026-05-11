@@ -44,21 +44,21 @@ fun DeviceList(
         modifier = modifier
             .padding(
                 start = MaterialTheme.spacing.large,
-                end = MaterialTheme.spacing.large
+                end = MaterialTheme.spacing.large,
             ),
         items = scanResults,
         keySelector = { it.device.address },
         emptyContent = {
-          if (emptyScanResultTxt != null) {
-              EmptyScreenText(
-                  modifier = Modifier
-                      .padding(
-                          start = MaterialTheme.spacing.large,
-                          end = MaterialTheme.spacing.large
-                      ),
-                  text = emptyScanResultTxt
-              )
-          }
+            if (emptyScanResultTxt != null) {
+                EmptyScreenText(
+                    modifier = Modifier
+                        .padding(
+                            start = MaterialTheme.spacing.large,
+                            end = MaterialTheme.spacing.large,
+                        ),
+                    text = emptyScanResultTxt,
+                )
+            }
         },
         content = { deviceContent ->
             DeviceItem(
@@ -95,7 +95,7 @@ private fun EmptyScreenText(
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Light,
-            color = MaterialTheme.colorScheme.secondary
+            color = MaterialTheme.colorScheme.secondary,
         )
     }
 }
@@ -106,19 +106,27 @@ fun DeviceListPreview() {
     LumenTheme {
         Surface {
             val mockScanResults = listOf(
-                DeviceContent(BleDevice(
-                    name = "LED 1",
-                    address = "00:11:22:33:44:55"),
-                    isFavorite = true
+                DeviceContent(
+                    BleDevice(
+                        name = "LED 1",
+                        address = "00:11:22:33:44:55",
+                    ),
+                    isFavorite = true,
                 ),
-                DeviceContent(BleDevice(
-                    name = "Test Device 2",
-                    address = "A:BB:CC:DD:EE:FF"),
-                    isFavorite = false),
-                DeviceContent(BleDevice(
-                    name = null,
-                    address = "FF:EE:DD:CC:BB:AA"),
-                    isFavorite = true),
+                DeviceContent(
+                    BleDevice(
+                        name = "Test Device 2",
+                        address = "A:BB:CC:DD:EE:FF",
+                    ),
+                    isFavorite = false,
+                ),
+                DeviceContent(
+                    BleDevice(
+                        name = null,
+                        address = "FF:EE:DD:CC:BB:AA",
+                    ),
+                    isFavorite = true,
+                ),
             )
 
             DeviceList(
@@ -156,19 +164,27 @@ fun DeviceListTabletLandscapePreview() {
     LumenTheme {
         Surface {
             val mockScanResults = listOf(
-                DeviceContent(BleDevice(
-                    name = "LED 1",
-                    address = "00:11:22:33:44:55"),
-                    isFavorite = true
+                DeviceContent(
+                    BleDevice(
+                        name = "LED 1",
+                        address = "00:11:22:33:44:55",
+                    ),
+                    isFavorite = true,
                 ),
-                DeviceContent(BleDevice(
-                    name = "Test Device 2",
-                    address = "A:BB:CC:DD:EE:FF"),
-                    isFavorite = false),
-                DeviceContent(BleDevice(
-                    name = null,
-                    address = "FF:EE:DD:CC:BB:AA"),
-                    isFavorite = true),
+                DeviceContent(
+                    BleDevice(
+                        name = "Test Device 2",
+                        address = "A:BB:CC:DD:EE:FF",
+                    ),
+                    isFavorite = false,
+                ),
+                DeviceContent(
+                    BleDevice(
+                        name = null,
+                        address = "FF:EE:DD:CC:BB:AA",
+                    ),
+                    isFavorite = true,
+                ),
             )
 
             DeviceList(
@@ -189,19 +205,27 @@ fun DeviceListTabletPortraitPreview() {
     LumenTheme {
         Surface {
             val mockScanResults = listOf(
-                DeviceContent(BleDevice(
-                    name = "LED 1",
-                    address = "00:11:22:33:44:55"),
-                    isFavorite = true
+                DeviceContent(
+                    BleDevice(
+                        name = "LED 1",
+                        address = "00:11:22:33:44:55",
+                    ),
+                    isFavorite = true,
                 ),
-                DeviceContent(BleDevice(
-                    name = "Test Device 2",
-                    address = "A:BB:CC:DD:EE:FF"),
-                    isFavorite = false),
-                DeviceContent(BleDevice(
-                    name = null,
-                    address = "FF:EE:DD:CC:BB:AA"),
-                    isFavorite = true),
+                DeviceContent(
+                    BleDevice(
+                        name = "Test Device 2",
+                        address = "A:BB:CC:DD:EE:FF",
+                    ),
+                    isFavorite = false,
+                ),
+                DeviceContent(
+                    BleDevice(
+                        name = null,
+                        address = "FF:EE:DD:CC:BB:AA",
+                    ),
+                    isFavorite = true,
+                ),
             )
 
             DeviceList(

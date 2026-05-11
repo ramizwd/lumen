@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control.components
+package com.example.lumen.presentation.ble.ledcontrol.components
 
 import android.graphics.Color
 import androidx.compose.material3.FilledTonalIconToggleButton
@@ -20,7 +20,7 @@ fun MatchDeviceThemeButton(
     enabled: Boolean,
     currentHexColor: String?,
     onMatchWithDeviceTheme: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val onPrimaryColor = MaterialTheme.colorScheme.onPrimary.toArgb()
 
@@ -44,12 +44,16 @@ fun MatchDeviceThemeButton(
                 onCheckedChange = { onMatchWithDeviceTheme(maxBrightnessColorHex) },
             ) {
                 Icon(
-                    painter = if (isSelected) painterResource(R.drawable.colorize_filled_24px)
-                    else painterResource(R.drawable.colorize_24px),
-                    contentDescription = "Match with device color"
+                    painter =
+                        if (isSelected) {
+                            painterResource(R.drawable.colorize_filled_24px)
+                        } else {
+                            painterResource(R.drawable.colorize_24px)
+                        },
+                    contentDescription = "Match with device color",
                 )
             }
-        }
+        },
     )
 }
 

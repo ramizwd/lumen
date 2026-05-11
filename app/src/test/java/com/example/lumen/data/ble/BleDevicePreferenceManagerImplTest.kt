@@ -29,7 +29,6 @@ import java.io.File
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class BleDevicePreferenceManagerImplTest {
-
     private val address = "00:11:22:33:44:55"
 
     @TempDir
@@ -47,10 +46,11 @@ class BleDevicePreferenceManagerImplTest {
         Dispatchers.setMain(testDispatcher)
 
         val testFile = File(tempDir, "test.preferences_pb")
-        testDataStore = PreferenceDataStoreFactory.create(
-            scope = testScope,
-            produceFile = { testFile }
-        )
+        testDataStore =
+            PreferenceDataStoreFactory.create(
+                scope = testScope,
+                produceFile = { testFile },
+            )
 
         mockDataStore = mockk()
 
@@ -64,90 +64,101 @@ class BleDevicePreferenceManagerImplTest {
     }
 
     @Test
-    fun `addFavDeviceAddress stores address correctly`() = runTest {
-        testManager.addFavDeviceAddress(address)
+    fun `addFavDeviceAddress stores address correctly`() =
+        runTest {
+            testManager.addFavDeviceAddress(address)
 
-        testManager.getFavDeviceAddresses().test {
-            assert(awaitItem().contains(address))
-        }
-    }
-
-    @Test
-    fun `addFavDeviceAddress should not allow duplicates`() = runTest {
-        testManager.addFavDeviceAddress(address)
-        testManager.addFavDeviceAddress(address)
-
-        testManager.getFavDeviceAddresses().test {
-            assertEquals(1, awaitItem().size)
-        }
-    }
-
-    @Test
-    fun `addFavDeviceAddress should handle write exceptions`() = runTest {
-        coEvery { mockDataStore.updateData(any()) } throws IOException("Write failed")
-
-        mockManager.addFavDeviceAddress(address)
-    }
-
-    @Test
-    fun `removeFavDeviceAddress removes existing address`() = runTest {
-        testManager.addFavDeviceAddress(address)
-
-        testManager.removeFavDeviceAddress(address)
-
-        testManager.getFavDeviceAddresses().test {
-            assertEquals(emptySet<String>(), awaitItem())
-        }
-    }
-
-    @Test
-    fun `removeFavDeviceAddress should handle edit exceptions`() = runTest {
-        coEvery { mockDataStore.updateData(any()) } throws IOException("Edit failed")
-
-        mockManager.removeFavDeviceAddress(address)
-    }
-
-    @Test
-    fun `saveDeviceListPreference updates selection`() = runTest {
-        val pref = DeviceListType.FAVORITE_DEVICES
-
-        testManager.getDeviceListPreference().test {
-            assertEquals(DeviceListType.ALL_DEVICES, awaitItem())
-
-            testManager.saveDeviceListPreference(pref)
-
-            assertEquals(pref, awaitItem())
-        }
-    }
-
-    @Test
-    fun `getFavDeviceAddresses should emit empty prefs on exception`() = runTest {
-        every { mockDataStore.data } returns flow {
-            throw IllegalStateException("Unexpected error")
+            testManager.getFavDeviceAddresses().test {
+                assert(awaitItem().contains(address))
+            }
         }
 
-        mockManager.getFavDeviceAddresses().test {
-            assertEquals(emptySet<String>(), awaitItem())
-            awaitComplete()
+    @Test
+    fun `addFavDeviceAddress should not allow duplicates`() =
+        runTest {
+            testManager.addFavDeviceAddress(address)
+            testManager.addFavDeviceAddress(address)
+
+            testManager.getFavDeviceAddresses().test {
+                assertEquals(1, awaitItem().size)
+            }
         }
-    }
 
     @Test
-    fun `getDeviceListPreference should emit empty prefs on exception`() = runTest {
-        every { mockDataStore.data } returns flow {
-            throw IllegalStateException("Unexpected error")
-        }
+    fun `addFavDeviceAddress should handle write exceptions`() =
+        runTest {
+            coEvery { mockDataStore.updateData(any()) } throws IOException("Write failed")
 
-        mockManager.getDeviceListPreference().test {
-            assertEquals(DeviceListType.ALL_DEVICES, awaitItem())
-            awaitComplete()
+            mockManager.addFavDeviceAddress(address)
         }
-    }
 
     @Test
-    fun `saveDeviceListPreference should handle edit exceptions`() = runTest {
-        coEvery { mockDataStore.updateData(any()) } throws IOException("Edit failed")
+    fun `removeFavDeviceAddress removes existing address`() =
+        runTest {
+            testManager.addFavDeviceAddress(address)
 
-        mockManager.saveDeviceListPreference(DeviceListType.ALL_DEVICES)
-    }
+            testManager.removeFavDeviceAddress(address)
+
+            testManager.getFavDeviceAddresses().test {
+                assertEquals(emptySet<String>(), awaitItem())
+            }
+        }
+
+    @Test
+    fun `removeFavDeviceAddress should handle edit exceptions`() =
+        runTest {
+            coEvery { mockDataStore.updateData(any()) } throws IOException("Edit failed")
+
+            mockManager.removeFavDeviceAddress(address)
+        }
+
+    @Test
+    fun `saveDeviceListPreference updates selection`() =
+        runTest {
+            val pref = DeviceListType.FAVORITE_DEVICES
+
+            testManager.getDeviceListPreference().test {
+                assertEquals(DeviceListType.ALL_DEVICES, awaitItem())
+
+                testManager.saveDeviceListPreference(pref)
+
+                assertEquals(pref, awaitItem())
+            }
+        }
+
+    @Test
+    fun `getFavDeviceAddresses should emit empty prefs on exception`() =
+        runTest {
+            every { mockDataStore.data } returns
+                flow {
+                    throw IllegalStateException("Unexpected error")
+                }
+
+            mockManager.getFavDeviceAddresses().test {
+                assertEquals(emptySet<String>(), awaitItem())
+                awaitComplete()
+            }
+        }
+
+    @Test
+    fun `getDeviceListPreference should emit empty prefs on exception`() =
+        runTest {
+            every { mockDataStore.data } returns
+                flow {
+                    throw IllegalStateException("Unexpected error")
+                }
+
+            mockManager.getDeviceListPreference().test {
+                assertEquals(DeviceListType.ALL_DEVICES, awaitItem())
+                awaitComplete()
+            }
+        }
+
+    @Test
+    fun `saveDeviceListPreference should handle edit exceptions`() =
+        runTest {
+            coEvery { mockDataStore.updateData(any()) } throws IOException("Edit failed")
+
+            mockManager.saveDeviceListPreference(DeviceListType.ALL_DEVICES)
+        }
 }

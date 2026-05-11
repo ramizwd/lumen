@@ -8,7 +8,7 @@ import javax.inject.Inject
 
 class ConnectToDeviceUseCase @Inject constructor(
     private val bleGattController: BleGattController,
-    private val bleScanController: BleScanController
+    private val bleScanController: BleScanController,
 ) {
     companion object ConnectToDeviceUseCase {
         private const val LOG_TAG = "ConnectToDeviceUseCase"

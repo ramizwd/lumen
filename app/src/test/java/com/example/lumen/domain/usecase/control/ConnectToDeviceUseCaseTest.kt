@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test
  * Unit tests for [ConnectToDeviceUseCase]
  */
 class ConnectToDeviceUseCaseTest {
-
     private lateinit var mockBleGattController: BleGattController
     private lateinit var mockBleScanController: BleScanController
     private lateinit var connectToDeviceUseCase: ConnectToDeviceUseCase
@@ -24,37 +23,40 @@ class ConnectToDeviceUseCaseTest {
     fun setup() {
         mockBleGattController = mockk(relaxed = true)
         mockBleScanController = mockk(relaxed = true)
-        connectToDeviceUseCase = ConnectToDeviceUseCase(
-            mockBleGattController,
-            mockBleScanController
-        )
+        connectToDeviceUseCase =
+            ConnectToDeviceUseCase(
+                mockBleGattController,
+                mockBleScanController,
+            )
     }
 
     @Test
-    fun `invoke stops scan and connects`() = runTest {
-        // Given
-        val device = BleDevice("test", "00:11:22:33:44:55")
+    fun `invoke stops scan and connects`() =
+        runTest {
+            // Given
+            val device = BleDevice("test", "00:11:22:33:44:55")
 
-        // When
-        connectToDeviceUseCase(device)
+            // When
+            connectToDeviceUseCase(device)
 
-        // Then
-        coVerify(exactly = 1) { mockBleScanController.stopScan() }
-        coVerify(exactly = 1) { mockBleGattController.connect(device) }
-    }
-
-    @Test
-    fun `invoke ensures scan is stopped before connection starts`() = runTest {
-        //Given
-        val device = BleDevice("test", "00:11:22:33:44:55")
-
-        // When
-        connectToDeviceUseCase(device)
-
-        // Then
-        coVerifyOrder {
-            mockBleScanController.stopScan()
-            mockBleGattController.connect(device)
+            // Then
+            coVerify(exactly = 1) { mockBleScanController.stopScan() }
+            coVerify(exactly = 1) { mockBleGattController.connect(device) }
         }
-    }
+
+    @Test
+    fun `invoke ensures scan is stopped before connection starts`() =
+        runTest {
+            // Given
+            val device = BleDevice("test", "00:11:22:33:44:55")
+
+            // When
+            connectToDeviceUseCase(device)
+
+            // Then
+            coVerifyOrder {
+                mockBleScanController.stopScan()
+                mockBleGattController.connect(device)
+            }
+        }
 }

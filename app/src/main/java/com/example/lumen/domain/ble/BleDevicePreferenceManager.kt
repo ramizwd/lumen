@@ -8,9 +8,12 @@ import kotlinx.coroutines.flow.Flow
  */
 interface BleDevicePreferenceManager {
     fun getFavDeviceAddresses(): Flow<Set<String>>
+
     suspend fun addFavDeviceAddress(address: String)
+
     suspend fun removeFavDeviceAddress(address: String)
 
     fun getDeviceListPreference(): Flow<DeviceListType>
+
     suspend fun saveDeviceListPreference(listType: DeviceListType)
 }

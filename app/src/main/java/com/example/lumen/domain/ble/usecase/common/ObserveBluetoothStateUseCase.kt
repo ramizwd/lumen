@@ -7,7 +7,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class ObserveBluetoothStateUseCase @Inject constructor(
-    private val bluetoothStateDataSource: BluetoothStateManager
+    private val bluetoothStateDataSource: BluetoothStateManager,
 ) {
     companion object {
         private const val LOG_TAG = "ObserveBluetoothStateUseCase"

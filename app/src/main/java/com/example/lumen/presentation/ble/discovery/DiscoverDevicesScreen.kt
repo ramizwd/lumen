@@ -62,7 +62,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun DiscoverDevicesScreen(
     modifier: Modifier = Modifier,
-    viewModel: DiscoveryViewModel = hiltViewModel()
+    viewModel: DiscoveryViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -73,24 +73,26 @@ fun DiscoverDevicesScreen(
     val currentToastRef: MutableState<Toast?> = remember { mutableStateOf(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val bluetoothPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) {
-        val granted = context.hasBluetoothPermissions()
-        val showRationale = activity?.shouldShowBluetoothRationale() == true
+    val bluetoothPermissionLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions(),
+        ) {
+            val granted = context.hasBluetoothPermissions()
+            val showRationale = activity?.shouldShowBluetoothRationale() == true
 
-        viewModel.onBtPermissionResult(granted, showRationale)
-        viewModel.onEvent(DiscoverDevicesUiEvent.TogglePermissionDialog(false))
-    }
+            viewModel.onBtPermissionResult(granted, showRationale)
+            viewModel.onEvent(DiscoverDevicesUiEvent.TogglePermissionDialog(false))
+        }
 
-    val enableBluetoothLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { }
+    val enableBluetoothLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.StartActivityForResult(),
+        ) { }
 
     LaunchedEffect(key1 = uiState.isBtDisabled, key2 = uiState.btPermissionStatus) {
         if (uiState.btPermissionStatus == BluetoothPermissionStatus.GRANTED) {
             viewModel.onEvent(
-                DiscoverDevicesUiEvent.ToggleEnableBtDialog(uiState.isBtDisabled)
+                DiscoverDevicesUiEvent.ToggleEnableBtDialog(uiState.isBtDisabled),
             )
         }
     }
@@ -98,29 +100,31 @@ fun DiscoverDevicesScreen(
     DisposableEffect(
         key1 = lifecycleOwner,
         effect = {
-            val observer = LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_START) {
-                    if (uiState.btPermissionStatus != BluetoothPermissionStatus.GRANTED) {
-                        bluetoothPermissionLauncher.launch(btPermissionArray)
+            val observer =
+                LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_START) {
+                        if (uiState.btPermissionStatus != BluetoothPermissionStatus.GRANTED) {
+                            bluetoothPermissionLauncher.launch(btPermissionArray)
+                        }
                     }
                 }
-            }
             lifecycleOwner.lifecycle.addObserver(observer)
 
             onDispose {
                 lifecycleOwner.lifecycle.removeObserver(observer)
             }
-        }
+        },
     )
 
     LaunchedEffect(key1 = Unit) {
         launch {
             viewModel.snackbarEvent.collect { event ->
-                val result = snackbarHostState.showSnackbar(
-                    message = event.message,
-                    actionLabel = event.actionLabel,
-                    duration = event.duration
-                )
+                val result =
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        actionLabel = event.actionLabel,
+                        duration = event.duration,
+                    )
 
                 when (result) {
                     SnackbarResult.Dismissed -> {
@@ -140,7 +144,7 @@ fun DiscoverDevicesScreen(
                 context = context,
                 message = msg,
                 duration = Toast.LENGTH_SHORT,
-                currentToastRef = currentToastRef
+                currentToastRef = currentToastRef,
             )
             viewModel.clearInfoMessage()
         }
@@ -152,7 +156,7 @@ fun DiscoverDevicesScreen(
                 context = context,
                 message = msg,
                 duration = Toast.LENGTH_SHORT,
-                currentToastRef = currentToastRef
+                currentToastRef = currentToastRef,
             )
             viewModel.clearErrorMessage()
         }
@@ -164,27 +168,29 @@ fun DiscoverDevicesScreen(
             onConfirmation = {
                 bluetoothPermissionLauncher.launch(btPermissionArray)
                 viewModel.onEvent(
-                    DiscoverDevicesUiEvent.TogglePermissionDialog(false)
+                    DiscoverDevicesUiEvent.TogglePermissionDialog(false),
                 )
             },
             onDismissRequest = {
                 viewModel.onEvent(
-                    DiscoverDevicesUiEvent.TogglePermissionDialog(false)
+                    DiscoverDevicesUiEvent.TogglePermissionDialog(false),
                 )
             },
-            permissionTextProvider = BluetoothPermissionTextProvider()
+            permissionTextProvider = BluetoothPermissionTextProvider(),
         )
     }
 
     // Prompt to enable permission through app settings after permanent denial
     if (uiState.btPermissionStatus == BluetoothPermissionStatus.DENIED_PERMANENTLY &&
-        uiState.showOpenSettingsDialog) {
+        uiState.showOpenSettingsDialog
+    ) {
         PermissionAlertDialog(
             onConfirmation = {
-                val intent = Intent(
-                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                    Uri.fromParts("package", context.packageName, null)
-                )
+                val intent =
+                    Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.fromParts("package", context.packageName, null),
+                    )
 
                 try {
                     context.startActivity(intent)
@@ -193,55 +199,56 @@ fun DiscoverDevicesScreen(
                         context = context,
                         message = "Could not open app settings. Try again",
                         duration = Toast.LENGTH_SHORT,
-                        currentToastRef = currentToastRef
+                        currentToastRef = currentToastRef,
                     )
                 }
                 viewModel.onEvent(
-                    DiscoverDevicesUiEvent.ToggleOpenSettingsDialog(false)
+                    DiscoverDevicesUiEvent.ToggleOpenSettingsDialog(false),
                 )
             },
             onDismissRequest = {
                 viewModel.onEvent(
-                    DiscoverDevicesUiEvent.ToggleOpenSettingsDialog(false)
+                    DiscoverDevicesUiEvent.ToggleOpenSettingsDialog(false),
                 )
             },
-            permissionTextProvider = OpenAppSettingsTextProvider()
+            permissionTextProvider = OpenAppSettingsTextProvider(),
         )
     }
 
     // If permission granted but BT is off, prompt to enable
     if (uiState.btPermissionStatus == BluetoothPermissionStatus.GRANTED &&
-        uiState.showEnableBtDialog) {
+        uiState.showEnableBtDialog
+    ) {
         PermissionAlertDialog(
             onConfirmation = {
                 try {
                     enableBluetoothLauncher.launch(
-                        Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                        Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE),
                     )
                     viewModel.onEvent(
-                        DiscoverDevicesUiEvent.ToggleEnableBtDialog(false)
+                        DiscoverDevicesUiEvent.ToggleEnableBtDialog(false),
                     )
                 } catch (_: SecurityException) {
                     showToast(
                         context = context,
                         message = "Nearby devices permission missing!",
                         duration = Toast.LENGTH_SHORT,
-                        currentToastRef = currentToastRef
+                        currentToastRef = currentToastRef,
                     )
                 }
             },
             onDismissRequest = {
                 viewModel.onEvent(
-                    DiscoverDevicesUiEvent.ToggleEnableBtDialog(false)
+                    DiscoverDevicesUiEvent.ToggleEnableBtDialog(false),
                 )
             },
-            permissionTextProvider = EnableBluetoothTextProvider()
+            permissionTextProvider = EnableBluetoothTextProvider(),
         )
     }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         DiscoverDevicesContent(
             innerPadding = innerPadding,
@@ -276,25 +283,29 @@ fun DiscoverDevicesContent(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(innerPadding),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(innerPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(
-            MaterialTheme.spacing.smallIncreased
-        )
+        verticalArrangement =
+            Arrangement.spacedBy(
+                MaterialTheme.spacing.smallIncreased,
+            ),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = MaterialTheme.spacing.large,
-                    end = MaterialTheme.spacing.large
-                ),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = MaterialTheme.spacing.large,
+                        end = MaterialTheme.spacing.large,
+                    ),
         ) {
             ChoiceChipRow(
-                modifier = Modifier
-                    .weight(1f),
+                modifier =
+                    Modifier
+                        .weight(1f),
                 choices = DeviceListType.entries.map { it.displayName },
                 selectedChoice = currSelectedListType.displayName,
                 onChoiceSelected = { selected ->
@@ -305,9 +316,10 @@ fun DiscoverDevicesContent(
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(
-                    MaterialTheme.spacing.smallIncreased
-                )
+                horizontalArrangement =
+                    Arrangement.spacedBy(
+                        MaterialTheme.spacing.smallIncreased,
+                    ),
             ) {
                 RadarScanAnimation(isScanning = isScanning)
 
@@ -384,19 +396,27 @@ fun DiscoverDevicesContentDevicesFoundPreview() {
     LumenTheme {
         Surface {
             val mockScanResults = listOf(
-                DeviceContent(BleDevice(
-                    name = "LED 1",
-                    address = "00:11:22:33:44:55"),
-                    isFavorite = true
+                DeviceContent(
+                    BleDevice(
+                        name = "LED 1",
+                        address = "00:11:22:33:44:55",
+                    ),
+                    isFavorite = true,
                 ),
-                DeviceContent(BleDevice(
-                    name = "Test Device 2",
-                    address = "A:BB:CC:DD:EE:FF"),
-                    isFavorite = false),
-                DeviceContent(BleDevice(
-                    name = null,
-                    address = "FF:EE:DD:CC:BB:AA"),
-                    isFavorite = true),
+                DeviceContent(
+                    BleDevice(
+                        name = "Test Device 2",
+                        address = "A:BB:CC:DD:EE:FF",
+                    ),
+                    isFavorite = false,
+                ),
+                DeviceContent(
+                    BleDevice(
+                        name = null,
+                        address = "FF:EE:DD:CC:BB:AA",
+                    ),
+                    isFavorite = true,
+                ),
             )
 
             DiscoverDevicesContent(
@@ -412,7 +432,6 @@ fun DiscoverDevicesContentDevicesFoundPreview() {
                 onRemoveFavDevice = {},
                 onConnectToDevice = {},
                 modifier = Modifier,
-
             )
         }
     }
@@ -493,19 +512,27 @@ fun DiscoverDevicesContentFavDevicesFoundPreview() {
     LumenTheme {
         Surface {
             val mockScanResults = listOf(
-                DeviceContent(BleDevice(
-                    name = "LED 1",
-                    address = "00:11:22:33:44:55"),
-                    isFavorite = true
+                DeviceContent(
+                    BleDevice(
+                        name = "LED 1",
+                        address = "00:11:22:33:44:55",
+                    ),
+                    isFavorite = true,
                 ),
-                DeviceContent(BleDevice(
-                    name = "Test Device 2",
-                    address = "A:BB:CC:DD:EE:FF"),
-                    isFavorite = true),
-                DeviceContent(BleDevice(
-                    name = null,
-                    address = "FF:EE:DD:CC:BB:AA"),
-                    isFavorite = true),
+                DeviceContent(
+                    BleDevice(
+                        name = "Test Device 2",
+                        address = "A:BB:CC:DD:EE:FF",
+                    ),
+                    isFavorite = true,
+                ),
+                DeviceContent(
+                    BleDevice(
+                        name = null,
+                        address = "FF:EE:DD:CC:BB:AA",
+                    ),
+                    isFavorite = true,
+                ),
             )
 
             DiscoverDevicesContent(

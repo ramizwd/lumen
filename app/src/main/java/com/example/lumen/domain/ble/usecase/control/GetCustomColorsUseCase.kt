@@ -6,9 +6,8 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetCustomColorsUseCase @Inject constructor(
-    private val colorPreferenceManager: ColorPreferenceManager
+    private val colorPreferenceManager: ColorPreferenceManager,
 ) {
-    operator fun invoke(deviceAddress: String): Flow<List<CustomColorSlot>> {
-        return colorPreferenceManager.getCustomColors(deviceAddress)
-    }
+    operator fun invoke(deviceAddress: String): Flow<List<CustomColorSlot>> =
+        colorPreferenceManager.getCustomColors(deviceAddress)
 }

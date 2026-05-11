@@ -9,9 +9,7 @@ import javax.inject.Inject
  * Use case for observing the device that is selected and successfully connected
  */
 class ObserveSelectedDeviceUseCase @Inject constructor(
-    private val bleGattController: BleGattController
+    private val bleGattController: BleGattController,
 ) {
-    operator fun invoke(): Flow<BleDevice?> {
-        return bleGattController.selectedDevice
-    }
+    operator fun invoke(): Flow<BleDevice?> = bleGattController.selectedDevice
 }

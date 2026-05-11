@@ -41,45 +41,53 @@ fun DeviceItem(
         color = MaterialTheme.colorScheme.surfaceContainer,
         shape = MaterialTheme.shapes.extraLarge,
         onClick = { onDeviceClick(device) },
-        modifier = modifier
-            .height(126.dp)
-            .background(
-                shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.primaryContainer
-            )
+        modifier =
+            modifier
+                .height(126.dp)
+                .background(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                ),
     ) {
-        Row (
+        Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(MaterialTheme.spacing.largeIncreased),
-                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .padding(MaterialTheme.spacing.largeIncreased),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
             ) {
                 Text(
-                    modifier = Modifier
-                        .horizontalScroll(scrollState),
+                    modifier =
+                        Modifier
+                            .horizontalScroll(scrollState),
                     text = deviceName,
                     style = MaterialTheme.typography.titleLarge,
-                    color = if (device.name == null) MaterialTheme.colorScheme.outline
-                    else Color.Unspecified,
+                    color =
+                        if (device.name == null) {
+                            MaterialTheme.colorScheme.outline
+                        } else {
+                            Color.Unspecified
+                        },
                     maxLines = 1,
                 )
 
                 Text(
                     text = device.address,
                     fontWeight = FontWeight.Light,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
 
             DeviceFavoriteButton(
                 isFavorite = isFavorite,
                 onFavor = { onFavDevice(device.address) },
-                onRemove = { onRemoveDevice(device.address) } ,
-                modifier = Modifier
-                    .padding(MaterialTheme.spacing.largeIncreased)
+                onRemove = { onRemoveDevice(device.address) },
+                modifier =
+                    Modifier
+                        .padding(MaterialTheme.spacing.largeIncreased),
             )
         }
     }
@@ -90,11 +98,14 @@ fun DeviceItem(
 fun DeviceItemPreview() {
     LumenTheme {
         Surface {
-            val mockDeviceContent = DeviceContent(BleDevice(
-                name = "LED Test",
-                address = "00:11:22:33:44:55"),
-                isFavorite = false
-            )
+            val mockDeviceContent =
+                DeviceContent(
+                    BleDevice(
+                        name = "LED Test",
+                        address = "00:11:22:33:44:55",
+                    ),
+                    isFavorite = false,
+                )
 
             DeviceItem(
                 deviceContent = mockDeviceContent,
@@ -111,11 +122,14 @@ fun DeviceItemPreview() {
 fun DeviceItemNoNamePreview() {
     LumenTheme {
         Surface {
-            val mockDeviceContent = DeviceContent(BleDevice(
-                name = null,
-                address = "00:11:22:33:44:55"),
-                isFavorite = false
-            )
+            val mockDeviceContent =
+                DeviceContent(
+                    BleDevice(
+                        name = null,
+                        address = "00:11:22:33:44:55",
+                    ),
+                    isFavorite = false,
+                )
 
             DeviceItem(
                 deviceContent = mockDeviceContent,

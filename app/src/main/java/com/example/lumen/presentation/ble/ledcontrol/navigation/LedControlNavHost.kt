@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control.navigation
+package com.example.lumen.presentation.ble.ledcontrol.navigation
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -10,9 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.lumen.presentation.ble.led_control.ColorPickerScreen
-import com.example.lumen.presentation.ble.led_control.ControlScreen
-import com.example.lumen.presentation.ble.led_control.LedControlUiState
+import com.example.lumen.presentation.ble.ledcontrol.ColorPickerScreen
+import com.example.lumen.presentation.ble.ledcontrol.ControlScreen
+import com.example.lumen.presentation.ble.ledcontrol.LedControlUiState
 
 @Composable
 fun LedControlNavHost(
@@ -24,7 +24,7 @@ fun LedControlNavHost(
     onChangeBrightness: (Float) -> Unit,
     navController: NavHostController,
     startDestination: Screen,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavHost(
         navController = navController,

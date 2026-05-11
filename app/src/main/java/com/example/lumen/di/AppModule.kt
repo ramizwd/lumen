@@ -27,9 +27,10 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
     @Provides
-    fun provideBluetoothAdapter(@ApplicationContext context: Context): BluetoothAdapter? {
+    fun provideBluetoothAdapter(
+        @ApplicationContext context: Context,
+    ): BluetoothAdapter? {
         val manager = context.getSystemService(BluetoothManager::class.java)
         return manager?.adapter
     }
@@ -39,68 +40,57 @@ object AppModule {
     fun provideBleScanController(
         @ApplicationContext context: Context,
         bluetoothAdapter: BluetoothAdapter?,
-    ): BleScanController {
-        return BleScanControllerImpl(
+    ): BleScanController =
+        BleScanControllerImpl(
             context,
             bluetoothAdapter,
         )
-    }
 
     @Provides
     @Singleton
     fun provideBleGattController(
         @ApplicationContext context: Context,
         bluetoothAdapter: BluetoothAdapter?,
-    ): BleGattController {
-        return BleGattControllerImpl(
+    ): BleGattController =
+        BleGattControllerImpl(
             context,
             bluetoothAdapter,
         )
-    }
 
     @Provides
     @Singleton
     fun provideBluetoothStateDataSource(
         @ApplicationContext context: Context,
         bluetoothAdapter: BluetoothAdapter?,
-    ): BluetoothStateManager {
-        return BluetoothStateManagerImpl(
+    ): BluetoothStateManager =
+        BluetoothStateManagerImpl(
             context,
-            bluetoothAdapter
+            bluetoothAdapter,
         )
-    }
 
     @Provides
     @Singleton
     @ColorPreferences
     fun provideColorDataStore(
-        @ApplicationContext context: Context
-    ): DataStore<Preferences> {
-        return context.colorDataStore
-    }
+        @ApplicationContext context: Context,
+    ): DataStore<Preferences> = context.colorDataStore
 
     @Provides
     @Singleton
     @BleDevicePreferences
     fun provideBleDeviceDataStore(
-        @ApplicationContext context: Context
-    ): DataStore<Preferences> {
-        return context.bleDeviceDataStore
-    }
+        @ApplicationContext context: Context,
+    ): DataStore<Preferences> = context.bleDeviceDataStore
 
     @Provides
     @Singleton
     fun provideColorPreferenceManager(
-        @ColorPreferences dataStore: DataStore<Preferences>
-    ): ColorPreferenceManager {
-        return ColorPreferenceManagerImpl(dataStore)
-    }
+        @ColorPreferences dataStore: DataStore<Preferences>,
+    ): ColorPreferenceManager = ColorPreferenceManagerImpl(dataStore)
 
     @Provides
     @Singleton
     fun provideBleDevicePreferenceManager(
-        @BleDevicePreferences dataStore: DataStore<Preferences>
-    ): BleDevicePreferenceManager {
-        return BleDevicePreferenceManagerImpl(dataStore)
-    }
+        @BleDevicePreferences dataStore: DataStore<Preferences>,
+    ): BleDevicePreferenceManager = BleDevicePreferenceManagerImpl(dataStore)
 }

@@ -16,34 +16,35 @@ import org.junit.jupiter.api.Test
  * Unit tests for [GetCustomColorsUseCase]
  */
 class GetCustomColorsUseCaseTest {
-
     private val colorPreferenceManager: ColorPreferenceManager = mockk()
     private val useCase = GetCustomColorsUseCase(colorPreferenceManager)
 
     @Test
-    fun `invoke should return custom colors from preference manager`() = runTest {
-        // Given
-        val deviceAddress = "00:11:22:33:44:55"
-        val expectedColors = listOf(
-            CustomColorSlot(id = 1, hexColor = "FF0000"),
-            CustomColorSlot(id = 2, hexColor = "00FF00"),
-        )
+    fun `invoke should return custom colors from preference manager`() =
+        runTest {
+            // Given
+            val deviceAddress = "00:11:22:33:44:55"
+            val expectedColors =
+                listOf(
+                    CustomColorSlot(id = 1, hexColor = "FF0000"),
+                    CustomColorSlot(id = 2, hexColor = "00FF00"),
+                )
 
-        every {
-            colorPreferenceManager.getCustomColors(deviceAddress)
-        } returns flowOf(expectedColors)
+            every {
+                colorPreferenceManager.getCustomColors(deviceAddress)
+            } returns flowOf(expectedColors)
 
-        // When
-        val result = useCase(deviceAddress)
+            // When
+            val result = useCase(deviceAddress)
 
-        // Then
-        result.test {
-            assertEquals(expectedColors, awaitItem())
-            awaitComplete()
+            // Then
+            result.test {
+                assertEquals(expectedColors, awaitItem())
+                awaitComplete()
+            }
+
+            verify(exactly = 1) {
+                colorPreferenceManager.getCustomColors(deviceAddress)
+            }
         }
-
-        verify(exactly = 1) {
-            colorPreferenceManager.getCustomColors(deviceAddress)
-        }
-    }
 }

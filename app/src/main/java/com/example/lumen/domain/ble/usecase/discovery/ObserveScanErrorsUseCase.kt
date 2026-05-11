@@ -5,9 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class ObserveScanErrorsUseCase @Inject constructor(
-    private val bleScanController: BleScanController
+    private val bleScanController: BleScanController,
 ) {
-    operator fun invoke(): Flow<String> {
-        return bleScanController.errors
-    }
+    operator fun invoke(): Flow<String> = bleScanController.errors
 }

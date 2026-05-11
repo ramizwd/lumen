@@ -25,9 +25,13 @@ fun DeviceFavoriteButton(
         },
     ) {
         Icon(
-            painter = if (!isFavorite) painterResource(R.drawable.star_24px)
-            else painterResource(R.drawable.star_filled_24px),
-            contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites"
+            painter =
+                if (!isFavorite) {
+                    painterResource(R.drawable.star_24px)
+                } else {
+                    painterResource(R.drawable.star_filled_24px)
+                },
+            contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
         )
     }
 }

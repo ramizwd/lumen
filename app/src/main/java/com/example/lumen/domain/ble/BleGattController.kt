@@ -18,11 +18,12 @@ interface BleGattController {
     val ledControllerState: StateFlow<LedControllerState?>
 
     suspend fun connect(selectedDevice: BleDevice)
+
     fun disconnect()
 
     suspend fun writeCharacteristic(
         serviceUUID: UUID,
         charaUUID: UUID,
-        data: ByteArray
+        data: ByteArray,
     )
 }

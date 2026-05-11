@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control.components
+package com.example.lumen.presentation.ble.ledcontrol.components
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -30,11 +30,12 @@ fun LedToggleButton(
 
     val animatedCornerRadius by animateDpAsState(
         targetValue = if (isOn) 22.dp else 40.dp,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMediumLow
-        ),
-        label = "LedButtonShapeAnimation"
+        animationSpec =
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessMediumLow,
+            ),
+        label = "LedButtonShapeAnimation",
     )
 
     val animatedShape = RoundedCornerShape(animatedCornerRadius)
@@ -55,9 +56,13 @@ fun LedToggleButton(
         },
     ) {
         Icon(
-            painter = if (isOn) painterResource(R.drawable.power_settings_new_semibold_24px)
-            else painterResource(R.drawable.power_settings_new_24px),
-            contentDescription = if (isOn) "Turn LED off" else "Turn LED on"
+            painter =
+                if (isOn) {
+                    painterResource(R.drawable.power_settings_new_semibold_24px)
+                } else {
+                    painterResource(R.drawable.power_settings_new_24px)
+                },
+            contentDescription = if (isOn) "Turn LED off" else "Turn LED on",
         )
     }
 }
@@ -70,7 +75,7 @@ fun LedToggleButtonOnPreview() {
             LedToggleButton(
                 isOn = true,
                 onTurnLedOnClick = {},
-                onTurnLedOffClick = {}
+                onTurnLedOffClick = {},
             )
         }
     }
@@ -84,7 +89,7 @@ fun LedToggleButtonOffPreview() {
             LedToggleButton(
                 isOn = false,
                 onTurnLedOnClick = {},
-                onTurnLedOffClick = {}
+                onTurnLedOffClick = {},
             )
         }
     }

@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control.navigation
+package com.example.lumen.presentation.ble.ledcontrol.navigation
 
 import androidx.annotation.DrawableRes
 import com.example.lumen.R
@@ -15,13 +15,13 @@ enum class BottomNavItem(
         R.drawable.palette_24px,
         R.drawable.palette_filled_24px,
         "Colors",
-        "Navigate to colors"
+        "Navigate to colors",
     ),
     CONTROLS(
         Screen.ControlScreen,
         R.drawable.discover_tune_24px,
         R.drawable.discover_tune_semibold_24px,
         "Controls",
-        "Navigate to controls"
-    )
+        "Navigate to controls",
+    ),
 }

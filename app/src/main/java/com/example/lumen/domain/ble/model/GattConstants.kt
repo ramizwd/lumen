@@ -6,7 +6,6 @@ import java.util.UUID
  * Holds GATT services & characteristics UUIDs, and command bytes related to the LED controller
  */
 object GattConstants {
-
     // Service and characteristic UUIDs
 
     // Service and its characteristic (with notify and write) and CCCD
@@ -28,5 +27,4 @@ object GattConstants {
 
     // Color change command byte
     const val COLOR_SUFFIX_HEX = "1E"
-
 }

@@ -5,5 +5,5 @@ package com.example.lumen.domain.ble.model
  */
 data class BleDevice(
     val name: String?,
-    val address: String
+    val address: String,
 )

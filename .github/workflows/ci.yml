@@ -2,10 +2,12 @@ name: CI
 
 on:
   push:
+    branches: [main, develop]
   pull_request:
 
 env:
   JAVA_VERSION: '21'
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
 
 jobs:
   verify:
@@ -20,10 +22,38 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'zulu'
-          cache: 'gradle'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main' }}
+
+      - name: Run Ktlint
+        run: ./gradlew ktlintCheck
 
       - name: Run unit tests
+        if: always()
         run: ./gradlew testDebugUnitTest
+
+      - name: Run Android lint
+        if: always()
+        run: ./gradlew lintDebug
+
+      - name: Upload reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-quality-reports
+          path: |
+            **/build/reports/lint-results-*
+            **/build/reports/ktlint/*
+            **/build/reports/tests/
+          retention-days: 7
+
+      - name: Test report summary
+        if: failure()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Junit test results
+          path: "**/build/test-results/**/*.xml"
+          reporter: java-junit

@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control.components
+package com.example.lumen.presentation.ble.ledcontrol.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,23 +32,26 @@ fun BrightnessSlider(
 ) {
     val sliderPercentage = ((brightnessValue.toInt() / BRIGHTNESS_MAX) * 100)
 
-    val percentageFormat = when {
-        sliderPercentage == 0f || sliderPercentage == 100f -> "%.0f".format(sliderPercentage)
-        else -> "%.1f".format(sliderPercentage)
-    }
+    val percentageFormat =
+        when {
+            sliderPercentage == 0f || sliderPercentage == 100f ->
+                "%.0f".format(sliderPercentage)
+            else -> "%.1f".format(sliderPercentage)
+        }
 
-    val brightnessIcon = when(sliderPercentage) {
-        in 80.1f..100f -> R.drawable.brightness_max_24px
-        in 20.1f..80f -> R.drawable.brightness_medium_24px
-        in 0.1f..20f -> R.drawable.brightness_low_24px
-        else -> R.drawable.brightness_zero_24px
-    }
+    val brightnessIcon =
+        when (sliderPercentage) {
+            in 80.1f..100f -> R.drawable.brightness_max_24px
+            in 20.1f..80f -> R.drawable.brightness_medium_24px
+            in 0.1f..20f -> R.drawable.brightness_low_24px
+            else -> R.drawable.brightness_zero_24px
+        }
 
     if (orientation == SliderOrientation.HORIZONTAL) {
         Row(
             modifier = modifier,
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
         ) {
             CustomSlider(
                 enabled = enabled,
@@ -64,22 +67,22 @@ fun BrightnessSlider(
             )
 
             Text(
-                text = "${percentageFormat}%",
+                text = "$percentageFormat%",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.weight(0.2f)
+                modifier = Modifier.weight(0.2f),
             )
         }
     } else {
         Column(
             modifier = modifier,
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "${percentageFormat}%",
+                text = "$percentageFormat%",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
             )
 
             CustomSlider(
@@ -109,7 +112,7 @@ fun BrightnessSliderPreview() {
                 brightnessValue = sliderValue,
                 onChangeBrightness = {
                     sliderValue = it
-                }
+                },
             )
         }
     }

@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control.navigation
+package com.example.lumen.presentation.ble.ledcontrol.navigation
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.padding
@@ -27,7 +27,7 @@ fun TopAppBar(
     onActionClick: () -> Unit,
     onClickTitle: () -> Unit,
     onLongClickTitle: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     CenterAlignedTopAppBar(
         modifier = modifier,
@@ -38,16 +38,15 @@ fun TopAppBar(
                     .clip(shape = MaterialTheme.shapes.medium)
                     .combinedClickable(
                         onClick = onClickTitle,
-                        onLongClick = onLongClickTitle
-                    )
-                    .padding(MaterialTheme.spacing.smallIncreased)
+                        onLongClick = onLongClickTitle,
+                    ).padding(MaterialTheme.spacing.smallIncreased),
             )
         },
         navigationIcon = {
             IconButton(onClick = onNavIconClick) {
                 Icon(
                     painter = painterResource(R.drawable.arrow_back_24px),
-                    contentDescription = "Navigate back"
+                    contentDescription = "Navigate back",
                 )
             }
         },
@@ -55,7 +54,7 @@ fun TopAppBar(
             TextButton(onClick = onActionClick) {
                 Text(text = "Disconnect")
             }
-        }
+        },
     )
 }
 

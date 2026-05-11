@@ -39,7 +39,6 @@ import org.junit.jupiter.api.Test
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class BleScanControllerImplTest {
-
     private val deviceAddress = "00:11:22:33:44:55"
     private val deviceName = "Test"
     private val callbackSlot = slot<ScanCallback>()
@@ -78,24 +77,28 @@ class BleScanControllerImplTest {
             bleScanner.startScan(
                 any(),
                 any(),
-                capture(callbackSlot))
+                capture(callbackSlot),
+            )
         } just Runs
         every { bleScanner.stopScan(any<ScanCallback>()) } just Runs
 
-        mockBtDevice = mockk(relaxed = true) {
-            every { address } returns deviceAddress
-            every { name } returns deviceName
-        }
+        mockBtDevice =
+            mockk(relaxed = true) {
+                every { address } returns deviceAddress
+                every { name } returns deviceName
+            }
 
-        mockScanResult = mockk {
-            every { device } returns mockBtDevice
-            every { isConnectable } returns true
-        }
+        mockScanResult =
+            mockk {
+                every { device } returns mockBtDevice
+                every { isConnectable } returns true
+            }
 
-        controller = BleScanControllerImpl(
-            context,
-            btAdapter,
-        )
+        controller =
+            BleScanControllerImpl(
+                context,
+                btAdapter,
+            )
     }
 
     @AfterEach
@@ -105,328 +108,356 @@ class BleScanControllerImplTest {
     }
 
     @Test
-    fun `startScan updates state to SCANNING and calls scanner`() = runTest {
-        controller.scanState.test {
-            assertEquals(ScanState.SCAN_PAUSED, awaitItem())
+    fun `startScan updates state to SCANNING and calls scanner`() =
+        runTest {
+            controller.scanState.test {
+                assertEquals(ScanState.SCAN_PAUSED, awaitItem())
 
-            controller.startScan()
+                controller.startScan()
 
-            assertEquals(ScanState.SCANNING, awaitItem())
+                assertEquals(ScanState.SCANNING, awaitItem())
 
-            verify(exactly = 1) {
-                bleScanner.startScan(
-                    any(),
-                    any(),
-                    any<ScanCallback>()
-                )
+                verify(exactly = 1) {
+                    bleScanner.startScan(
+                        any(),
+                        any(),
+                        any<ScanCallback>(),
+                    )
+                }
             }
         }
-    }
 
     @Test
-    fun `startScan should emit error when BLUETOOTH_SCAN permission is missing`() = runTest {
-        every { context.hasPermission(any()) } returns false
-
-        controller.errors.test {
-            controller.startScan()
-
-            assertEquals("Nearby devices permission missing!" ,awaitItem())
-        }
-    }
-
-    @Test
-    fun `startScan should emit error when BT is disabled`() = runTest {
-        every { btAdapter.isEnabled } returns false
-
-        controller.errors.test {
-            controller.startScan()
-
-            assertEquals("Bluetooth is not enabled", awaitItem())
-        }
-    }
-
-    @Test
-    fun `startScan should emit error when BLE is not available`() = runTest {
-        every { btAdapter.bluetoothLeScanner } returns null
-
-        controller.errors.test {
-            controller.startScan()
-
-            assertEquals("BLE scanning not supported", awaitItem())
-        }
-    }
-
-    @Test
-    fun `startScan resets scan if already scanning`() = runTest {
-        controller.startScan()
-
-        assertEquals(ScanState.SCANNING, controller.scanState.value)
-
-        controller.startScan()
-
-        verify(exactly = 1) { bleScanner.stopScan(any<ScanCallback>()) }
-        verify(exactly = 2) {
-            bleScanner.startScan(
-                any(),
-                any(),
-                any<ScanCallback>()
-            )
-        }
-    }
-
-    @Test
-    fun `startScan resets scan result state when a new scan starts`() = runTest {
-        controller.startScan()
-
-        callbackSlot.captured.onScanResult(
-            ScanSettings.CALLBACK_TYPE_ALL_MATCHES, mockScanResult
-        )
-
-        controller.scanResults.test {
-            assertTrue(awaitItem().isNotEmpty())
-
-            controller.startScan()
-
-            assertEquals(emptyMap<String, BleDevice>(), awaitItem())
-        }
-    }
-
-    @Test
-    fun `startScan should emit error when hardware startScan throws exception`() = runTest {
-        every {
-            bleScanner.startScan(
-                any(),
-                any(),
-                any<ScanCallback>()
-            )
-        } throws RuntimeException("Hardware failure")
-
-        controller.scanState.test {
-            assertEquals(ScanState.SCAN_PAUSED, awaitItem())
+    fun `startScan should emit error when BLUETOOTH_SCAN permission is missing`() =
+        runTest {
+            every { context.hasPermission(any()) } returns false
 
             controller.errors.test {
                 controller.startScan()
 
-                assertEquals("Scan failed", awaitItem())
+                assertEquals("Nearby devices permission missing!", awaitItem())
             }
-
-            assertEquals(ScanState.SCAN_PAUSED, controller.scanState.value)
-            expectNoEvents()
         }
-    }
 
     @Test
-    fun `startScan stops scan if scan period is over 30 seconds`() = runTest {
-        val controllerWithScope = BleScanControllerImpl(
-            context,
-            btAdapter,
-            backgroundScope
-        )
+    fun `startScan should emit error when BT is disabled`() =
+        runTest {
+            every { btAdapter.isEnabled } returns false
 
-        controllerWithScope.scanState.test {
-            assertEquals(ScanState.SCAN_PAUSED, awaitItem())
+            controller.errors.test {
+                controller.startScan()
 
-            controllerWithScope.startScan()
+                assertEquals("Bluetooth is not enabled", awaitItem())
+            }
+        }
 
-            assertEquals(ScanState.SCANNING, awaitItem())
+    @Test
+    fun `startScan should emit error when BLE is not available`() =
+        runTest {
+            every { btAdapter.bluetoothLeScanner } returns null
 
-            advanceTimeBy(29_000)
-            runCurrent()
+            controller.errors.test {
+                controller.startScan()
 
-            expectNoEvents()
+                assertEquals("BLE scanning not supported", awaitItem())
+            }
+        }
 
-            advanceTimeBy(2_000)
-            runCurrent()
+    @Test
+    fun `startScan resets scan if already scanning`() =
+        runTest {
+            controller.startScan()
 
-            assertEquals(ScanState.SCAN_AUTO_PAUSED, expectMostRecentItem())
+            assertEquals(ScanState.SCANNING, controller.scanState.value)
+
+            controller.startScan()
 
             verify(exactly = 1) { bleScanner.stopScan(any<ScanCallback>()) }
-
-            cancelAndIgnoreRemainingEvents()
+            verify(exactly = 2) {
+                bleScanner.startScan(
+                    any(),
+                    any(),
+                    any<ScanCallback>(),
+                )
+            }
         }
-    }
 
     @Test
-    fun `ScanCallback onScanResult ignores non-connectable devices`() = runTest {
-        every { mockScanResult.isConnectable } returns false
-
-        controller.startScan()
-
-        controller.scanResults.test {
-            assertEquals(emptyMap<String, BleDevice>(), awaitItem())
+    fun `startScan resets scan result state when a new scan starts`() =
+        runTest {
+            controller.startScan()
 
             callbackSlot.captured.onScanResult(
-                ScanSettings.CALLBACK_TYPE_ALL_MATCHES, mockScanResult
+                ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                mockScanResult,
             )
 
-            expectNoEvents()
+            controller.scanResults.test {
+                assertTrue(awaitItem().isNotEmpty())
 
-            assertEquals(0, controller.scanResults.value.size)
+                controller.startScan()
+
+                assertEquals(emptyMap<String, BleDevice>(), awaitItem())
+            }
         }
-    }
 
     @Test
-    fun `ScanCallback onScanResult updates scanResults map with found devices`() = runTest {
-        controller.startScan()
+    fun `startScan should emit error when hardware startScan throws exception`() =
+        runTest {
+            every {
+                bleScanner.startScan(
+                    any(),
+                    any(),
+                    any<ScanCallback>(),
+                )
+            } throws RuntimeException("Hardware failure")
 
-        controller.scanResults.test {
-            assertEquals(emptyMap<String, BleDevice>(), awaitItem())
+            controller.scanState.test {
+                assertEquals(ScanState.SCAN_PAUSED, awaitItem())
 
-            callbackSlot.captured.onScanResult(
-                ScanSettings.CALLBACK_TYPE_ALL_MATCHES, mockScanResult
-            )
+                controller.errors.test {
+                    controller.startScan()
 
-            val updatedMap = awaitItem()
+                    assertEquals("Scan failed", awaitItem())
+                }
 
-            assertTrue(updatedMap.containsKey(deviceAddress))
-            assertEquals(deviceAddress, updatedMap[deviceAddress]?.address)
-
-            cancelAndIgnoreRemainingEvents()
+                assertEquals(ScanState.SCAN_PAUSED, controller.scanState.value)
+                expectNoEvents()
+            }
         }
-    }
 
     @Test
-    fun `ScanCallback onScanResult updates existing device with new data`() = runTest {
-        val updatedName =  "Updated name"
+    fun `startScan stops scan if scan period is over 30 seconds`() =
+        runTest {
+            val controllerWithScope =
+                BleScanControllerImpl(
+                    context,
+                    btAdapter,
+                    backgroundScope,
+                )
 
-        val updatedDevice = mockk<BluetoothDevice>(relaxed = true) {
-            every { address } returns deviceAddress
-            every { name } returns updatedName
+            controllerWithScope.scanState.test {
+                assertEquals(ScanState.SCAN_PAUSED, awaitItem())
+
+                controllerWithScope.startScan()
+
+                assertEquals(ScanState.SCANNING, awaitItem())
+
+                advanceTimeBy(29_000)
+                runCurrent()
+
+                expectNoEvents()
+
+                advanceTimeBy(2_000)
+                runCurrent()
+
+                assertEquals(ScanState.SCAN_AUTO_PAUSED, expectMostRecentItem())
+
+                verify(exactly = 1) { bleScanner.stopScan(any<ScanCallback>()) }
+
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-
-        val updatedScanResult = mockk<ScanResult> {
-            every { device } returns updatedDevice
-            every { isConnectable } returns true
-        }
-
-        controller.startScan()
-
-        controller.scanResults.test {
-            awaitItem()
-
-            callbackSlot.captured.onScanResult(
-                ScanSettings.CALLBACK_TYPE_ALL_MATCHES, mockScanResult
-            )
-
-            assertEquals(deviceName, awaitItem()[deviceAddress]?.name)
-
-            callbackSlot.captured.onScanResult(
-                ScanSettings.CALLBACK_TYPE_ALL_MATCHES, updatedScanResult
-            )
-
-            val updatedMap = awaitItem()
-
-            assertEquals(1, updatedMap.size)
-            assertEquals(updatedName, updatedMap[deviceAddress]?.name)
-
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
 
     @Test
-    fun `scanResult state does NOT duplicate found devices`() = runTest {
-        controller.startScan()
+    fun `ScanCallback onScanResult ignores non-connectable devices`() =
+        runTest {
+            every { mockScanResult.isConnectable } returns false
 
-        controller.scanResults.test {
-            assertEquals(emptyMap<String, BleDevice>(), awaitItem())
+            controller.startScan()
 
-            callbackSlot.captured.onScanResult(
-                ScanSettings.CALLBACK_TYPE_ALL_MATCHES, mockScanResult
-            )
+            controller.scanResults.test {
+                assertEquals(emptyMap<String, BleDevice>(), awaitItem())
 
-            callbackSlot.captured.onScanResult(
-                ScanSettings.CALLBACK_TYPE_ALL_MATCHES, mockScanResult
-            )
+                callbackSlot.captured.onScanResult(
+                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                    mockScanResult,
+                )
 
-            val updatedResult = expectMostRecentItem()
+                expectNoEvents()
 
-            assertEquals(1, updatedResult.size)
-            assertTrue(updatedResult.containsKey(deviceAddress))
-
-            cancelAndIgnoreRemainingEvents()
+                assertEquals(0, controller.scanResults.value.size)
+            }
         }
-    }
 
     @Test
-    fun `stopScan stops ongoing scan and updates state to SCAN_PAUSED`() = runTest {
-        controller.startScan()
+    fun `ScanCallback onScanResult updates scanResults map with found devices`() =
+        runTest {
+            controller.startScan()
 
-        controller.scanState.test {
-            assertEquals(ScanState.SCANNING ,awaitItem())
+            controller.scanResults.test {
+                assertEquals(emptyMap<String, BleDevice>(), awaitItem())
 
-            controller.stopScan()
+                callbackSlot.captured.onScanResult(
+                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                    mockScanResult,
+                )
 
-            assertEquals(ScanState.SCAN_PAUSED ,awaitItem())
+                val updatedMap = awaitItem()
 
-            verify(exactly = 1) { bleScanner.stopScan(any<ScanCallback>()) }
+                assertTrue(updatedMap.containsKey(deviceAddress))
+                assertEquals(deviceAddress, updatedMap[deviceAddress]?.address)
+
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `stopScan should emit error when BLUETOOTH_SCAN permission is missing`() = runTest {
-        every { context.hasPermission(any()) } returns false
+    fun `ScanCallback onScanResult updates existing device with new data`() =
+        runTest {
+            val updatedName = "Updated name"
 
-        controller.errors.test {
-            controller.stopScan()
+            val updatedDevice =
+                mockk<BluetoothDevice>(relaxed = true) {
+                    every { address } returns deviceAddress
+                    every { name } returns updatedName
+                }
 
-            assertEquals("Nearby devices permission missing!" ,awaitItem())
+            val updatedScanResult =
+                mockk<ScanResult> {
+                    every { device } returns updatedDevice
+                    every { isConnectable } returns true
+                }
+
+            controller.startScan()
+
+            controller.scanResults.test {
+                awaitItem()
+
+                callbackSlot.captured.onScanResult(
+                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                    mockScanResult,
+                )
+
+                assertEquals(deviceName, awaitItem()[deviceAddress]?.name)
+
+                callbackSlot.captured.onScanResult(
+                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                    updatedScanResult,
+                )
+
+                val updatedMap = awaitItem()
+
+                assertEquals(1, updatedMap.size)
+                assertEquals(updatedName, updatedMap[deviceAddress]?.name)
+
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `stopScan should emit error when BT is disabled`() = runTest {
-        every { btAdapter.isEnabled } returns false
+    fun `scanResult state does NOT duplicate found devices`() =
+        runTest {
+            controller.startScan()
 
-        controller.startScan()
+            controller.scanResults.test {
+                assertEquals(emptyMap<String, BleDevice>(), awaitItem())
 
-        controller.errors.test {
-            controller.stopScan()
+                callbackSlot.captured.onScanResult(
+                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                    mockScanResult,
+                )
 
-            assertEquals("Bluetooth is not enabled", awaitItem())
+                callbackSlot.captured.onScanResult(
+                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                    mockScanResult,
+                )
+
+                val updatedResult = expectMostRecentItem()
+
+                assertEquals(1, updatedResult.size)
+                assertTrue(updatedResult.containsKey(deviceAddress))
+
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `stopScan should emit error when BLE is not available`() = runTest {
-        every { btAdapter.bluetoothLeScanner } returns null
+    fun `stopScan stops ongoing scan and updates state to SCAN_PAUSED`() =
+        runTest {
+            controller.startScan()
 
-        controller.startScan()
+            controller.scanState.test {
+                assertEquals(ScanState.SCANNING, awaitItem())
 
-        controller.errors.test {
-            controller.stopScan()
+                controller.stopScan()
 
-            assertEquals("BLE scanning not supported", awaitItem())
+                assertEquals(ScanState.SCAN_PAUSED, awaitItem())
+
+                verify(exactly = 1) { bleScanner.stopScan(any<ScanCallback>()) }
+            }
         }
-    }
 
     @Test
-    fun `stopScan should not call hardware scanner when there are no ongoing scans`() = runTest {
-        assertEquals(ScanState.SCAN_PAUSED, controller.scanState.value)
-
-        controller.stopScan()
-
-        verify(exactly = 0) { bleScanner.stopScan(any<ScanCallback>()) }
-    }
-
-    @Test
-    fun `stopScan should emit error when hardware stopScan throws exception`() = runTest {
-        every {
-            bleScanner.stopScan(any<ScanCallback>())
-        } throws RuntimeException("Hardware failure")
-
-        controller.startScan()
-
-        controller.scanState.test {
-            assertEquals(ScanState.SCANNING, awaitItem())
+    fun `stopScan should emit error when BLUETOOTH_SCAN permission is missing`() =
+        runTest {
+            every { context.hasPermission(any()) } returns false
 
             controller.errors.test {
                 controller.stopScan()
 
-                assertEquals("Pausing scan failed", awaitItem())
+                assertEquals("Nearby devices permission missing!", awaitItem())
             }
-
-            assertEquals(ScanState.SCAN_PAUSED, awaitItem())
-            expectNoEvents()
         }
-    }
+
+    @Test
+    fun `stopScan should emit error when BT is disabled`() =
+        runTest {
+            every { btAdapter.isEnabled } returns false
+
+            controller.startScan()
+
+            controller.errors.test {
+                controller.stopScan()
+
+                assertEquals("Bluetooth is not enabled", awaitItem())
+            }
+        }
+
+    @Test
+    fun `stopScan should emit error when BLE is not available`() =
+        runTest {
+            every { btAdapter.bluetoothLeScanner } returns null
+
+            controller.startScan()
+
+            controller.errors.test {
+                controller.stopScan()
+
+                assertEquals("BLE scanning not supported", awaitItem())
+            }
+        }
+
+    @Test
+    fun `stopScan should not call hardware scanner when there are no ongoing scans`() =
+        runTest {
+            assertEquals(ScanState.SCAN_PAUSED, controller.scanState.value)
+
+            controller.stopScan()
+
+            verify(exactly = 0) { bleScanner.stopScan(any<ScanCallback>()) }
+        }
+
+    @Test
+    fun `stopScan should emit error when hardware stopScan throws exception`() =
+        runTest {
+            every {
+                bleScanner.stopScan(any<ScanCallback>())
+            } throws RuntimeException("Hardware failure")
+
+            controller.startScan()
+
+            controller.scanState.test {
+                assertEquals(ScanState.SCANNING, awaitItem())
+
+                controller.errors.test {
+                    controller.stopScan()
+
+                    assertEquals("Pausing scan failed", awaitItem())
+                }
+
+                assertEquals(ScanState.SCAN_PAUSED, awaitItem())
+                expectNoEvents()
+            }
+        }
 }

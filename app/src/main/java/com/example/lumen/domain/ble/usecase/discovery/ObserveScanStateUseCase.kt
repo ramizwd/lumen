@@ -7,7 +7,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class ObserveScanStateUseCase @Inject constructor(
-    private val bleScanController: BleScanController
+    private val bleScanController: BleScanController,
 ) {
     companion object {
         private const val LOG_TAG = "ObserveIsScanningUseCase"

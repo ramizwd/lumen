@@ -1,4 +1,4 @@
-package com.example.lumen.presentation.ble.led_control
+package com.example.lumen.presentation.ble.ledcontrol
 
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
@@ -32,11 +32,11 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.PresetLedColors
-import com.example.lumen.presentation.ble.led_control.components.ColorPicker
-import com.example.lumen.presentation.ble.led_control.components.ColorRows
-import com.example.lumen.presentation.ble.led_control.components.LedToggleButton
-import com.example.lumen.presentation.ble.led_control.components.MatchDeviceThemeButton
-import com.example.lumen.presentation.ble.led_control.components.RandomColorButton
+import com.example.lumen.presentation.ble.ledcontrol.components.ColorPicker
+import com.example.lumen.presentation.ble.ledcontrol.components.ColorRows
+import com.example.lumen.presentation.ble.ledcontrol.components.LedToggleButton
+import com.example.lumen.presentation.ble.ledcontrol.components.MatchDeviceThemeButton
+import com.example.lumen.presentation.ble.ledcontrol.components.RandomColorButton
 import com.example.lumen.presentation.common.utils.DeviceConfiguration
 import com.example.lumen.presentation.common.utils.hexToComposeColor
 import com.example.lumen.presentation.theme.LumenTheme
@@ -109,7 +109,7 @@ fun ColorPickerContent(
         if (!isUsingColorPicker) {
             colorPickerController.selectByColor(
                 color = ledHexColor.hexToComposeColor(),
-                fromUser = false
+                fromUser = false,
             )
         }
     }
@@ -121,17 +121,18 @@ fun ColorPickerContent(
     when (deviceConfig) {
         DeviceConfiguration.TABLET_PORTRAIT,
         DeviceConfiguration.TABLET_LANDSCAPE,
-        DeviceConfiguration.MOBILE_PORTRAIT -> {
+        DeviceConfiguration.MOBILE_PORTRAIT,
+        -> {
             Column(
                 modifier = modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
                     text = "#$ledHexColor".uppercase(),
                     fontFamily = FontFamily.Monospace,
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.tertiary
+                    color = MaterialTheme.colorScheme.tertiary,
                 )
 
                 Column {
@@ -179,7 +180,7 @@ fun ColorPickerContent(
                                 selectedSlot = 0
                                 isUsingColorPicker = false
                                 setLedColor(hexColor)
-                            }
+                            },
                         )
                     }
                 }
@@ -202,7 +203,7 @@ fun ColorPickerContent(
                     isOn = isOn,
                     onTurnLedOnClick = onTurnLedOnClick,
                     onTurnLedOffClick = onTurnLedOffClick,
-                    modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium)
+                    modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium),
                 )
             }
         }
@@ -211,12 +212,12 @@ fun ColorPickerContent(
             Row(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Column(
                     modifier = Modifier.fillMaxHeight().weight(1f),
                     verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     ColorPicker(
                         modifier = Modifier
@@ -240,13 +241,13 @@ fun ColorPickerContent(
                 Column(
                     modifier = Modifier.fillMaxHeight().weight(1.2f),
                     verticalArrangement = Arrangement.SpaceBetween,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
                         text = "#$ledHexColor".uppercase(),
                         fontFamily = FontFamily.Monospace,
                         style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.tertiary
+                        color = MaterialTheme.colorScheme.tertiary,
                     )
 
                     ColorRows(
@@ -272,7 +273,7 @@ fun ColorPickerContent(
                                 end = MaterialTheme.spacing.largeIncreased,
                             ),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceAround
+                        horizontalArrangement = Arrangement.SpaceAround,
                     ) {
                         RandomColorButton(
                             enabled = isOn,
@@ -290,7 +291,7 @@ fun ColorPickerContent(
                                 selectedSlot = 0
                                 isUsingColorPicker = false
                                 setLedColor(hexColor)
-                            }
+                            },
                         )
                     }
 
@@ -298,7 +299,7 @@ fun ColorPickerContent(
                         isOn = isOn,
                         onTurnLedOnClick = onTurnLedOnClick,
                         onTurnLedOffClick = onTurnLedOffClick,
-                        modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium)
+                        modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium),
                     )
                 }
             }
