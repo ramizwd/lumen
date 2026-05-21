@@ -11,7 +11,6 @@ import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.os.Build
-import androidx.compose.ui.res.stringResource
 import com.example.lumen.R
 import com.example.lumen.data.mapper.toLedControllerState
 import com.example.lumen.domain.ble.BleGattController
@@ -540,7 +539,7 @@ class BleGattControllerImpl(
 
             _connectionEvents.tryEmit(
                 ConnectionResult
-                    .ConnectionFailed(context.getString(R.string.connection_failed))
+                    .ConnectionFailed(context.getString(R.string.connection_failed)),
             )
             close()
         }
