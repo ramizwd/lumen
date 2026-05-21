@@ -37,6 +37,7 @@ proguard/
 /*/out
 /*/*/build
 /*/*/production
+**/release/
 captures/
 .navigation/
 *.ipr

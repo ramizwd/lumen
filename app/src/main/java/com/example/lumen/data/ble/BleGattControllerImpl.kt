@@ -11,6 +11,8 @@ import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.os.Build
+import androidx.compose.ui.res.stringResource
+import com.example.lumen.R
 import com.example.lumen.data.mapper.toLedControllerState
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.BleDevice
@@ -86,7 +88,8 @@ class BleGattControllerImpl(
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
             _connectionEvents.emit(
-                ConnectionResult.Error("Nearby devices permission missing!"),
+                ConnectionResult
+                    .Error(context.getString(R.string.nearby_devices_perms_missing)),
             )
             return
         }
@@ -96,7 +99,7 @@ class BleGattControllerImpl(
                 .tag(LOG_TAG)
                 .e("bluetoothAdapter is null or not enabled - startScan()")
             _connectionEvents.emit(
-                ConnectionResult.Error("Bluetooth is not enabled"),
+                ConnectionResult.Error(context.getString(R.string.bt_not_enabled)),
             )
             return
         }
@@ -127,7 +130,7 @@ class BleGattControllerImpl(
         } catch (e: IllegalArgumentException) {
             Timber.tag(LOG_TAG).e(e, "Device not found")
             _connectionEvents.emit(
-                ConnectionResult.Error("Device not found"),
+                ConnectionResult.Error(context.getString(R.string.device_not_found)),
             )
 
             close()
@@ -138,7 +141,8 @@ class BleGattControllerImpl(
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
             _connectionEvents.tryEmit(
-                ConnectionResult.Error("Nearby devices permission missing!"),
+                ConnectionResult
+                    .Error(context.getString(R.string.nearby_devices_perms_missing)),
             )
             return
         }
@@ -172,7 +176,8 @@ class BleGattControllerImpl(
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
             _connectionEvents.emit(
-                ConnectionResult.Error("Nearby devices permission missing!"),
+                ConnectionResult
+                    .Error(context.getString(R.string.nearby_devices_perms_missing)),
             )
             return
         }
@@ -483,7 +488,8 @@ class BleGattControllerImpl(
                 } catch (e: Exception) {
                     Timber.tag(LOG_TAG).e(e, "Error writing to characteristic")
                     _connectionEvents.tryEmit(
-                        ConnectionResult.Error("Error sending command"),
+                        ConnectionResult
+                            .Error(context.getString(R.string.error_sending_command)),
                     )
                 }
             } else {
@@ -493,7 +499,8 @@ class BleGattControllerImpl(
                 } catch (e: Exception) {
                     Timber.tag(LOG_TAG).e(e, "Error writing to characteristic")
                     _connectionEvents.tryEmit(
-                        ConnectionResult.Error("Error sending command"),
+                        ConnectionResult
+                            .Error(context.getString(R.string.error_sending_command)),
                     )
                 }
             }
@@ -522,7 +529,8 @@ class BleGattControllerImpl(
                         Timber.tag(LOG_TAG).e("Cannot retry, device to connect to is null")
 
                         _connectionEvents.emit(
-                            ConnectionResult.Error("Cannot retry, no device selected"),
+                            ConnectionResult
+                                .Error(context.getString(R.string.cannot_retry_no_device)),
                         )
                         close()
                     }
@@ -530,7 +538,10 @@ class BleGattControllerImpl(
         } else {
             Timber.tag(LOG_TAG).e("Max connection tries reached. Connection failed")
 
-            _connectionEvents.tryEmit(ConnectionResult.ConnectionFailed("Connection failed"))
+            _connectionEvents.tryEmit(
+                ConnectionResult
+                    .ConnectionFailed(context.getString(R.string.connection_failed))
+            )
             close()
         }
     }

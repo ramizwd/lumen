@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Lumen</string>
+
+    <string name="nearby_devices_perms_missing">Nearby devices permission missing!</string>
+    <string name="bt_not_enabled">Bluetooth is not enabled</string>
+    <string name="device_not_found">Device not found</string>
+    <string name="error_sending_command">Error sending command</string>
+    <string name="cannot_retry_no_device">Cannot retry, no device selected</string>
+    <string name="connection_failed">Connection failed</string>
 </resources>
