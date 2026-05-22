@@ -8,6 +8,7 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
+import com.example.lumen.R
 import com.example.lumen.data.mapper.toBleDevice
 import com.example.lumen.domain.ble.BleScanController
 import com.example.lumen.domain.ble.model.BleDevice
@@ -72,7 +73,7 @@ class BleScanControllerImpl(
     override suspend fun startScan() {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
             Timber.tag(LOG_TAG).e("BLUETOOTH_SCAN permission missing!")
-            _errors.emit("Nearby devices permission missing!")
+            _errors.emit(context.getString(R.string.nearby_devices_perms_missing))
             return
         }
 
@@ -80,14 +81,14 @@ class BleScanControllerImpl(
             Timber
                 .tag(LOG_TAG)
                 .e("bluetoothAdapter is null or not enabled - startScan()")
-            _errors.emit("Bluetooth is not enabled")
+            _errors.emit(context.getString(R.string.bt_not_enabled))
             return
         }
 
         val scanner =
             bleScanner ?: run {
                 Timber.tag(LOG_TAG).e("BluetoothLeScanner is null - startScan()")
-                _errors.emit("BLE scanning not supported")
+                _errors.emit(context.getString(R.string.ble_scanning_not_supported))
                 return
             }
 
@@ -120,7 +121,7 @@ class BleScanControllerImpl(
                 }
         } catch (e: Exception) {
             Timber.tag(LOG_TAG).e(e, "Exception during scan start")
-            _errors.emit("Scan failed")
+            _errors.emit(context.getString(R.string.scan_failed))
             _scanState.value = ScanState.SCAN_PAUSED
         }
     }
@@ -128,7 +129,7 @@ class BleScanControllerImpl(
     override fun stopScan() {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
             Timber.tag(LOG_TAG).e("BLUETOOTH_SCAN permission missing!")
-            _errors.tryEmit("Nearby devices permission missing!")
+            _errors.tryEmit(context.getString(R.string.nearby_devices_perms_missing))
             return
         }
 
@@ -143,7 +144,7 @@ class BleScanControllerImpl(
                 .tag(LOG_TAG)
                 .e("bluetoothAdapter is null or not enabled - stopScan()")
             clearScanState()
-            _errors.tryEmit("Bluetooth is not enabled")
+            _errors.tryEmit(context.getString(R.string.bt_not_enabled))
             return
         }
 
@@ -151,7 +152,9 @@ class BleScanControllerImpl(
             bleScanner ?: run {
                 Timber.tag(LOG_TAG).e("BluetoothLeScanner is null - startScan()")
                 clearScanState()
-                _errors.tryEmit("BLE scanning not supported")
+                _errors.tryEmit(
+                    context.getString(R.string.ble_scanning_not_supported),
+                )
                 return
             }
 
@@ -160,7 +163,7 @@ class BleScanControllerImpl(
             Timber.tag(LOG_TAG).i("Scan stopped")
         } catch (e: Exception) {
             Timber.tag(LOG_TAG).e(e, "Exception during scan stop")
-            _errors.tryEmit("Pausing scan failed")
+            _errors.tryEmit(context.getString(R.string.pausing_scan_failed))
         } finally {
             Timber.tag(LOG_TAG).i("Scan state cleared - stopScan()")
             clearScanState()
@@ -195,7 +198,7 @@ class BleScanControllerImpl(
             override fun onScanFailed(errorCode: Int) {
                 super.onScanFailed(errorCode)
                 Timber.tag(LOG_TAG).e("BLE Scan failed with error: $errorCode")
-                _errors.tryEmit("Stopping scan failed")
+                _errors.tryEmit(context.getString(R.string.stopping_scan_failed))
                 clearScanState()
             }
         }

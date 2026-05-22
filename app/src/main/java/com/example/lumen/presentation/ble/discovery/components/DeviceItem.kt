@@ -15,9 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.presentation.common.components.DeviceFavoriteButton
 import com.example.lumen.presentation.common.model.DeviceContent
@@ -34,7 +36,7 @@ fun DeviceItem(
 ) {
     val device = deviceContent.device
     val isFavorite = deviceContent.isFavorite
-    val deviceName = device.name ?: "Unknown"
+    val deviceName = device.name ?: stringResource(R.string.unknown)
     val scrollState = rememberScrollState()
 
     Surface(

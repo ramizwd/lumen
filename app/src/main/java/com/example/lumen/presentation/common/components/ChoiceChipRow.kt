@@ -16,15 +16,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import com.example.lumen.domain.ble.model.DeviceListType
+import com.example.lumen.presentation.mapper.toResourceId
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
 
 @Composable
 fun ChoiceChipRow(
-    choices: List<String>,
-    selectedChoice: String,
-    onChoiceSelected: (String) -> Unit,
+    choices: List<DeviceListType>,
+    selectedChoice: DeviceListType,
+    onChoiceSelected: (DeviceListType) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
@@ -40,7 +43,7 @@ fun ChoiceChipRow(
             FilterChip(
                 selected = choice == selectedChoice,
                 onClick = { onChoiceSelected(choice) },
-                label = { Text(text = choice) },
+                label = { Text(text = stringResource(id = choice.toResourceId())) },
             )
         }
     }
@@ -50,7 +53,7 @@ fun ChoiceChipRow(
 @Composable
 fun ChoiceChipGroupPreview() {
     LumenTheme {
-        val choices = listOf("All", "Favorites")
+        val choices = DeviceListType.entries
         var selectedItem by remember { mutableStateOf(choices.first()) }
 
         Surface {

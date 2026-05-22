@@ -306,10 +306,9 @@ fun DiscoverDevicesContent(
                 modifier =
                     Modifier
                         .weight(1f),
-                choices = DeviceListType.entries.map { it.displayName },
-                selectedChoice = currSelectedListType.displayName,
-                onChoiceSelected = { selected ->
-                    val selectedEnum = DeviceListType.entries.first { it.displayName == selected }
+                choices = DeviceListType.entries,
+                selectedChoice = currSelectedListType,
+                onChoiceSelected = { selectedEnum ->
                     onSelectListFilter(selectedEnum)
                 },
             )
