@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.R
 import com.example.lumen.presentation.theme.LumenTheme
@@ -46,13 +47,13 @@ fun TopAppBar(
             IconButton(onClick = onNavIconClick) {
                 Icon(
                     painter = painterResource(R.drawable.arrow_back_24px),
-                    contentDescription = "Navigate back",
+                    contentDescription = stringResource(R.string.navigate_back),
                 )
             }
         },
         actions = {
             TextButton(onClick = onActionClick) {
-                Text(text = "Disconnect")
+                Text(text = stringResource(R.string.disconnect))
             }
         },
     )

@@ -2,10 +2,12 @@ package com.example.lumen.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
+import com.example.lumen.presentation.common.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,7 +34,7 @@ class MainViewModel @Inject constructor(
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
     val connectionState = _connectionState.asStateFlow()
 
-    private val _loadingText = MutableStateFlow("")
+    private val _loadingText = MutableStateFlow<UiText?>(null)
     val loadingText = _loadingText.asStateFlow()
 
     private val _showLoading = MutableStateFlow(false)
@@ -44,11 +46,15 @@ class MainViewModel @Inject constructor(
                 _connectionState.update { state }
                 _loadingText.update {
                     when (state) {
-                        ConnectionState.CONNECTING -> "Connecting..."
-                        ConnectionState.LOADING_DEVICE_STATE -> "Initializing..."
-                        ConnectionState.RETRYING -> "Connection failed, retrying..."
-                        ConnectionState.INVALID_DEVICE -> "Invalid device, disconnecting..."
-                        else -> ""
+                        ConnectionState.CONNECTING ->
+                            UiText.StringResource(R.string.connecting)
+                        ConnectionState.LOADING_DEVICE_STATE ->
+                            UiText.StringResource(R.string.initializing)
+                        ConnectionState.RETRYING ->
+                            UiText.StringResource(R.string.connection_failed_retrying)
+                        ConnectionState.INVALID_DEVICE ->
+                            UiText.StringResource(R.string.invalid_device_disconnecting)
+                        else -> null
                     }
                 }
                 _showLoading.update {

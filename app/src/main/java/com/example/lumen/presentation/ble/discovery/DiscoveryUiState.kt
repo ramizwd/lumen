@@ -5,6 +5,7 @@ import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.DeviceListType
 import com.example.lumen.domain.ble.model.ScanState
 import com.example.lumen.presentation.common.model.DeviceContent
+import com.example.lumen.presentation.common.utils.UiText
 
 /**
  * Data class for the BLE discovery and connection UI states
@@ -24,13 +25,13 @@ import com.example.lumen.presentation.common.model.DeviceContent
 data class DiscoveryUiState(
     val scanResults: List<DeviceContent> = emptyList(),
     val scanState: ScanState = ScanState.SCAN_PAUSED,
-    val emptyScanResultTxt: String? = null,
+    val emptyScanResultTxt: UiText? = null,
     val bluetoothState: BluetoothState = BluetoothState.UNKNOWN,
     val selectedListType: DeviceListType = DeviceListType.ALL_DEVICES,
     val btPermissionStatus: BluetoothPermissionStatus = BluetoothPermissionStatus.UNKNOWN,
     val isBtDisabled: Boolean = false,
-    val errorMessage: String? = null,
-    val infoMessage: String? = null,
+    val errorMessage: UiText? = null,
+    val infoMessage: UiText? = null,
     val showEnableBtDialog: Boolean = false,
     val showPermissionDialog: Boolean = false,
     val showOpenSettingsDialog: Boolean = false,

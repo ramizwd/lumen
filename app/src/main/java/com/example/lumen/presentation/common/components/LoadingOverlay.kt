@@ -18,15 +18,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.lumen.R
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
 
 @Composable
 fun LoadingOverlay(
-    text: String,
+    text: String?,
     isVisible: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
@@ -58,7 +60,7 @@ fun LoadingOverlay(
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.smallIncreased))
 
                 Text(
-                    text = text,
+                    text = text ?: "",
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -71,7 +73,7 @@ fun LoadingOverlay(
                         .align(Alignment.BottomEnd)
                         .padding(MaterialTheme.spacing.smallIncreased),
             ) {
-                Text(text = "Cancel")
+                Text(text = stringResource(R.string.cancel))
             }
         }
     }

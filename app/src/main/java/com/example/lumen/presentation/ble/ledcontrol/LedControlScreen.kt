@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -26,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.presentation.ble.ledcontrol.navigation.BottomNavBar
@@ -35,6 +37,7 @@ import com.example.lumen.presentation.ble.ledcontrol.navigation.NavRail
 import com.example.lumen.presentation.ble.ledcontrol.navigation.TopAppBar
 import com.example.lumen.presentation.common.components.TextFieldDialog
 import com.example.lumen.presentation.common.utils.DeviceConfiguration
+import com.example.lumen.presentation.common.utils.UiText
 import com.example.lumen.presentation.common.utils.showToast
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.utils.AppConstants.MAX_DEVICE_CHAR
@@ -51,13 +54,13 @@ fun LedControlScreen(
     val currToastRef: MutableState<Toast?> = remember { mutableStateOf(null) }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val deviceName = uiState.selectedDevice?.name ?: "Unknown"
+    val deviceName = uiState.selectedDevice?.name ?: stringResource(R.string.unknown)
 
     LaunchedEffect(key1 = uiState.infoMessage) {
         uiState.infoMessage?.let { msg ->
             showToast(
                 context = context,
-                message = msg,
+                message = msg.asString(context),
                 duration = Toast.LENGTH_SHORT,
                 currentToastRef = currToastRef,
             )
@@ -70,10 +73,13 @@ fun LedControlScreen(
 
         TextFieldDialog(
             state = textFieldState,
-            title = "Rename Device",
+            title = stringResource(R.string.rename_device),
             initialText = deviceName,
             maxChar = MAX_DEVICE_CHAR,
-            supportingText = "$MAX_DEVICE_CHAR characters max",
+            supportingText = stringResource(
+                R.string.characters_max,
+                MAX_DEVICE_CHAR,
+            ),
             onConfirmation = {
                 viewModel.setDeviceName(it)
                 viewModel.onEvent(LedControlUiEvent.ToggleRenameDeviceDialog(false))
@@ -132,14 +138,15 @@ fun LedControlContent(
                 onNavIconClick = { rootNavController.popBackStack() },
                 onActionClick = { onDisconnectClick() },
                 onClickTitle = {
+                    val message = if (uiState.isLedOn) {
+                        UiText.StringResource(R.string.long_press_to_rename)
+                    } else {
+                        UiText.StringResource(R.string.turn_on_to_rename)
+                    }
+
                     showToast(
                         context = context,
-                        message =
-                            if (uiState.isLedOn) {
-                                "Long press to rename"
-                            } else {
-                                "Turn the device on to rename it"
-                            },
+                        message = message.asString(context),
                         duration = Toast.LENGTH_SHORT,
                         currentToastRef = currToastRef,
                     )
@@ -150,7 +157,10 @@ fun LedControlContent(
                     } else {
                         showToast(
                             context = context,
-                            message = "Turn the device on to rename it",
+                            message = UiText
+                                .StringResource(
+                                    R.string.turn_on_to_rename,
+                                ).asString(context),
                             duration = Toast.LENGTH_LONG,
                             currentToastRef = currToastRef,
                         )

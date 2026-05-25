@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewDynamicColors
 import com.example.lumen.R
 import com.example.lumen.presentation.common.components.PlainTooltip
@@ -35,7 +36,7 @@ fun MatchDeviceThemeButton(
     val isSelected = maxBrightnessColorHex == currentHexColor
 
     PlainTooltip(
-        text = "Match with device theme",
+        text = stringResource(R.string.match_with_device_theme),
         content = {
             FilledTonalIconToggleButton(
                 modifier = modifier,
@@ -50,7 +51,7 @@ fun MatchDeviceThemeButton(
                         } else {
                             painterResource(R.drawable.colorize_24px)
                         },
-                    contentDescription = "Match with device color",
+                    contentDescription = stringResource(R.string.match_with_device_theme),
                 )
             }
         },

@@ -14,6 +14,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.R
 import com.example.lumen.presentation.theme.LumenTheme
@@ -46,7 +47,7 @@ fun TextFieldDialog(
                         }) {
                             Icon(
                                 painter = painterResource(R.drawable.close_24px),
-                                contentDescription = "Clear text",
+                                contentDescription = stringResource(R.string.clear_text),
                             )
                         }
                     }
@@ -64,7 +65,7 @@ fun TextFieldDialog(
                         state.text.isNotBlank() &&
                         state.text != initialText,
             ) {
-                Text(text = "Confirm")
+                Text(text = stringResource(R.string.confirm))
             }
         },
         dismissButton = {
@@ -73,7 +74,7 @@ fun TextFieldDialog(
                     onDismissRequest()
                 },
             ) {
-                Text("Dismiss")
+                Text(stringResource(R.string.dismiss))
             }
         },
     )

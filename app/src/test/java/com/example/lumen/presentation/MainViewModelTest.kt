@@ -1,12 +1,14 @@
 package com.example.lumen.presentation
 
 import app.cash.turbine.test
+import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.connection.DisconnectUseCase
 import com.example.lumen.domain.ble.usecase.connection.ObserveConnectionStateUseCase
+import com.example.lumen.presentation.common.utils.UiText
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -79,16 +81,19 @@ class MainViewModelTest {
         runTest {
             viewModel.loadingText.test {
                 connectionFlow.emit(ConnectionState.CONNECTING)
-                assertEquals("Connecting...", expectMostRecentItem())
+                assertEquals(
+                    UiText.StringResource(R.string.connecting),
+                    expectMostRecentItem(),
+                )
             }
         }
 
     @Test
-    fun `when connection state is DISCONNECTED, loading text is empty`() =
+    fun `when connection state is DISCONNECTED, loading text is null`() =
         runTest {
             viewModel.loadingText.test {
                 connectionFlow.emit(ConnectionState.DISCONNECTED)
-                assertEquals("", expectMostRecentItem())
+                assertEquals(null, expectMostRecentItem())
             }
         }
 

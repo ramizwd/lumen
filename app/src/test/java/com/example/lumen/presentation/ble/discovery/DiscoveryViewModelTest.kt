@@ -2,6 +2,7 @@ package com.example.lumen.presentation.ble.discovery
 
 import androidx.compose.material3.SnackbarDuration
 import app.cash.turbine.test
+import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.BluetoothState
@@ -24,6 +25,7 @@ import com.example.lumen.domain.ble.usecase.prefs.GetFavDeviceAddressesUseCase
 import com.example.lumen.domain.ble.usecase.prefs.PrefsUseCases
 import com.example.lumen.domain.ble.usecase.prefs.RemoveFavDeviceAddressUseCase
 import com.example.lumen.domain.ble.usecase.prefs.SaveDeviceListPreferenceUseCase
+import com.example.lumen.presentation.common.utils.UiText
 import io.mockk.clearMocks
 import io.mockk.coVerify
 import io.mockk.every
@@ -180,7 +182,7 @@ class DiscoveryViewModelTest {
             scanStateFlow.emit(ScanState.SCANNING)
 
             assertEquals(
-                "Searching for favorites...",
+                UiText.StringResource(R.string.searching_for_fav),
                 viewModel.uiState.value.emptyScanResultTxt,
             )
         }
@@ -212,7 +214,10 @@ class DiscoveryViewModelTest {
 
                 errorMessageFlow.emit(errMsg)
 
-                assertEquals(errMsg, awaitItem().errorMessage)
+                assertEquals(
+                    UiText.DynamicString(errMsg),
+                    awaitItem().errorMessage,
+                )
             }
         }
 
@@ -245,10 +250,16 @@ class DiscoveryViewModelTest {
                 awaitItem()
 
                 connectionResultFlow.emit(ConnectionResult.Disconnected)
-                assertEquals("Disconnected", awaitItem().infoMessage)
+                assertEquals(
+                    UiText.StringResource(R.string.disconnected),
+                    awaitItem().infoMessage,
+                )
 
                 connectionResultFlow.emit(ConnectionResult.Error(errMsg))
-                assertEquals(errMsg, awaitItem().errorMessage)
+                assertEquals(
+                    UiText.DynamicString(errMsg),
+                    awaitItem().errorMessage,
+                )
 
                 connectionResultFlow.emit(ConnectionResult.ConnectionEstablished)
 
@@ -268,7 +279,10 @@ class DiscoveryViewModelTest {
                 val state = awaitItem()
 
                 assertEquals(errMsg, state.message)
-                assertEquals("RETRY", state.actionLabel)
+                assertEquals(
+                    UiText.StringResource(R.string.retry),
+                    state.actionLabel,
+                )
                 assertEquals(SnackbarDuration.Long, state.duration)
             }
         }
@@ -361,12 +375,15 @@ class DiscoveryViewModelTest {
     @Test
     fun `retryConnection updates errorMessage when no device is selected`() =
         runTest {
-            assertEquals("", viewModel.uiState.value.errorMessage)
+            assertEquals(
+                UiText.DynamicString(""),
+                viewModel.uiState.value.errorMessage,
+            )
 
             viewModel.retryConnection()
 
             assertEquals(
-                "No device to retry connection for",
+                UiText.StringResource(R.string.no_device_to_retry_for),
                 viewModel.uiState.value.errorMessage,
             )
 
@@ -384,7 +401,10 @@ class DiscoveryViewModelTest {
 
             coVerify(exactly = 1) { connectToDeviceUseCase(device) }
 
-            assertEquals("", viewModel.uiState.value.errorMessage)
+            assertEquals(
+                UiText.DynamicString(""),
+                viewModel.uiState.value.errorMessage,
+            )
         }
 
     @Test

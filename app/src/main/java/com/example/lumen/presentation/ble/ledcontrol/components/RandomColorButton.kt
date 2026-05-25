@@ -6,6 +6,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewDynamicColors
 import com.example.lumen.R
 import com.example.lumen.presentation.common.components.PlainTooltip
@@ -20,7 +21,7 @@ fun RandomColorButton(
     modifier: Modifier = Modifier,
 ) {
     PlainTooltip(
-        text = "Random color",
+        text = stringResource(R.string.random_color),
         content = {
             FilledTonalIconButton(
                 modifier = modifier,
@@ -29,7 +30,7 @@ fun RandomColorButton(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.dice_filled_24px),
-                    contentDescription = "Pick random color",
+                    contentDescription = stringResource(R.string.random_color),
                 )
             }
         },

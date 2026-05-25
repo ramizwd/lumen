@@ -3,6 +3,7 @@ package com.example.lumen.presentation.ble.discovery
 import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.BluetoothState
@@ -15,6 +16,7 @@ import com.example.lumen.domain.ble.usecase.discovery.DiscoveryUseCases
 import com.example.lumen.domain.ble.usecase.prefs.PrefsUseCases
 import com.example.lumen.presentation.common.model.DeviceContent
 import com.example.lumen.presentation.common.model.SnackbarEvent
+import com.example.lumen.presentation.common.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -108,9 +110,7 @@ class DiscoveryViewModel @Inject constructor(
             .observeScanErrorsUseCase()
             .onEach { error ->
                 _uiState.update {
-                    it.copy(
-                        errorMessage = error,
-                    )
+                    it.copy(errorMessage = UiText.DynamicString(error))
                 }
             }.launchIn(viewModelScope)
 
@@ -147,19 +147,31 @@ class DiscoveryViewModel @Inject constructor(
                         }
                     }
                     ConnectionResult.Disconnected -> {
-                        _uiState.update { it.copy(infoMessage = "Disconnected") }
+                        _uiState.update {
+                            it.copy(infoMessage = UiText.StringResource(R.string.disconnected))
+                        }
                     }
                     ConnectionResult.InvalidDevice -> {
-                        _uiState.update { it.copy(infoMessage = "Invalid device") }
+                        _uiState.update {
+                            it.copy(
+                                infoMessage = UiText.StringResource(R.string.invalid_device),
+                            )
+                        }
                     }
                     ConnectionResult.ConnectionCanceled -> {
-                        _uiState.update { it.copy(infoMessage = "Connection canceled") }
+                        _uiState.update {
+                            it.copy(
+                                infoMessage = UiText.StringResource(
+                                    R.string.connection_canceled,
+                                ),
+                            )
+                        }
                     }
 
                     is ConnectionResult.Error -> {
                         _uiState.update {
                             it.copy(
-                                errorMessage = result.message,
+                                errorMessage = UiText.DynamicString(result.message),
                             )
                         }
                     }
@@ -167,7 +179,7 @@ class DiscoveryViewModel @Inject constructor(
                         _snackbarEvent.send(
                             SnackbarEvent(
                                 message = result.message,
-                                actionLabel = "RETRY",
+                                actionLabel = UiText.StringResource(R.string.retry),
                                 duration = SnackbarDuration.Long,
                             ),
                         )
@@ -246,7 +258,11 @@ class DiscoveryViewModel @Inject constructor(
         viewModelScope.launch {
             deviceToConnect.value?.let { device ->
                 connectionUseCases.connectToDeviceUseCase(device)
-            } ?: _uiState.update { it.copy(errorMessage = "No device to retry connection for") }
+            } ?: _uiState.update {
+                it.copy(
+                    errorMessage = UiText.StringResource(R.string.no_device_to_retry_for),
+                )
+            }
         }
     }
 
@@ -316,19 +332,21 @@ class DiscoveryViewModel @Inject constructor(
         isNoFavDevices: Boolean,
         scanState: ScanState,
         listType: DeviceListType,
-    ): String? {
+    ): UiText? {
         val scanStateMsg =
             when (scanState) {
-                ScanState.SCANNING -> "Searching..."
-                ScanState.SCAN_PAUSED -> "Start scanning to find nearby devices."
-                ScanState.SCAN_AUTO_PAUSED -> "No devices found."
+                ScanState.SCANNING -> UiText.StringResource(R.string.searching)
+                ScanState.SCAN_PAUSED -> UiText.StringResource(R.string.find_devices)
+                ScanState.SCAN_AUTO_PAUSED ->
+                    UiText.StringResource(R.string.no_devices_found)
             }
 
         val favScanStateMsg =
             when (scanState) {
-                ScanState.SCANNING -> "Searching for favorites..."
-                ScanState.SCAN_PAUSED -> "Start scanning to find favorite devices."
-                ScanState.SCAN_AUTO_PAUSED -> "No favorite devices found."
+                ScanState.SCANNING -> UiText.StringResource(R.string.searching_for_fav)
+                ScanState.SCAN_PAUSED -> UiText.StringResource(R.string.find_fav_devices)
+                ScanState.SCAN_AUTO_PAUSED ->
+                    UiText.StringResource(R.string.no_fav_devices_found)
             }
 
         return when (listType) {

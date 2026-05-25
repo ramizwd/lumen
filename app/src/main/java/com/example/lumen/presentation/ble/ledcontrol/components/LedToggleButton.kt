@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.R
@@ -62,7 +63,9 @@ fun LedToggleButton(
                 } else {
                     painterResource(R.drawable.power_settings_new_24px)
                 },
-            contentDescription = if (isOn) "Turn LED off" else "Turn LED on",
+            contentDescription = stringResource(
+                if (isOn) R.string.turn_led_off else R.string.turn_led_on,
+            ),
         )
     }
 }

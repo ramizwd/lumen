@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -68,7 +69,7 @@ fun ColorPicker(
                     null,
                 )
 
-                val nativePaint = Paint().asFrameworkPaint().apply {
+                val nativePaint = Paint().nativePaint.apply {
                     shader = sweepGradient
                     if (glowRadius > 0f) {
                         maskFilter = BlurMaskFilter(glowRadius, BlurMaskFilter.Blur.NORMAL)

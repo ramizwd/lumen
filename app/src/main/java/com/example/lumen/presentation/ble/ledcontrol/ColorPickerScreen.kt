@@ -98,9 +98,7 @@ fun ColorPickerContent(
     val transition = updateTransition(targetState = isOn)
     val glowRadius by transition.animateFloat { state ->
         when (state) {
-            true -> {
-                if (deviceConfig == DeviceConfiguration.MOBILE_LANDSCAPE) 90f else 120f
-            }
+            true -> if (deviceConfig == DeviceConfiguration.MOBILE_LANDSCAPE) 90f else 120f
             false -> 0f
         }
     }

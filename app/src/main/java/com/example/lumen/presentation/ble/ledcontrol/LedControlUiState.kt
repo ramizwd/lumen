@@ -2,6 +2,7 @@ package com.example.lumen.presentation.ble.ledcontrol
 
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
+import com.example.lumen.presentation.common.utils.UiText
 
 /**
  * Device related UI states
@@ -21,6 +22,6 @@ data class LedControlUiState(
     val ledHexColor: String = "ffffff",
     val brightnessValue: Float = 0f,
     val pixelCount: Int = 0,
-    val infoMessage: String? = null,
+    val infoMessage: UiText? = null,
     val showRenameDeviceDialog: Boolean = false,
 )

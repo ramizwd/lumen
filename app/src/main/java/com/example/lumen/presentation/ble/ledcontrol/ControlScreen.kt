@@ -14,9 +14,11 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import com.example.lumen.R
 import com.example.lumen.presentation.ble.ledcontrol.components.BrightnessSlider
 import com.example.lumen.presentation.ble.ledcontrol.components.LedToggleButton
 import com.example.lumen.presentation.common.components.SliderOrientation
@@ -135,11 +137,11 @@ private fun PixelCountText(pixelCount: Int) {
 
         Column {
             Text(
-                text = "Pixels",
+                text = stringResource(R.string.pixels),
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = "in control",
+                text = stringResource(R.string.in_control),
                 fontWeight = FontWeight.SemiBold,
             )
         }

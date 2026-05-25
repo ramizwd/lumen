@@ -2,10 +2,12 @@ package com.example.lumen.presentation.ble.ledcontrol
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.lumen.R
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.usecase.config.SetDeviceNameUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
+import com.example.lumen.presentation.common.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -144,9 +146,16 @@ class LedControlViewModel @Inject constructor(
             val res = setDeviceNameUseCase(name)
             res
                 .onSuccess {
-                    _uiState.update { it.copy(infoMessage = "Device renamed") }
+                    _uiState.update {
+                        it.copy(infoMessage = UiText.StringResource(R.string.device_renamed))
+                    }
                 }.onFailure {
-                    _uiState.update { it.copy(infoMessage = "Error renaming device") }
+                    _uiState.update {
+                        it.copy(
+                            infoMessage =
+                                UiText.StringResource(R.string.error_renaming_device),
+                        )
+                    }
                 }
         }
     }

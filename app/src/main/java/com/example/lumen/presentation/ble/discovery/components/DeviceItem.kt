@@ -43,28 +43,24 @@ fun DeviceItem(
         color = MaterialTheme.colorScheme.surfaceContainer,
         shape = MaterialTheme.shapes.extraLarge,
         onClick = { onDeviceClick(device) },
-        modifier =
-            modifier
-                .height(126.dp)
-                .background(
-                    shape = MaterialTheme.shapes.extraLarge,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                ),
+        modifier = modifier
+            .height(126.dp)
+            .background(
+                shape = MaterialTheme.shapes.extraLarge,
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
-                modifier =
-                    Modifier
-                        .weight(1f)
-                        .padding(MaterialTheme.spacing.largeIncreased),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(MaterialTheme.spacing.largeIncreased),
                 verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
             ) {
                 Text(
-                    modifier =
-                        Modifier
-                            .horizontalScroll(scrollState),
+                    modifier = Modifier.horizontalScroll(scrollState),
                     text = deviceName,
                     style = MaterialTheme.typography.titleLarge,
                     color =
@@ -87,9 +83,7 @@ fun DeviceItem(
                 isFavorite = isFavorite,
                 onFavor = { onFavDevice(device.address) },
                 onRemove = { onRemoveDevice(device.address) },
-                modifier =
-                    Modifier
-                        .padding(MaterialTheme.spacing.largeIncreased),
+                modifier = Modifier.padding(MaterialTheme.spacing.largeIncreased),
             )
         }
     }

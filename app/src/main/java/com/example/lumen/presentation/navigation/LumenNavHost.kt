@@ -64,7 +64,7 @@ fun LumenNavHost() {
             DiscoverDevicesScreen()
 
             LoadingOverlay(
-                text = loadingText,
+                text = loadingText?.asString(),
                 isVisible = showLoading,
                 onDismiss = mainViewModel::disconnect,
             )

@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.R
@@ -61,7 +62,7 @@ fun BrightnessSlider(
                     onChangeBrightness(it)
                 },
                 icon = brightnessIcon,
-                iconDescription = "Brightness",
+                iconDescription = stringResource(R.string.brightness),
                 orientation = orientation,
                 modifier = Modifier.weight(1f),
             )
@@ -93,7 +94,7 @@ fun BrightnessSlider(
                     onChangeBrightness(it)
                 },
                 icon = brightnessIcon,
-                iconDescription = "Brightness",
+                iconDescription = stringResource(R.string.brightness),
                 orientation = orientation,
             )
         }

@@ -6,6 +6,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.R
 import com.example.lumen.presentation.theme.LumenTheme
@@ -31,7 +32,9 @@ fun DeviceFavoriteButton(
                 } else {
                     painterResource(R.drawable.star_filled_24px)
                 },
-            contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+            contentDescription = stringResource(
+                if (isFavorite) R.string.remove_from_favorites else R.string.add_to_favorites,
+            ),
         )
     }
 }

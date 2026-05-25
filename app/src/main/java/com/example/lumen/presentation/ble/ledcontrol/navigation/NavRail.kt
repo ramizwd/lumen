@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
@@ -69,10 +70,10 @@ fun NavRail(
                                 } else {
                                     painterResource(item.icon)
                                 },
-                            contentDescription = item.contentDescription,
+                            contentDescription = stringResource(item.contentDescription),
                         )
                     },
-                    label = { Text(text = item.label) },
+                    label = { Text(text = stringResource(item.label)) },
                 )
             }
         }

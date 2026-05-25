@@ -1,5 +1,6 @@
 package com.example.lumen.presentation.ble.ledcontrol
 
+import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.LedControllerState
@@ -15,6 +16,7 @@ import com.example.lumen.domain.ble.usecase.control.ObserveControllerStateUseCas
 import com.example.lumen.domain.ble.usecase.control.SaveCustomColorUseCase
 import com.example.lumen.domain.ble.usecase.control.SetLedColorUseCase
 import com.example.lumen.domain.ble.usecase.control.TurnLedOnOffUseCase
+import com.example.lumen.presentation.common.utils.UiText
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -245,7 +247,10 @@ class LedControlViewModelTest {
         runTest {
             viewModel.setDeviceName("New name")
 
-            assertEquals("Device renamed", viewModel.uiState.value.infoMessage)
+            assertEquals(
+                UiText.StringResource(R.string.device_renamed),
+                viewModel.uiState.value.infoMessage,
+            )
         }
 
     @Test
@@ -259,7 +264,10 @@ class LedControlViewModelTest {
             viewModel.setDeviceName("New name")
 
             // Then
-            assertEquals("Error renaming device", viewModel.uiState.value.infoMessage)
+            assertEquals(
+                UiText.StringResource(R.string.error_renaming_device),
+                viewModel.uiState.value.infoMessage,
+            )
         }
 
     @Test
@@ -272,7 +280,10 @@ class LedControlViewModelTest {
             viewModel.setDeviceName("")
 
             // Then
-            assertEquals("Error renaming device", viewModel.uiState.value.infoMessage)
+            assertEquals(
+                UiText.StringResource(R.string.error_renaming_device),
+                viewModel.uiState.value.infoMessage,
+            )
         }
 
     @Test

@@ -38,6 +38,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.DeviceListType
@@ -51,6 +52,7 @@ import com.example.lumen.presentation.common.components.OpenAppSettingsTextProvi
 import com.example.lumen.presentation.common.components.PermissionAlertDialog
 import com.example.lumen.presentation.common.components.RadarScanAnimation
 import com.example.lumen.presentation.common.model.DeviceContent
+import com.example.lumen.presentation.common.utils.UiText
 import com.example.lumen.presentation.common.utils.showToast
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
@@ -122,7 +124,7 @@ fun DiscoverDevicesScreen(
                 val result =
                     snackbarHostState.showSnackbar(
                         message = event.message,
-                        actionLabel = event.actionLabel,
+                        actionLabel = event.actionLabel?.asString(context),
                         duration = event.duration,
                     )
 
@@ -142,7 +144,7 @@ fun DiscoverDevicesScreen(
         uiState.infoMessage?.let { msg ->
             showToast(
                 context = context,
-                message = msg,
+                message = msg.asString(context),
                 duration = Toast.LENGTH_SHORT,
                 currentToastRef = currentToastRef,
             )
@@ -154,7 +156,7 @@ fun DiscoverDevicesScreen(
         uiState.errorMessage?.let { msg ->
             showToast(
                 context = context,
-                message = msg,
+                message = msg.asString(context),
                 duration = Toast.LENGTH_SHORT,
                 currentToastRef = currentToastRef,
             )
@@ -197,7 +199,10 @@ fun DiscoverDevicesScreen(
                 } catch (_: ActivityNotFoundException) {
                     showToast(
                         context = context,
-                        message = "Could not open app settings. Try again",
+                        message = UiText
+                            .StringResource(
+                                R.string.error_opening_settings,
+                            ).asString(context),
                         duration = Toast.LENGTH_SHORT,
                         currentToastRef = currentToastRef,
                     )
@@ -231,7 +236,10 @@ fun DiscoverDevicesScreen(
                 } catch (_: SecurityException) {
                     showToast(
                         context = context,
-                        message = "Nearby devices permission missing!",
+                        message = UiText
+                            .StringResource(
+                                R.string.nearby_devices_perms_missing,
+                            ).asString(context),
                         duration = Toast.LENGTH_SHORT,
                         currentToastRef = currentToastRef,
                     )
@@ -254,7 +262,7 @@ fun DiscoverDevicesScreen(
             innerPadding = innerPadding,
             isScanning = uiState.scanState == ScanState.SCANNING,
             scanResults = uiState.scanResults,
-            emptyScanResultTxt = uiState.emptyScanResultTxt,
+            emptyScanResultTxt = uiState.emptyScanResultTxt?.asString(),
             currSelectedListType = uiState.selectedListType,
             onStartScan = viewModel::startScan,
             onStopScan = viewModel::stopScan,
@@ -288,10 +296,7 @@ fun DiscoverDevicesContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement =
-            Arrangement.spacedBy(
-                MaterialTheme.spacing.smallIncreased,
-            ),
+        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.smallIncreased),
     ) {
         Row(
             modifier =
@@ -303,9 +308,7 @@ fun DiscoverDevicesContent(
                     ),
         ) {
             ChoiceChipRow(
-                modifier =
-                    Modifier
-                        .weight(1f),
+                modifier = Modifier.weight(1f),
                 choices = DeviceListType.entries,
                 selectedChoice = currSelectedListType,
                 onChoiceSelected = { selectedEnum ->
@@ -316,9 +319,7 @@ fun DiscoverDevicesContent(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement =
-                    Arrangement.spacedBy(
-                        MaterialTheme.spacing.smallIncreased,
-                    ),
+                    Arrangement.spacedBy(MaterialTheme.spacing.smallIncreased),
             ) {
                 RadarScanAnimation(isScanning = isScanning)
 

@@ -5,7 +5,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import com.example.lumen.R
+import com.example.lumen.presentation.common.utils.UiText
 import com.example.lumen.presentation.theme.LumenTheme
 
 @Composable
@@ -16,10 +19,10 @@ fun PermissionAlertDialog(
 ) {
     AlertDialog(
         title = {
-            Text(text = permissionTextProvider.title)
+            Text(text = permissionTextProvider.title.asString())
         },
         text = {
-            Text(text = permissionTextProvider.description)
+            Text(text = permissionTextProvider.description.asString())
         },
         onDismissRequest = {
             onDismissRequest()
@@ -30,7 +33,7 @@ fun PermissionAlertDialog(
                     onConfirmation()
                 },
             ) {
-                Text(permissionTextProvider.confirmButtonText)
+                Text(permissionTextProvider.confirmButtonText.asString())
             }
         },
         dismissButton = {
@@ -39,51 +42,49 @@ fun PermissionAlertDialog(
                     onDismissRequest()
                 },
             ) {
-                Text("Dismiss")
+                Text(stringResource(R.string.dismiss))
             }
         },
     )
 }
 
 interface PermissionTextProvider {
-    val title: String
-    val description: String
-    val confirmButtonText: String
+    val title: UiText
+    val description: UiText
+    val confirmButtonText: UiText
 }
 
 class EnableBluetoothTextProvider : PermissionTextProvider {
-    override val title: String
-        get() = "Bluetooth is off"
+    override val title: UiText
+        get() = UiText.StringResource(R.string.bt_is_off)
 
-    override val description: String
-        get() = "Bluetooth needs to be enabled to start scanning."
+    override val description: UiText
+        get() = UiText.StringResource(R.string.bt_needs_to_be_enabled_to_scan)
 
-    override val confirmButtonText: String
-        get() = "Enable"
+    override val confirmButtonText: UiText
+        get() = UiText.StringResource(R.string.enable)
 }
 
 class BluetoothPermissionTextProvider : PermissionTextProvider {
-    override val title: String
-        get() = "Permission request"
+    override val title: UiText
+        get() = UiText.StringResource(R.string.perms_request)
 
-    override val description: String
-        get() = "Nearby devices permission is required to scan for and" +
-            " connect to Bluetooth devices."
+    override val description: UiText
+        get() = UiText.StringResource(R.string.perms_required_to_scan)
 
-    override val confirmButtonText: String
-        get() = "Allow"
+    override val confirmButtonText: UiText
+        get() = UiText.StringResource(R.string.allow)
 }
 
 class OpenAppSettingsTextProvider : PermissionTextProvider {
-    override val title: String
-        get() = "Permission request"
+    override val title: UiText
+        get() = UiText.StringResource(R.string.perms_request)
 
-    override val description: String
-        get() = "Please allow nearby devices permission in app settings to scan for and " +
-            "connect to Bluetooth devices."
+    override val description: UiText
+        get() = UiText.StringResource(R.string.allow_perms_in_settings)
 
-    override val confirmButtonText: String
-        get() = "Settings"
+    override val confirmButtonText: UiText
+        get() = UiText.StringResource(R.string.settings)
 }
 
 @PreviewLightDark
