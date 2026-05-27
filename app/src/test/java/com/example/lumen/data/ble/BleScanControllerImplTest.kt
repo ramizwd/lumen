@@ -8,8 +8,8 @@ import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import app.cash.turbine.test
-import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.domain.ble.model.ScanError
 import com.example.lumen.domain.ble.model.ScanState
 import com.example.lumen.utils.hasPermission
 import io.mockk.Runs
@@ -125,51 +125,36 @@ class BleScanControllerImplTest {
     @Test
     fun `startScan should emit error when BLUETOOTH_SCAN permission is missing`() =
         runTest {
-            val expectedErrorMessage = "Nearby devices permission missing!"
-
             every { context.hasPermission(any()) } returns false
-            every {
-                context.getString(R.string.nearby_devices_perms_missing)
-            } returns expectedErrorMessage
 
             controller.errors.test {
                 controller.startScan()
 
-                assertEquals(expectedErrorMessage, awaitItem())
+                assertEquals(ScanError.PERMS_MISSING, awaitItem())
             }
         }
 
     @Test
     fun `startScan should emit error when BT is disabled`() =
         runTest {
-            val expectedErrorMessage = "Bluetooth is not enabled"
-
             every { btAdapter.isEnabled } returns false
-            every {
-                context.getString(R.string.bt_not_enabled)
-            } returns expectedErrorMessage
 
             controller.errors.test {
                 controller.startScan()
 
-                assertEquals(expectedErrorMessage, awaitItem())
+                assertEquals(ScanError.BT_DISABLED, awaitItem())
             }
         }
 
     @Test
     fun `startScan should emit error when BLE is not available`() =
         runTest {
-            val expectedErrorMessage = "BLE scanning not supported"
-
             every { btAdapter.bluetoothLeScanner } returns null
-            every {
-                context.getString(R.string.ble_scanning_not_supported)
-            } returns expectedErrorMessage
 
             controller.errors.test {
                 controller.startScan()
 
-                assertEquals(expectedErrorMessage, awaitItem())
+                assertEquals(ScanError.BLE_NOT_SUPPORTED, awaitItem())
             }
         }
 
@@ -214,12 +199,6 @@ class BleScanControllerImplTest {
     @Test
     fun `startScan should emit error when hardware startScan throws exception`() =
         runTest {
-            val expectedErrorMessage = "Scan failed"
-
-            every {
-                context.getString(R.string.scan_failed)
-            } returns expectedErrorMessage
-
             every {
                 bleScanner.startScan(
                     any(),
@@ -234,7 +213,7 @@ class BleScanControllerImplTest {
                 controller.errors.test {
                     controller.startScan()
 
-                    assertEquals(expectedErrorMessage, awaitItem())
+                    assertEquals(ScanError.SCAN_FAILED, awaitItem())
                 }
 
                 assertEquals(ScanState.SCAN_PAUSED, controller.scanState.value)
@@ -407,55 +386,40 @@ class BleScanControllerImplTest {
     @Test
     fun `stopScan should emit error when BLUETOOTH_SCAN permission is missing`() =
         runTest {
-            val expectedErrorMessage = "Nearby devices permission missing!"
-
             every { context.hasPermission(any()) } returns false
-            every {
-                context.getString(R.string.nearby_devices_perms_missing)
-            } returns expectedErrorMessage
 
             controller.errors.test {
                 controller.stopScan()
 
-                assertEquals(expectedErrorMessage, awaitItem())
+                assertEquals(ScanError.PERMS_MISSING, awaitItem())
             }
         }
 
     @Test
     fun `stopScan should emit error when BT is disabled`() =
         runTest {
-            val expectedErrorMessage = "Bluetooth is not enabled"
-
             every { btAdapter.isEnabled } returns false
-            every {
-                context.getString(R.string.bt_not_enabled)
-            } returns expectedErrorMessage
 
             controller.startScan()
 
             controller.errors.test {
                 controller.stopScan()
 
-                assertEquals(expectedErrorMessage, awaitItem())
+                assertEquals(ScanError.BT_DISABLED, awaitItem())
             }
         }
 
     @Test
     fun `stopScan should emit error when BLE is not available`() =
         runTest {
-            val expectedErrorMessage = "BLE scanning not supported"
-
             every { btAdapter.bluetoothLeScanner } returns null
-            every {
-                context.getString(R.string.ble_scanning_not_supported)
-            } returns expectedErrorMessage
 
             controller.startScan()
 
             controller.errors.test {
                 controller.stopScan()
 
-                assertEquals(expectedErrorMessage, awaitItem())
+                assertEquals(ScanError.BLE_NOT_SUPPORTED, awaitItem())
             }
         }
 
@@ -472,12 +436,6 @@ class BleScanControllerImplTest {
     @Test
     fun `stopScan should emit error when hardware stopScan throws exception`() =
         runTest {
-            val expectedErrorMessage = "Pausing scan failed"
-
-            every {
-                context.getString(R.string.pausing_scan_failed)
-            } returns expectedErrorMessage
-
             every {
                 bleScanner.stopScan(any<ScanCallback>())
             } throws RuntimeException("Hardware failure")
@@ -490,7 +448,7 @@ class BleScanControllerImplTest {
                 controller.errors.test {
                     controller.stopScan()
 
-                    assertEquals(expectedErrorMessage, awaitItem())
+                    assertEquals(ScanError.SCAN_PAUSE_FAILED, awaitItem())
                 }
 
                 assertEquals(ScanState.SCAN_PAUSED, awaitItem())

@@ -9,6 +9,7 @@ import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionResult
 import com.example.lumen.domain.ble.model.DeviceListType
+import com.example.lumen.domain.ble.model.ScanError
 import com.example.lumen.domain.ble.model.ScanState
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
@@ -109,9 +110,15 @@ class DiscoveryViewModel @Inject constructor(
         discoveryUseCases
             .observeScanErrorsUseCase()
             .onEach { error ->
-                _uiState.update {
-                    it.copy(errorMessage = UiText.DynamicString(error))
+                val resId = when (error) {
+                    ScanError.PERMS_MISSING -> R.string.nearby_devices_perms_missing
+                    ScanError.BT_DISABLED -> R.string.bt_disabled
+                    ScanError.BLE_NOT_SUPPORTED -> R.string.ble_scanning_not_supported
+                    ScanError.SCAN_FAILED -> R.string.scan_failed
+                    ScanError.SCAN_PAUSE_FAILED -> R.string.pausing_scan_failed
                 }
+
+                _uiState.update { it.copy(errorMessage = UiText.StringResource(resId)) }
             }.launchIn(viewModelScope)
 
         uiState
@@ -148,7 +155,9 @@ class DiscoveryViewModel @Inject constructor(
                     }
                     ConnectionResult.Disconnected -> {
                         _uiState.update {
-                            it.copy(infoMessage = UiText.StringResource(R.string.disconnected))
+                            it.copy(
+                                infoMessage = UiText.StringResource(R.string.disconnected),
+                            )
                         }
                     }
                     ConnectionResult.InvalidDevice -> {
@@ -168,21 +177,30 @@ class DiscoveryViewModel @Inject constructor(
                         }
                     }
 
-                    is ConnectionResult.Error -> {
-                        _uiState.update {
-                            it.copy(
-                                errorMessage = UiText.DynamicString(result.message),
-                            )
+                    is ConnectionResult.Failure -> {
+                        val resId = when (result) {
+                            ConnectionResult.Failure.BtDisabled -> R.string.bt_disabled
+                            ConnectionResult.Failure.CannotRetry -> R.string.cannot_retry_no_device
+                            ConnectionResult.Failure.CommandFailed -> R.string.error_sending_command
+                            ConnectionResult.Failure.ConnectionFailed -> R.string.connection_failed
+                            ConnectionResult.Failure.DeviceNotFound -> R.string.device_not_found
+                            ConnectionResult.Failure.PermsMissing ->
+                                R.string.nearby_devices_perms_missing
                         }
-                    }
-                    is ConnectionResult.ConnectionFailed -> {
-                        _snackbarEvent.send(
-                            SnackbarEvent(
-                                message = result.message,
-                                actionLabel = UiText.StringResource(R.string.retry),
-                                duration = SnackbarDuration.Long,
-                            ),
-                        )
+
+                        if (result is ConnectionResult.Failure.ConnectionFailed) {
+                            _snackbarEvent.send(
+                                SnackbarEvent(
+                                    message = UiText.StringResource(resId),
+                                    actionLabel = UiText.StringResource(R.string.retry),
+                                    duration = SnackbarDuration.Long,
+                                ),
+                            )
+                        } else {
+                            _uiState.update {
+                                it.copy(errorMessage = UiText.StringResource(resId))
+                            }
+                        }
                     }
                 }
             }.catch { throwable ->

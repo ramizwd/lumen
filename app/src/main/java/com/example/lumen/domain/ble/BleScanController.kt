@@ -1,6 +1,7 @@
 package com.example.lumen.domain.ble
 
 import com.example.lumen.domain.ble.model.BleDevice
+import com.example.lumen.domain.ble.model.ScanError
 import com.example.lumen.domain.ble.model.ScanState
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface BleScanController {
     val scanResults: StateFlow<Map<String, BleDevice>>
     val scanState: StateFlow<ScanState>
-    val errors: SharedFlow<String>
+    val errors: SharedFlow<ScanError>
 
     suspend fun startScan()
 

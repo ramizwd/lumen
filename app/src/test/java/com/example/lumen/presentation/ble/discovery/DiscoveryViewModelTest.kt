@@ -8,6 +8,7 @@ import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionResult
 import com.example.lumen.domain.ble.model.DeviceListType
+import com.example.lumen.domain.ble.model.ScanError
 import com.example.lumen.domain.ble.model.ScanState
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectToDeviceUseCase
@@ -59,7 +60,7 @@ class DiscoveryViewModelTest {
 
     private val scanResultFlow = MutableStateFlow(listOf(device, favDevice))
     private val scanStateFlow = MutableStateFlow(ScanState.SCAN_PAUSED)
-    private var errorMessageFlow = MutableStateFlow("")
+    private var errorMessageFlow = MutableSharedFlow<ScanError>()
     private var favDeviceAddressFlow = MutableStateFlow(setOf(favAddress))
     private val listTypeFlow = MutableStateFlow(DeviceListType.ALL_DEVICES)
     private val connectionResultFlow = MutableSharedFlow<ConnectionResult>()
@@ -207,15 +208,13 @@ class DiscoveryViewModelTest {
     @Test
     fun `init collects scan error messages and updates state`() =
         runTest {
-            val errMsg = "Error"
-
             viewModel.uiState.test {
                 awaitItem()
 
-                errorMessageFlow.emit(errMsg)
+                errorMessageFlow.emit(ScanError.SCAN_FAILED)
 
                 assertEquals(
-                    UiText.DynamicString(errMsg),
+                    UiText.StringResource(R.string.scan_failed),
                     awaitItem().errorMessage,
                 )
             }
@@ -244,8 +243,6 @@ class DiscoveryViewModelTest {
     @Test
     fun `infoMessage and errorMessage states update correctly`() =
         runTest {
-            val errMsg = "Error"
-
             viewModel.uiState.test {
                 awaitItem()
 
@@ -253,12 +250,6 @@ class DiscoveryViewModelTest {
                 assertEquals(
                     UiText.StringResource(R.string.disconnected),
                     awaitItem().infoMessage,
-                )
-
-                connectionResultFlow.emit(ConnectionResult.Error(errMsg))
-                assertEquals(
-                    UiText.DynamicString(errMsg),
-                    awaitItem().errorMessage,
                 )
 
                 connectionResultFlow.emit(ConnectionResult.ConnectionEstablished)
@@ -272,13 +263,14 @@ class DiscoveryViewModelTest {
     @Test
     fun `show snackbar with proper message and action label when connection fails`() =
         runTest {
-            val errMsg = "Error"
-
             viewModel.snackbarEvent.test {
-                connectionResultFlow.emit(ConnectionResult.ConnectionFailed(errMsg))
+                connectionResultFlow.emit(ConnectionResult.Failure.ConnectionFailed)
                 val state = awaitItem()
 
-                assertEquals(errMsg, state.message)
+                assertEquals(
+                    UiText.StringResource(R.string.connection_failed),
+                    state.message,
+                )
                 assertEquals(
                     UiText.StringResource(R.string.retry),
                     state.actionLabel,
@@ -376,7 +368,7 @@ class DiscoveryViewModelTest {
     fun `retryConnection updates errorMessage when no device is selected`() =
         runTest {
             assertEquals(
-                UiText.DynamicString(""),
+                null,
                 viewModel.uiState.value.errorMessage,
             )
 
@@ -402,7 +394,7 @@ class DiscoveryViewModelTest {
             coVerify(exactly = 1) { connectToDeviceUseCase(device) }
 
             assertEquals(
-                UiText.DynamicString(""),
+                null,
                 viewModel.uiState.value.errorMessage,
             )
         }

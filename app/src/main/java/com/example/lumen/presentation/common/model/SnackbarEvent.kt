@@ -7,7 +7,7 @@ import com.example.lumen.presentation.common.utils.UiText
  * Represents the Snackbar properties
  */
 data class SnackbarEvent(
-    val message: String,
+    val message: UiText,
     val actionLabel: UiText? = null,
     val duration: SnackbarDuration = SnackbarDuration.Long,
 )

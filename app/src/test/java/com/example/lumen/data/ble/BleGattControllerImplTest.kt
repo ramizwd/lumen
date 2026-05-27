@@ -13,7 +13,6 @@ import android.bluetooth.BluetoothProfile.STATE_CONNECTED
 import android.bluetooth.BluetoothProfile.STATE_DISCONNECTED
 import android.content.Context
 import app.cash.turbine.test
-import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.ConnectionResult
 import com.example.lumen.domain.ble.model.ConnectionState
@@ -143,18 +142,13 @@ class BleGattControllerImplTest {
     @Test
     fun `connect should emit error when BLUETOOTH_CONNECT perms missing`() =
         runTest {
-            val expectedErrorMessage = "Nearby devices permission missing!"
-
             every { context.hasPermission(any()) } returns false
-            every {
-                context.getString(R.string.nearby_devices_perms_missing)
-            } returns expectedErrorMessage
 
             controller.connect(device)
 
             controller.connectionEvents.test {
                 assertEquals(
-                    ConnectionResult.Error(expectedErrorMessage),
+                    ConnectionResult.Failure.PermsMissing,
                     awaitItem(),
                 )
             }
@@ -171,18 +165,13 @@ class BleGattControllerImplTest {
     @Test
     fun `connect should emit error when BT is disabled`() =
         runTest {
-            val expectedErrorMessage = "Bluetooth is not enabled"
-
             every { btAdapter.isEnabled } returns false
-            every {
-                context.getString(R.string.bt_not_enabled)
-            } returns expectedErrorMessage
 
             controller.connectionEvents.test {
                 controller.connect(device)
 
                 assertEquals(
-                    ConnectionResult.Error(expectedErrorMessage),
+                    ConnectionResult.Failure.BtDisabled,
                     awaitItem(),
                 )
             }
@@ -199,12 +188,6 @@ class BleGattControllerImplTest {
     @Test
     fun `connect should emit error when connectGatt throws an exception`() =
         runTest {
-            val expectedErrorMessage = "Device not found"
-
-            every {
-                context.getString(R.string.device_not_found)
-            } returns expectedErrorMessage
-
             every {
                 remoteDevice.connectGatt(
                     any<Context>(),
@@ -217,7 +200,7 @@ class BleGattControllerImplTest {
 
             controller.connectionEvents.test {
                 assertEquals(
-                    ConnectionResult.Error(expectedErrorMessage),
+                    ConnectionResult.Failure.DeviceNotFound,
                     awaitItem(),
                 )
             }
@@ -274,12 +257,6 @@ class BleGattControllerImplTest {
     @Test
     fun `onConnectionStateChange should emit error when retry attempts is over max limit`() =
         runTest {
-            val expectedErrorMessage = "Connection failed"
-
-            every {
-                context.getString(R.string.connection_failed)
-            } returns expectedErrorMessage
-
             val controllerWithScope =
                 BleGattControllerImpl(
                     context,
@@ -301,7 +278,7 @@ class BleGattControllerImplTest {
 
             controllerWithScope.connectionEvents.test {
                 assertEquals(
-                    ConnectionResult.ConnectionFailed(expectedErrorMessage),
+                    ConnectionResult.Failure.ConnectionFailed,
                     awaitItem(),
                 )
             }
@@ -448,18 +425,13 @@ class BleGattControllerImplTest {
     @Test
     fun `disconnect should emit error when BLUETOOTH_CONNECT perms missing`() =
         runTest {
-            val expectedErrorMessage = "Nearby devices permission missing!"
-
             every { context.hasPermission(any()) } returns false
-            every {
-                context.getString(R.string.nearby_devices_perms_missing)
-            } returns expectedErrorMessage
 
             controller.disconnect()
 
             controller.connectionEvents.test {
                 assertEquals(
-                    ConnectionResult.Error(expectedErrorMessage),
+                    ConnectionResult.Failure.PermsMissing,
                     awaitItem(),
                 )
             }
@@ -487,12 +459,7 @@ class BleGattControllerImplTest {
     @Test
     fun `writeCharacteristic should emit error when BLUETOOTH_CONNECT perms missing`() =
         runTest {
-            val expectedErrorMessage = "Nearby devices permission missing!"
-
             every { context.hasPermission(any()) } returns false
-            every {
-                context.getString(R.string.nearby_devices_perms_missing)
-            } returns expectedErrorMessage
 
             controller.writeCharacteristic(
                 SERVICE_UUID,
@@ -502,7 +469,7 @@ class BleGattControllerImplTest {
 
             controller.connectionEvents.test {
                 assertEquals(
-                    ConnectionResult.Error(expectedErrorMessage),
+                    ConnectionResult.Failure.PermsMissing,
                     awaitItem(),
                 )
             }
@@ -515,13 +482,7 @@ class BleGattControllerImplTest {
     @Test
     fun `writeCharacteristic should emit error when BT stack throws an exception`() =
         runTest {
-            val expectedErrorMessage = "Error sending command"
-
             controller.connect(device)
-
-            every {
-                context.getString(R.string.error_sending_command)
-            } returns expectedErrorMessage
 
             every { gatt.writeCharacteristic(any()) } throws RuntimeException("BT error")
             every {
@@ -536,7 +497,7 @@ class BleGattControllerImplTest {
 
             controller.connectionEvents.test {
                 assertEquals(
-                    ConnectionResult.Error(expectedErrorMessage),
+                    ConnectionResult.Failure.CommandFailed,
                     awaitItem(),
                 )
             }

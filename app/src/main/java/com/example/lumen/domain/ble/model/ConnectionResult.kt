@@ -12,11 +12,17 @@ sealed interface ConnectionResult {
 
     object ConnectionCanceled : ConnectionResult
 
-    data class Error(
-        val message: String,
-    ) : ConnectionResult
+    sealed interface Failure : ConnectionResult {
+        data object PermsMissing : Failure
 
-    data class ConnectionFailed(
-        val message: String,
-    ) : ConnectionResult
+        data object BtDisabled : Failure
+
+        data object DeviceNotFound : Failure
+
+        data object CommandFailed : Failure
+
+        data object CannotRetry : Failure
+
+        data object ConnectionFailed : Failure
+    }
 }

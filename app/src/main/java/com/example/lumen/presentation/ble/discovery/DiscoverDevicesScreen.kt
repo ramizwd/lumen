@@ -123,7 +123,7 @@ fun DiscoverDevicesScreen(
             viewModel.snackbarEvent.collect { event ->
                 val result =
                     snackbarHostState.showSnackbar(
-                        message = event.message,
+                        message = event.message.asString(context),
                         actionLabel = event.actionLabel?.asString(context),
                         duration = event.duration,
                     )

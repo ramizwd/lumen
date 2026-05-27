@@ -2,14 +2,13 @@
     <string name="app_name" translatable="false">Lumen</string>
 
     <string name="nearby_devices_perms_missing">Nearby devices permission missing!</string>
-    <string name="bt_not_enabled">Bluetooth is not enabled</string>
+    <string name="bt_disabled">Bluetooth is disabled</string>
     <string name="device_not_found">Device not found</string>
     <string name="error_sending_command">Error sending command</string>
     <string name="cannot_retry_no_device">Cannot retry, no device selected</string>
     <string name="connection_failed">Connection failed</string>
     <string name="ble_scanning_not_supported">BLE scanning is not supported</string>
     <string name="scan_failed">Scan failed</string>
-    <string name="stopping_scan_failed">Stopping scan failed</string>
     <string name="pausing_scan_failed">Pausing scan failed</string>
     <string name="all">All</string>
     <string name="favorites">Favorites</string>
