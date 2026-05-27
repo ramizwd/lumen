@@ -32,8 +32,7 @@ fun LumenNavHost() {
 
     val mainViewModel = hiltViewModel<MainViewModel>()
     val connectionState by mainViewModel.connectionState.collectAsStateWithLifecycle()
-    val loadingText by mainViewModel.loadingText.collectAsStateWithLifecycle()
-    val showLoading by mainViewModel.showLoading.collectAsStateWithLifecycle()
+    val loadingInfo by mainViewModel.loadingInfo.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = connectionState) {
         val currentRoute = rootNavController.currentBackStackEntry?.destination?.route
@@ -64,8 +63,8 @@ fun LumenNavHost() {
             DiscoverDevicesScreen()
 
             LoadingOverlay(
-                text = loadingText?.asString(),
-                isVisible = showLoading,
+                text = loadingInfo.text?.asString(),
+                isVisible = loadingInfo.isVisible,
                 onDismiss = mainViewModel::disconnect,
             )
         }

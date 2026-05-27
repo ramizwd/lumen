@@ -8,6 +8,7 @@ import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.connection.DisconnectUseCase
 import com.example.lumen.domain.ble.usecase.connection.ObserveConnectionStateUseCase
+import com.example.lumen.presentation.common.model.LoadingInfo
 import com.example.lumen.presentation.common.utils.UiText
 import io.mockk.coVerify
 import io.mockk.every
@@ -21,6 +22,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -68,43 +70,56 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `when connection state is CONNECTING, loading state is true`() =
+    fun `when connection state is CONNECTING, loading info is correct`() =
         runTest {
-            viewModel.showLoading.test {
-                connectionFlow.emit(ConnectionState.CONNECTING)
-                assertTrue(expectMostRecentItem())
-            }
-        }
+            viewModel.loadingInfo.test {
+                assertEquals(
+                    LoadingInfo(false, null),
+                    awaitItem(),
+                )
 
-    @Test
-    fun `when connection state is CONNECTING, loading text is correct`() =
-        runTest {
-            viewModel.loadingText.test {
                 connectionFlow.emit(ConnectionState.CONNECTING)
+
+                val state = awaitItem()
+                assertTrue(state.isVisible)
                 assertEquals(
                     UiText.StringResource(R.string.connecting),
-                    expectMostRecentItem(),
+                    state.text,
                 )
             }
         }
 
     @Test
-    fun `when connection state is DISCONNECTED, loading text is null`() =
+    fun `when connection state is DISCONNECTED, loading info is hidden and text is null`() =
         runTest {
-            viewModel.loadingText.test {
+            viewModel.loadingInfo.test {
+                awaitItem()
+
+                connectionFlow.emit(ConnectionState.CONNECTING)
+                awaitItem()
+
                 connectionFlow.emit(ConnectionState.DISCONNECTED)
-                assertEquals(null, expectMostRecentItem())
+
+                val state = awaitItem()
+                assertFalse(state.isVisible)
+                assertEquals(null, state.text)
             }
         }
 
     @Test
     fun `when bluetooth turns off while connected, disconnect is called`() =
         runTest {
-            connectionFlow.emit(ConnectionState.STATE_LOADED_AND_CONNECTED)
+            viewModel.connectionState.test {
+                assertEquals(ConnectionState.DISCONNECTED, awaitItem())
 
-            bluetoothFlow.emit(BluetoothState.TURNING_OFF)
+                connectionFlow.emit(ConnectionState.STATE_LOADED_AND_CONNECTED)
 
-            coVerify(exactly = 1) { disconnectUseCase() }
+                bluetoothFlow.emit(BluetoothState.TURNING_OFF)
+
+                coVerify(exactly = 1) { disconnectUseCase() }
+
+                cancelAndIgnoreRemainingEvents()
+            }
         }
 
     @Test

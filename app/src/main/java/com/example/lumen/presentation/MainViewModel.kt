@@ -7,14 +7,15 @@ import com.example.lumen.domain.ble.model.BluetoothState
 import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
+import com.example.lumen.presentation.common.model.LoadingInfo
 import com.example.lumen.presentation.common.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,45 +32,45 @@ class MainViewModel @Inject constructor(
         private const val LOG_TAG = "MainViewModel"
     }
 
-    private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
-    val connectionState = _connectionState.asStateFlow()
+    val connectionState = connectionUseCases
+        .observeConnectionStateUseCase()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            ConnectionState.DISCONNECTED,
+        )
 
-    private val _loadingText = MutableStateFlow<UiText?>(null)
-    val loadingText = _loadingText.asStateFlow()
+    val loadingInfo = connectionState
+        .map { state ->
+            val show = when (state) {
+                ConnectionState.CONNECTING,
+                ConnectionState.LOADING_DEVICE_STATE,
+                ConnectionState.INVALID_DEVICE,
+                ConnectionState.RETRYING,
+                -> true
+                else -> false
+            }
 
-    private val _showLoading = MutableStateFlow(false)
-    val showLoading = _showLoading.asStateFlow()
+            val text = when (state) {
+                ConnectionState.CONNECTING ->
+                    UiText.StringResource(R.string.connecting)
+                ConnectionState.LOADING_DEVICE_STATE ->
+                    UiText.StringResource(R.string.initializing)
+                ConnectionState.RETRYING ->
+                    UiText.StringResource(R.string.connection_failed_retrying)
+                ConnectionState.INVALID_DEVICE ->
+                    UiText.StringResource(R.string.invalid_device_disconnecting)
+                else -> null
+            }
+
+            LoadingInfo(show, text)
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            LoadingInfo(false, null),
+        )
 
     init {
-        viewModelScope.launch {
-            connectionUseCases.observeConnectionStateUseCase().collect { state ->
-                _connectionState.update { state }
-                _loadingText.update {
-                    when (state) {
-                        ConnectionState.CONNECTING ->
-                            UiText.StringResource(R.string.connecting)
-                        ConnectionState.LOADING_DEVICE_STATE ->
-                            UiText.StringResource(R.string.initializing)
-                        ConnectionState.RETRYING ->
-                            UiText.StringResource(R.string.connection_failed_retrying)
-                        ConnectionState.INVALID_DEVICE ->
-                            UiText.StringResource(R.string.invalid_device_disconnecting)
-                        else -> null
-                    }
-                }
-                _showLoading.update {
-                    when (state) {
-                        ConnectionState.CONNECTING,
-                        ConnectionState.LOADING_DEVICE_STATE,
-                        ConnectionState.INVALID_DEVICE,
-                        ConnectionState.RETRYING,
-                        -> true
-                        else -> false
-                    }
-                }
-            }
-        }
-
         observeBluetoothStateUseCase()
             .onEach { btState ->
                 when (btState) {
@@ -85,9 +86,7 @@ class MainViewModel @Inject constructor(
                     BluetoothState.TURNING_OFF -> {
                         Timber.tag(LOG_TAG).d("BT turning off...")
 
-                        if (_connectionState.value ==
-                            ConnectionState.STATE_LOADED_AND_CONNECTED
-                        ) {
+                        if (connectionState.value == ConnectionState.STATE_LOADED_AND_CONNECTED) {
                             Timber.tag(LOG_TAG).i("Disconnecting...")
                             disconnect()
                         }

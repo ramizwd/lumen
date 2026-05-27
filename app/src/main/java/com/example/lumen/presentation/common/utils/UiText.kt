@@ -6,14 +6,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 
 sealed class UiText {
-    data class DynamicString(
-        val value: String,
-    ) : UiText()
+    @Composable
+    abstract fun asString(): String
+
+    abstract fun asString(context: Context): String
 
     class StringResource(
         @StringRes val resId: Int,
         vararg val args: Any,
     ) : UiText() {
+        @Composable
+        override fun asString(): String = stringResource(resId, *args)
+
+        override fun asString(context: Context): String = context.getString(resId, *args)
+
         // Manual equals check to handle resId and vararg array content for easier testing
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -27,23 +33,6 @@ sealed class UiText {
             return true
         }
 
-        override fun hashCode(): Int {
-            var result = resId
-            result = 31 * result + args.contentHashCode()
-            return result
-        }
+        override fun hashCode(): Int = 31 * resId + args.contentHashCode()
     }
-
-    @Composable
-    fun asString(): String =
-        when (this) {
-            is DynamicString -> value
-            is StringResource -> stringResource(resId, *args)
-        }
-
-    fun asString(context: Context): String =
-        when (this) {
-            is DynamicString -> value
-            is StringResource -> context.getString(resId, *args)
-        }
 }
