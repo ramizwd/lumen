@@ -18,9 +18,10 @@
     <string name="searching">Searching…</string>
     <string name="find_devices">Start scanning to find nearby devices.</string>
     <string name="no_devices_found">No devices found.</string>
-    <string name="searching_for_fav">Searching for favorites…</string>
+    <string name="no_fav_added">No devices added to your favorites. Add your favorite devices from all devices scan list.</string>
+    <string name="searching_for_fav">Searching for favorite devices…</string>
     <string name="find_fav_devices">Start scanning to find favorite devices.</string>
-    <string name="no_fav_devices_found">No favorite devices found.</string>
+    <string name="no_fav_devices_found">No favorite devices found nearby.</string>
     <string name="disconnected">Disconnected</string>
     <string name="invalid_device">Invalid device</string>
     <string name="connection_canceled">Connection canceled</string>

@@ -12,7 +12,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -35,16 +39,26 @@ fun TextFieldDialog(
         modifier = modifier,
         title = { Text(text = title) },
         text = {
+            val focusRequester = remember { FocusRequester() }
+
+            LaunchedEffect(Unit) {
+                focusRequester.requestFocus()
+            }
+
             OutlinedTextField(
                 state = state,
+                modifier = Modifier.focusRequester(focusRequester),
                 lineLimits = TextFieldLineLimits.SingleLine,
                 supportingText = { Text(text = supportingText) },
                 isError = state.text.length > maxChar,
                 trailingIcon = {
                     if (state.text.isNotBlank()) {
-                        IconButton(onClick = {
-                            state.clearText()
-                        }) {
+                        IconButton(
+                            onClick = {
+                                state.clearText()
+                                focusRequester.requestFocus()
+                            },
+                        ) {
                             Icon(
                                 painter = painterResource(R.drawable.close_24px),
                                 contentDescription = stringResource(R.string.clear_text),

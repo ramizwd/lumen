@@ -8,6 +8,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewDynamicColors
@@ -23,6 +25,8 @@ fun MatchDeviceThemeButton(
     onMatchWithDeviceTheme: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
+
     val onPrimaryColor = MaterialTheme.colorScheme.onPrimary.toArgb()
 
     // convert input color to HSV and set the luminosity to max
@@ -42,7 +46,12 @@ fun MatchDeviceThemeButton(
                 modifier = modifier,
                 enabled = enabled,
                 checked = isSelected,
-                onCheckedChange = { onMatchWithDeviceTheme(maxBrightnessColorHex) },
+                onCheckedChange = {
+                    if (!isSelected) {
+                        onMatchWithDeviceTheme(maxBrightnessColorHex)
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                    }
+                },
             ) {
                 Icon(
                     painter =

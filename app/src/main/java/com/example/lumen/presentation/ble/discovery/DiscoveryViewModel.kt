@@ -82,6 +82,7 @@ class DiscoveryViewModel @Inject constructor(
             val emptyScanResTxt =
                 getEmptyScanResultTxt(
                     scanResults.isEmpty(),
+                    favAddresses.isEmpty(),
                     favDevices.isEmpty(),
                     scanState,
                     listType,
@@ -347,32 +348,33 @@ class DiscoveryViewModel @Inject constructor(
 
     private fun getEmptyScanResultTxt(
         isNoDevices: Boolean,
+        isNoFavAdded: Boolean,
         isNoFavDevices: Boolean,
         scanState: ScanState,
         listType: DeviceListType,
     ): UiText? {
-        val scanStateMsg =
-            when (scanState) {
-                ScanState.SCANNING -> UiText.StringResource(R.string.searching)
-                ScanState.SCAN_PAUSED -> UiText.StringResource(R.string.find_devices)
-                ScanState.SCAN_AUTO_PAUSED ->
-                    UiText.StringResource(R.string.no_devices_found)
-            }
+        val scanStateResId = when (scanState) {
+            ScanState.SCANNING -> R.string.searching
+            ScanState.SCAN_PAUSED -> R.string.find_devices
+            ScanState.SCAN_AUTO_PAUSED -> R.string.no_devices_found
+        }
 
-        val favScanStateMsg =
+        val favScanStateResId = if (isNoFavAdded) {
+            R.string.no_fav_added
+        } else {
             when (scanState) {
-                ScanState.SCANNING -> UiText.StringResource(R.string.searching_for_fav)
-                ScanState.SCAN_PAUSED -> UiText.StringResource(R.string.find_fav_devices)
-                ScanState.SCAN_AUTO_PAUSED ->
-                    UiText.StringResource(R.string.no_fav_devices_found)
+                ScanState.SCANNING -> R.string.searching_for_fav
+                ScanState.SCAN_PAUSED -> R.string.find_fav_devices
+                ScanState.SCAN_AUTO_PAUSED -> R.string.no_fav_devices_found
             }
+        }
 
         return when (listType) {
             DeviceListType.ALL_DEVICES -> {
-                if (isNoDevices) scanStateMsg else null
+                if (isNoDevices) UiText.StringResource(scanStateResId) else null
             }
             DeviceListType.FAVORITE_DEVICES -> {
-                if (isNoFavDevices) favScanStateMsg else null
+                if (isNoFavDevices) UiText.StringResource(favScanStateResId) else null
             }
         }
     }

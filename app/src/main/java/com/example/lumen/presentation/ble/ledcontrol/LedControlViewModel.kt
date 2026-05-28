@@ -59,8 +59,7 @@ class LedControlViewModel @Inject constructor(
             _uiState.update { state ->
                 state.copy(
                     isLedOn = initState?.isOn ?: false,
-                    ledHexColor =
-                        initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
+                    ledHexColor = initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
                     brightnessValue = initState?.brightness ?: 0f,
                     pixelCount = initState?.pixelCount ?: 0,
                 )

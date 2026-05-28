@@ -5,6 +5,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewDynamicColors
@@ -20,13 +22,18 @@ fun RandomColorButton(
     onClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
+
     PlainTooltip(
         text = stringResource(R.string.random_color),
         content = {
             FilledTonalIconButton(
                 modifier = modifier,
                 enabled = enabled,
-                onClick = { onClick(Random().nextColorHexString()) },
+                onClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                    onClick(Random().nextColorHexString())
+                },
             ) {
                 Icon(
                     painter = painterResource(R.drawable.dice_filled_24px),
