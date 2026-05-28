@@ -37,7 +37,6 @@ fun Random.nextColorHexString(): String {
 }
 
 /**
- * Converts an ARGB int color to 6 digit hex string, dropping first two digits that are
- * associated with the alpha value
+ * Converts an ARGB int color to 6 digit lowercase hex string and strips the alpha value
  */
-fun @receiver:ColorInt Int.toNoAlphaHexString(): String = String.format("%02X", this).drop(2)
+fun @receiver:ColorInt Int.toNoAlphaHexString(): String = String.format("%06x", this and 0xFFFFFF)
