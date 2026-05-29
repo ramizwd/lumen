@@ -133,11 +133,12 @@ fun ColorPickerContent(
                     color = MaterialTheme.colorScheme.tertiary,
                 )
 
-                Column {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween,
+                ) {
                     ColorPicker(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(340.dp),
+                        modifier = Modifier.height(360.dp),
                         controller = colorPickerController,
                         onSetHsvColor = { hexColor ->
                             isUsingColorPicker = true

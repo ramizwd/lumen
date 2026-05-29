@@ -5,11 +5,15 @@ import android.graphics.SweepGradient
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
@@ -44,7 +48,7 @@ fun ColorPicker(
 ) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier,
+        modifier = modifier.aspectRatio(1f),
     ) {
         Canvas(
             modifier = Modifier.matchParentSize(),
@@ -76,10 +80,11 @@ fun ColorPicker(
                     }
                 }
 
+                val wheelRadius = (size.minDimension / 2) - 30
                 nativeCanvas.drawCircle(
                     center.x,
                     center.y,
-                    size.minDimension / 2 + glowRadius / 2, // cover glow area
+                    wheelRadius + (glowRadius / 2), // cover glow area
                     nativePaint,
                 )
             }
@@ -87,6 +92,8 @@ fun ColorPicker(
 
         HsvColorPicker(
             modifier = Modifier
+                .clip(CircleShape)
+                .padding(14.dp)
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onPress = {
@@ -98,7 +105,7 @@ fun ColorPicker(
                             }
                         },
                     )
-                }.then(modifier),
+                },
             controller = controller,
             onColorChanged = { colorEnvelope: ColorEnvelope ->
                 // Drop the alpha value
@@ -167,6 +174,20 @@ fun ColorPickerPreview() {
     LumenTheme {
         Surface {
             ColorPicker(
+                controller = rememberColorPickerController(),
+                onSetHsvColor = {},
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+fun ColorPickerGlowOffPreview() {
+    LumenTheme {
+        Surface {
+            ColorPicker(
+                glowRadius = 0f,
                 controller = rememberColorPickerController(),
                 onSetHsvColor = {},
             )
