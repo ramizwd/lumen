@@ -164,7 +164,6 @@ class LedControlViewModel @Inject constructor(
     }
 
     override fun onCleared() {
-        super.onCleared()
         // TODO here until figuring out persistent controller state
         connectionUseCases.disconnectUseCase()
     }
