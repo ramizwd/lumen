@@ -52,7 +52,7 @@ class BleGattControllerImpl(
         private const val LOG_TAG = "BleGattControllerImpl"
 
         private const val MAX_CONNECTION_TRIES = 5
-        private val retry_delay= 500.milliseconds
+        private val retry_delay = 500.milliseconds
     }
 
     private var bluetoothGatt: BluetoothGatt? = null
