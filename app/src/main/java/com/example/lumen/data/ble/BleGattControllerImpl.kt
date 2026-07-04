@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.UUID
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Class that implements [BleGattController] interface.
@@ -51,7 +52,7 @@ class BleGattControllerImpl(
         private const val LOG_TAG = "BleGattControllerImpl"
 
         private const val MAX_CONNECTION_TRIES = 5
-        private const val RETRY_DELAY_MILLIS: Long = 500 // half a sec
+        private val retry_delay= 500.milliseconds
     }
 
     private var bluetoothGatt: BluetoothGatt? = null
@@ -497,7 +498,7 @@ class BleGattControllerImpl(
 
             connRetryJob =
                 bleConnScope.launch {
-                    delay(RETRY_DELAY_MILLIS)
+                    delay(retry_delay)
                     bluetoothGatt?.close()
                     bluetoothGatt = null
 

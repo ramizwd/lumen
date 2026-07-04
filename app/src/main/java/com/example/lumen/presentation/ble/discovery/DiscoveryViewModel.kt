@@ -380,7 +380,6 @@ class DiscoveryViewModel @Inject constructor(
     }
 
     override fun onCleared() {
-        super.onCleared()
         discoveryUseCases.stopScanUseCase()
     }
 }

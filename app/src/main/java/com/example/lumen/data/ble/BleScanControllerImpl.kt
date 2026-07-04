@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Class that implements [BleScanController] interface.
@@ -44,7 +45,7 @@ class BleScanControllerImpl(
         private const val LOG_TAG = "BleScanControllerImpl"
 
         private const val REPOT_DELAY_MILLIS: Long = 0
-        private const val SCAN_PERIOD_MILLIS: Long = 30_000 // Scan for 30 seconds
+        private val scan_period = 30.seconds
     }
 
     private val bleScanner: BluetoothLeScanner?
@@ -113,7 +114,7 @@ class BleScanControllerImpl(
             // Start a coroutine to stop scanning after a period
             scanJob =
                 bleScanScope.launch {
-                    delay(SCAN_PERIOD_MILLIS)
+                    delay(scan_period)
                     stopScan()
                     _scanState.value = ScanState.SCAN_AUTO_PAUSED
                     Timber.tag(LOG_TAG).i("Scan stopped automatically")

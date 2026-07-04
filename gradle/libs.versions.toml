@@ -2,11 +2,11 @@
 agp = "9.2.1"
 datastorePreferences = "1.2.1"
 junitBom = "6.1.1"
-kotlinMetadataJvm = "2.3.21"
+kotlinMetadataJvm = "2.4.0"
 kotlinxCoroutinesTest = "1.11.0"
 turbine = "1.2.1"
 mockk = "1.14.11"
-ksp = "2.3.7"
+ksp = "2.3.9"
 hilt = "2.60"
 hiltNavigationCompose = "1.4.0"
 kotlin = "2.4.0"
@@ -23,7 +23,7 @@ colorpicker = "1.2.0"
 navigationCompose = "2.9.8"
 timber = "5.0.1"
 ktlint = "14.2.0"
-aboutLibraries = "15.0.2"
+aboutLibraries = "15.0.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

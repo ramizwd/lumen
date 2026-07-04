@@ -26,6 +26,7 @@ import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun DeviceList(
@@ -74,7 +75,7 @@ fun DeviceList(
             coroutineScope.launch {
                 isRefreshing = true
                 onStartScan()
-                delay(1000) // show indicator for 1 sec.
+                delay(1.seconds)
                 isRefreshing = false
             }
         },
