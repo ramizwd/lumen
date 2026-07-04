@@ -24,7 +24,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.lumen.R
@@ -44,7 +43,7 @@ import com.example.lumen.utils.AppConstants.MAX_DEVICE_CHAR
 
 @Composable
 fun LedControlScreen(
-    rootNavController: NavHostController,
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LedControlViewModel = hiltViewModel(),
 ) {
@@ -94,7 +93,7 @@ fun LedControlScreen(
         deviceConfig = deviceConfig,
         uiState = uiState,
         deviceName = deviceName,
-        rootNavController = rootNavController,
+        onNavigateBack = onBackClick,
         context = context,
         currToastRef = currToastRef,
         onTurnLedOnClick = viewModel::turnLedOn,
@@ -113,7 +112,7 @@ fun LedControlContent(
     deviceConfig: DeviceConfiguration,
     uiState: LedControlUiState,
     deviceName: String,
-    rootNavController: NavHostController,
+    onNavigateBack: () -> Unit,
     context: Context,
     currToastRef: MutableState<Toast?>,
     onTurnLedOnClick: () -> Unit,
@@ -135,8 +134,8 @@ fun LedControlContent(
         topBar = {
             TopAppBar(
                 title = deviceName,
-                onNavIconClick = { rootNavController.popBackStack() },
-                onActionClick = { onDisconnectClick() },
+                onNavigateBack = onNavigateBack,
+                onActionClick = onDisconnectClick,
                 onClickTitle = {
                     val message = if (uiState.isLedOn) {
                         UiText.StringResource(R.string.long_press_to_rename)
@@ -249,7 +248,7 @@ fun LedControlContentPreview() {
                 deviceConfig = DeviceConfiguration.MOBILE_PORTRAIT,
                 uiState = uiState,
                 deviceName = "Test",
-                rootNavController = rememberNavController(),
+                onNavigateBack = { },
                 context = LocalContext.current,
                 currToastRef = toastRef,
                 onTurnLedOnClick = { },
@@ -294,7 +293,7 @@ fun LedControlContentLandscapePreview() {
                 deviceConfig = DeviceConfiguration.MOBILE_LANDSCAPE,
                 uiState = uiState,
                 deviceName = "Test",
-                rootNavController = rememberNavController(),
+                onNavigateBack = { },
                 context = LocalContext.current,
                 currToastRef = toastRef,
                 onTurnLedOnClick = { },
@@ -339,7 +338,7 @@ fun LedControlContentTabletLandscapePreview() {
                 deviceConfig = DeviceConfiguration.TABLET_LANDSCAPE,
                 uiState = uiState,
                 deviceName = "Test",
-                rootNavController = rememberNavController(),
+                onNavigateBack = { },
                 context = LocalContext.current,
                 currToastRef = toastRef,
                 onTurnLedOnClick = { },

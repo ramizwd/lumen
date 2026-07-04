@@ -4,14 +4,12 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.EaseInQuint
-import androidx.compose.animation.core.EaseOut
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
@@ -19,6 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.presentation.MainViewModel
+import com.example.lumen.presentation.ble.AboutScreen
 import com.example.lumen.presentation.ble.discovery.DiscoverDevicesScreen
 import com.example.lumen.presentation.ble.ledcontrol.LedControlScreen
 import com.example.lumen.presentation.common.components.LoadingOverlay
@@ -38,13 +37,15 @@ fun LumenNavHost() {
         val currentRoute = rootNavController.currentBackStackEntry?.destination?.route
 
         if (connectionState == ConnectionState.STATE_LOADED_AND_CONNECTED &&
-            currentRoute != LedControlScreen::class.qualifiedName
+            currentRoute != LedControlScreen::class.qualifiedName &&
+            currentRoute != AboutScreen::class.qualifiedName
         ) {
             rootNavController.navigate(LedControlScreen) {
                 launchSingleTop = true
             }
         } else if (connectionState == ConnectionState.DISCONNECTED &&
-            currentRoute != DiscoverDevicesScreen::class.qualifiedName
+            currentRoute != DiscoverDevicesScreen::class.qualifiedName &&
+            currentRoute != AboutScreen::class.qualifiedName
         ) {
             rootNavController.navigate(DiscoverDevicesScreen) {
                 popUpTo(LedControlScreen) { inclusive = true }
@@ -58,9 +59,14 @@ fun LumenNavHost() {
         startDestination = DiscoverDevicesScreen,
         enterTransition = { EnterTransition.None },
         exitTransition = { ExitTransition.None },
+        modifier = Modifier.fillMaxSize(),
     ) {
         composable<DiscoverDevicesScreen> {
-            DiscoverDevicesScreen()
+            DiscoverDevicesScreen(
+                onNavigateToAbout = {
+                    rootNavController.navigate(AboutScreen)
+                },
+            )
 
             LoadingOverlay(
                 text = loadingInfo.text?.asString(),
@@ -69,27 +75,25 @@ fun LumenNavHost() {
             )
         }
 
-        composable<LedControlScreen>(
+        composable<AboutScreen>(
             enterTransition = {
-                fadeIn(
-                    animationSpec = tween(500, easing = EaseInQuint),
-                ) +
-                    slideIntoContainer(
-                        animationSpec = tween(400, easing = EaseInQuint),
-                        towards = AnimatedContentTransitionScope.SlideDirection.Start,
-                    )
+                slideIntoContainer(
+                    animationSpec = tween(400, easing = EaseInQuint),
+                    towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                )
             },
-            exitTransition = {
-                fadeOut(
-                    animationSpec = tween(300, easing = LinearEasing),
-                ) +
-                    slideOutOfContainer(
-                        animationSpec = tween(300, easing = EaseOut),
-                        towards = AnimatedContentTransitionScope.SlideDirection.End,
-                    )
-            },
+            exitTransition = NavTransitions.exit,
         ) {
-            LedControlScreen(rootNavController = rootNavController)
+            AboutScreen(
+                onBackClick = { rootNavController.popBackStack() },
+            )
+        }
+
+        composable<LedControlScreen>(
+            enterTransition = NavTransitions.enter,
+            exitTransition = NavTransitions.exit,
+        ) {
+            LedControlScreen(onBackClick = { rootNavController.popBackStack() })
         }
     }
 }

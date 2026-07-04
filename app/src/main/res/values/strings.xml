@@ -65,4 +65,12 @@
     <string name="initializing">Initializing…</string>
     <string name="connection_failed_retrying">Connection failed, retrying…</string>
     <string name="invalid_device_disconnecting">Invalid device, disconnecting…</string>
+    <string name="more_options">More options</string>
+    <string name="about">About</string>
+    <string name="version">Version %s</string>
+    <string name="list_of_libraries">Lumen is built with open source software. The following is a list of third-party libraries used by Lumen</string>
+    <string name="source_code">Source Code</string>
+    <string name="license">License</string>
+    <string name="view_source_code">View source code</string>
+    <string name="view_license">View license</string>
 </resources>

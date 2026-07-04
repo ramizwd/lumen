@@ -55,55 +55,72 @@ The following highlights both core functionalities and new or improved features 
 > - Setting RGB sequence and IC type
 
 ## Dependencies
-This project utilizes the following third-party libraries.
+This project utilizes the following open source third-party libraries.
+
+- **AboutLibraries**
+  - https://github.com/mikepenz/aboutlibraries
+  - Automated dependencies and licenses listing for Gradle applications
+  - License: Apache 2.0
 
 - **Compose Material 3 Adaptive**
   - https://developer.android.com/jetpack/androidx/releases/compose-material3-adaptive
   - Library for creating adaptive UIs
+  - License: Apache 2.0
  
 - **Color Picker Compose**
   - https://github.com/skydoves/colorpicker-compose
   - A color picker library for Jetpack Compose
+  - License: Apache 2.0
 
 - **Dagger-Hilt**
   - https://github.com/google/dagger
   - Dependency injection framework for Android
+  - License: Apache 2.0
  
 - **JUnit**
   - https://github.com/junit-team/junit-framework
   - Unit testing framework for Java and the JVM
+  - License: Eclipse Public License 2.0
 
 - **Kotlinx Coroutines**
   - https://github.com/Kotlin/kotlinx.coroutines
   - Kotlin library for asynchronous code
+  - License: Apache 2.0
 
 - **Kotlinx Serialization JSON**
   - https://github.com/Kotlin/kotlinx.serialization
   - A multiplatform serialization library for Kotlin
+  - License: Apache 2.0
 
 - **Ktlint Gradle**
   - https://github.com/JLLeitschuh/ktlint-gradle
   - A Gradle plugin that provides ktlint integration for code formatting
+  - License: MIT
   
 - **MockK**
   - https://github.com/mockk/mockk
   - Mocking library for Kotlin
+  - License: Apache 2.0
 
 - **Navigation Compose**
   - https://developer.android.com/jetpack/androidx/releases/navigation
   - Navigation library for Jetpack Compose
+  - License: Apache 2.0
 
 - **Preferences DataStore**
   - https://developer.android.com/jetpack/androidx/releases/datastore
   - Jetpack DataStore for storing key-value pairs
+  - License: Apache 2.0
 
 - **Timber**
   - https://github.com/JakeWharton/timber
   - An extensible logging library for Android
+  - License: Apache 2.0
 
 - **Turbine**
   - https://github.com/cashapp/turbine
-  - A testing library for kotlinx.coroutines Flow
+  - A testing library for `kotlinx.coroutines` Flow
+  - License: Apache 2.0
 
 ## Icons
 Icons used in this project are from [Material Symbols and Icons](https://fonts.google.com/icons)

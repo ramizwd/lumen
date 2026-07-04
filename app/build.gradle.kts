@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ktlint)
+    alias(libs.plugins.aboutLibraries)
 }
 
 android {
@@ -86,6 +87,8 @@ dependencies {
     // UI libraries
     implementation(libs.compose.colorpicker)
     implementation(libs.androidx.compose.adaptive)
+    implementation(libs.aboutlibraries.core)
+    implementation(libs.aboutlibraries.compose.m3)
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
@@ -123,5 +126,4 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.timber)
-    lintChecks(libs.timber)
 }

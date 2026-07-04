@@ -11,7 +11,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +28,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -44,6 +45,7 @@ import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.DeviceListType
 import com.example.lumen.domain.ble.model.ScanState
 import com.example.lumen.presentation.ble.discovery.components.DeviceList
+import com.example.lumen.presentation.ble.discovery.components.DropdownMenu
 import com.example.lumen.presentation.ble.discovery.components.ScanButton
 import com.example.lumen.presentation.common.components.BluetoothPermissionTextProvider
 import com.example.lumen.presentation.common.components.ChoiceChipRow
@@ -63,6 +65,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun DiscoverDevicesScreen(
+    onNavigateToAbout: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DiscoveryViewModel = hiltViewModel(),
 ) {
@@ -74,6 +77,8 @@ fun DiscoverDevicesScreen(
 
     val currentToastRef: MutableState<Toast?> = remember { mutableStateOf(null) }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    var isMenuExpanded by rememberSaveable { mutableStateOf(false) }
 
     val bluetoothPermissionLauncher =
         rememberLauncherForActivityResult(
@@ -259,8 +264,8 @@ fun DiscoverDevicesScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         DiscoverDevicesContent(
-            innerPadding = innerPadding,
             isScanning = uiState.scanState == ScanState.SCANNING,
+            isMenuExpanded = isMenuExpanded,
             scanResults = uiState.scanResults,
             emptyScanResultTxt = uiState.emptyScanResultTxt?.asString(),
             currSelectedListType = uiState.selectedListType,
@@ -270,15 +275,19 @@ fun DiscoverDevicesScreen(
             onRemoveFavDevice = viewModel::removeFavDevice,
             onConnectToDevice = viewModel::connectToDevice,
             onSelectListFilter = viewModel::selectDeviceListType,
-            modifier = modifier,
+            onToggleMenu = { expanded ->
+                isMenuExpanded = expanded
+            },
+            onAboutClick = { onNavigateToAbout() },
+            modifier = Modifier.padding(innerPadding),
         )
     }
 }
 
 @Composable
 fun DiscoverDevicesContent(
-    innerPadding: PaddingValues,
     isScanning: Boolean,
+    isMenuExpanded: Boolean,
     scanResults: List<DeviceContent>,
     emptyScanResultTxt: String?,
     currSelectedListType: DeviceListType,
@@ -288,13 +297,12 @@ fun DiscoverDevicesContent(
     onFavDevice: (String) -> Unit,
     onRemoveFavDevice: (String) -> Unit,
     onConnectToDevice: (BleDevice) -> Unit,
+    onToggleMenu: (Boolean) -> Unit,
+    onAboutClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.smallIncreased),
     ) {
@@ -304,7 +312,6 @@ fun DiscoverDevicesContent(
                     .fillMaxWidth()
                     .padding(
                         start = MaterialTheme.spacing.large,
-                        end = MaterialTheme.spacing.large,
                     ),
         ) {
             ChoiceChipRow(
@@ -318,8 +325,6 @@ fun DiscoverDevicesContent(
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement =
-                    Arrangement.spacedBy(MaterialTheme.spacing.smallIncreased),
             ) {
                 RadarScanAnimation(isScanning = isScanning)
 
@@ -327,6 +332,12 @@ fun DiscoverDevicesContent(
                     onStartScan = onStartScan,
                     onStopScan = onStopScan,
                     isScanning = isScanning,
+                )
+
+                DropdownMenu(
+                    isExpanded = isMenuExpanded,
+                    onMenuClick = onToggleMenu,
+                    onAboutClick = onAboutClick,
                 )
             }
         }
@@ -350,8 +361,8 @@ fun DiscoverDevicesContentPreview() {
     LumenTheme {
         Surface {
             DiscoverDevicesContent(
-                innerPadding = PaddingValues(),
                 isScanning = false,
+                isMenuExpanded = true,
                 scanResults = emptyList(),
                 emptyScanResultTxt = "Start scanning to find nearby devices.",
                 currSelectedListType = DeviceListType.ALL_DEVICES,
@@ -361,6 +372,8 @@ fun DiscoverDevicesContentPreview() {
                 onFavDevice = {},
                 onRemoveFavDevice = {},
                 onConnectToDevice = {},
+                onToggleMenu = { },
+                onAboutClick = { },
                 modifier = Modifier,
             )
         }
@@ -373,8 +386,8 @@ fun DiscoverDevicesContentSearchingPreview() {
     LumenTheme {
         Surface {
             DiscoverDevicesContent(
-                innerPadding = PaddingValues(),
                 isScanning = true,
+                isMenuExpanded = false,
                 scanResults = emptyList(),
                 emptyScanResultTxt = "Searching...",
                 currSelectedListType = DeviceListType.ALL_DEVICES,
@@ -384,6 +397,8 @@ fun DiscoverDevicesContentSearchingPreview() {
                 onFavDevice = {},
                 onRemoveFavDevice = {},
                 onConnectToDevice = {},
+                onToggleMenu = { },
+                onAboutClick = { },
                 modifier = Modifier,
             )
         }
@@ -420,8 +435,8 @@ fun DiscoverDevicesContentDevicesFoundPreview() {
             )
 
             DiscoverDevicesContent(
-                innerPadding = PaddingValues(),
                 isScanning = true,
+                isMenuExpanded = false,
                 scanResults = mockScanResults,
                 emptyScanResultTxt = null,
                 currSelectedListType = DeviceListType.ALL_DEVICES,
@@ -431,6 +446,8 @@ fun DiscoverDevicesContentDevicesFoundPreview() {
                 onFavDevice = {},
                 onRemoveFavDevice = {},
                 onConnectToDevice = {},
+                onToggleMenu = { },
+                onAboutClick = { },
                 modifier = Modifier,
             )
         }
@@ -443,8 +460,8 @@ fun DiscoverDevicesContentNoDevicesFoundPreview() {
     LumenTheme {
         Surface {
             DiscoverDevicesContent(
-                innerPadding = PaddingValues(),
                 isScanning = false,
+                isMenuExpanded = false,
                 scanResults = emptyList(),
                 emptyScanResultTxt = "No devices found.",
                 currSelectedListType = DeviceListType.ALL_DEVICES,
@@ -454,6 +471,8 @@ fun DiscoverDevicesContentNoDevicesFoundPreview() {
                 onFavDevice = {},
                 onRemoveFavDevice = {},
                 onConnectToDevice = {},
+                onToggleMenu = { },
+                onAboutClick = { },
                 modifier = Modifier,
             )
         }
@@ -466,8 +485,8 @@ fun DiscoverDevicesContentFavDevicesPreview() {
     LumenTheme {
         Surface {
             DiscoverDevicesContent(
-                innerPadding = PaddingValues(),
                 isScanning = false,
+                isMenuExpanded = false,
                 scanResults = emptyList(),
                 emptyScanResultTxt = "Start scanning to find favorite devices.",
                 currSelectedListType = DeviceListType.FAVORITE_DEVICES,
@@ -477,6 +496,8 @@ fun DiscoverDevicesContentFavDevicesPreview() {
                 onFavDevice = {},
                 onRemoveFavDevice = {},
                 onConnectToDevice = {},
+                onToggleMenu = { },
+                onAboutClick = { },
                 modifier = Modifier,
             )
         }
@@ -489,8 +510,8 @@ fun DiscoverDevicesContentSearchingFavDevicesPreview() {
     LumenTheme {
         Surface {
             DiscoverDevicesContent(
-                innerPadding = PaddingValues(),
                 isScanning = true,
+                isMenuExpanded = false,
                 scanResults = emptyList(),
                 emptyScanResultTxt = "Searching for favorites...",
                 currSelectedListType = DeviceListType.FAVORITE_DEVICES,
@@ -500,6 +521,8 @@ fun DiscoverDevicesContentSearchingFavDevicesPreview() {
                 onFavDevice = {},
                 onRemoveFavDevice = {},
                 onConnectToDevice = {},
+                onToggleMenu = { },
+                onAboutClick = { },
                 modifier = Modifier,
             )
         }
@@ -536,8 +559,8 @@ fun DiscoverDevicesContentFavDevicesFoundPreview() {
             )
 
             DiscoverDevicesContent(
-                innerPadding = PaddingValues(),
                 isScanning = false,
+                isMenuExpanded = false,
                 scanResults = mockScanResults,
                 emptyScanResultTxt = null,
                 currSelectedListType = DeviceListType.FAVORITE_DEVICES,
@@ -547,6 +570,8 @@ fun DiscoverDevicesContentFavDevicesFoundPreview() {
                 onFavDevice = {},
                 onRemoveFavDevice = {},
                 onConnectToDevice = {},
+                onToggleMenu = { },
+                onAboutClick = { },
                 modifier = Modifier,
             )
         }
@@ -559,8 +584,8 @@ fun DiscoverDevicesContentFavDevicesNoDevicesPreview() {
     LumenTheme {
         Surface {
             DiscoverDevicesContent(
-                innerPadding = PaddingValues(),
                 isScanning = false,
+                isMenuExpanded = false,
                 scanResults = emptyList(),
                 emptyScanResultTxt = "No favorite devices found.",
                 currSelectedListType = DeviceListType.FAVORITE_DEVICES,
@@ -570,6 +595,8 @@ fun DiscoverDevicesContentFavDevicesNoDevicesPreview() {
                 onFavDevice = {},
                 onRemoveFavDevice = {},
                 onConnectToDevice = {},
+                onToggleMenu = { },
+                onAboutClick = { },
                 modifier = Modifier,
             )
         }

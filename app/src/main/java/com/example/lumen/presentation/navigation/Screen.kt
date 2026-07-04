@@ -8,3 +8,5 @@ import kotlinx.serialization.Serializable
 @Serializable object DiscoverDevicesScreen
 
 @Serializable object LedControlScreen
+
+@Serializable object AboutScreen

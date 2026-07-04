@@ -24,7 +24,7 @@ import com.example.lumen.presentation.theme.spacing
 @Composable
 fun TopAppBar(
     title: String,
-    onNavIconClick: () -> Unit,
+    onNavigateBack: () -> Unit,
     onActionClick: () -> Unit,
     onClickTitle: () -> Unit,
     onLongClickTitle: () -> Unit,
@@ -44,7 +44,7 @@ fun TopAppBar(
             )
         },
         navigationIcon = {
-            IconButton(onClick = onNavIconClick) {
+            IconButton(onClick = onNavigateBack) {
                 Icon(
                     painter = painterResource(R.drawable.arrow_back_24px),
                     contentDescription = stringResource(R.string.navigate_back),
@@ -66,7 +66,7 @@ fun TopAppBarPreview() {
         Surface {
             TopAppBar(
                 title = "Test",
-                onNavIconClick = {},
+                onNavigateBack = {},
                 onActionClick = {},
                 onClickTitle = {},
                 onLongClickTitle = {},
