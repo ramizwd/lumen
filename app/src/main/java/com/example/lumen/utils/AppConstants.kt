@@ -9,4 +9,8 @@ object AppConstants {
 
     // Seems like the controller supports max 10 chars, anymore than that and it will freak out due to buffer overflow
     const val MAX_DEVICE_CHAR = 10
+
+    // Min and max LED num range
+    const val MIN_LED_NUM = 1
+    const val MAX_LED_NUM = 1024
 }

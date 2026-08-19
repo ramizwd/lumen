@@ -10,7 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -48,7 +48,7 @@ fun LedControlScreen(
     viewModel: LedControlViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
     val deviceConfig = DeviceConfiguration.fromWindowSizeClass(windowSizeClass)
     val currToastRef: MutableState<Toast?> = remember { mutableStateOf(null) }
 
@@ -99,6 +99,7 @@ fun LedControlScreen(
         onTurnLedOnClick = viewModel::turnLedOn,
         onTurnLedOffClick = viewModel::turnLedOff,
         setLedColor = viewModel::setLedColor,
+        setLedNum = viewModel::setLedNum,
         onSaveCustomColorSlot = viewModel::saveCustomColor,
         onChangeBrightness = viewModel::changeBrightness,
         onDisconnectClick = viewModel::disconnectFromDevice,
@@ -118,6 +119,7 @@ fun LedControlContent(
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     setLedColor: (String) -> Unit,
+    setLedNum: (Int) -> Unit,
     onSaveCustomColorSlot: (Int, String) -> Unit,
     onChangeBrightness: (Float) -> Unit,
     onDisconnectClick: () -> Unit,
@@ -195,10 +197,12 @@ fun LedControlContent(
                     onTurnLedOnClick = onTurnLedOnClick,
                     onTurnLedOffClick = onTurnLedOffClick,
                     setLedColor = setLedColor,
+                    setLedNum = setLedNum,
                     onSaveCustomColorSlot = onSaveCustomColorSlot,
                     onChangeBrightness = onChangeBrightness,
                     navController = navController,
                     startDestination = startDestination,
+                    onEvent = onEvent,
                     modifier = Modifier.fillMaxSize(),
                 )
             }
@@ -208,10 +212,12 @@ fun LedControlContent(
                 onTurnLedOnClick = onTurnLedOnClick,
                 onTurnLedOffClick = onTurnLedOffClick,
                 setLedColor = setLedColor,
+                setLedNum = setLedNum,
                 onSaveCustomColorSlot = onSaveCustomColorSlot,
                 onChangeBrightness = onChangeBrightness,
                 navController = navController,
                 startDestination = startDestination,
+                onEvent = onEvent,
                 modifier = Modifier.padding(contentPadding),
             )
         }
@@ -254,6 +260,7 @@ fun LedControlContentPreview() {
                 onTurnLedOnClick = { },
                 onTurnLedOffClick = { },
                 setLedColor = { },
+                setLedNum = { },
                 onSaveCustomColorSlot = { _, _ -> },
                 onChangeBrightness = { },
                 onDisconnectClick = {},
@@ -299,6 +306,7 @@ fun LedControlContentLandscapePreview() {
                 onTurnLedOnClick = { },
                 onTurnLedOffClick = { },
                 setLedColor = { },
+                setLedNum = { },
                 onSaveCustomColorSlot = { _, _ -> },
                 onChangeBrightness = { },
                 onDisconnectClick = {},
@@ -344,6 +352,7 @@ fun LedControlContentTabletLandscapePreview() {
                 onTurnLedOnClick = { },
                 onTurnLedOffClick = { },
                 setLedColor = { },
+                setLedNum = { },
                 onSaveCustomColorSlot = { _, _ -> },
                 onChangeBrightness = { },
                 onDisconnectClick = {},

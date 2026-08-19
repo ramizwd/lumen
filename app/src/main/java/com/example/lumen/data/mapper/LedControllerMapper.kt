@@ -18,7 +18,7 @@ fun ByteArray.toLedControllerState(): LedControllerState {
     val channel = this[5]
     val pixelCountMSB = this[6].toUByte().toInt()
     val pixelCountLSB = this[7].toUByte().toInt()
-    val pixelCount = (pixelCountMSB shl 8) or pixelCountLSB
+    val totalActivePixels = (pixelCountMSB shl 8) or pixelCountLSB
     val red = this[8].toHexString()
     val green = this[9].toHexString()
     val blue = this[10].toHexString()
@@ -31,7 +31,7 @@ fun ByteArray.toLedControllerState(): LedControllerState {
         brightness = brightness,
         icModel = icMode,
         channel = channel,
-        pixelCount = pixelCount,
+        totalActivePixels = totalActivePixels,
         red = red,
         green = green,
         blue = blue,

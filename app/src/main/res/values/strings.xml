@@ -39,8 +39,11 @@
     <string name="navigate_to_controls">Navigate to controls</string>
     <string name="navigate_back">Navigate back</string>
     <string name="disconnect">Disconnect</string>
-    <string name="pixels">Pixels</string>
-    <string name="in_control">in control</string>
+    <string name="active">Active</string>
+    <plurals name="pixel">
+        <item quantity="one">pixel</item>
+        <item quantity="other">pixels</item>
+    </plurals>
     <string name="rename_device">Rename device</string>
     <string name="characters_max">Use %d characters or fewer</string>
     <string name="long_press_to_rename">Long press to rename</string>
@@ -73,4 +76,8 @@
     <string name="license">License</string>
     <string name="view_source_code">View source code</string>
     <string name="view_license">View license</string>
+    <string name="set_active_pixel_range">Set active pixel range</string>
+    <string name="pixel_range">Input a number between %d and %d</string>
+    <string name="active_pixel_set">Active pixels set</string>
+    <string name="error_setting_pixel_count">Error setting pixel count</string>
 </resources>

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.lumen.R
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.usecase.config.SetDeviceNameUseCase
+import com.example.lumen.domain.ble.usecase.config.SetLedNumUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
 import com.example.lumen.presentation.common.utils.UiText
@@ -28,6 +29,7 @@ class LedControlViewModel @Inject constructor(
     private val connectionUseCases: ConnectionUseCases,
     private val controlUseCases: ControlUseCases,
     private val setDeviceNameUseCase: SetDeviceNameUseCase,
+    private val setLedNumUseCase: SetLedNumUseCase,
 ) : ViewModel() {
     companion object {
         private const val LOG_TAG = "LedControlViewModel"
@@ -61,7 +63,7 @@ class LedControlViewModel @Inject constructor(
                     isLedOn = initState?.isOn ?: false,
                     ledHexColor = initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
                     brightnessValue = initState?.brightness ?: 0f,
-                    pixelCount = initState?.pixelCount ?: 0,
+                    totalActivePixels = initState?.totalActivePixels ?: 0,
                 )
             }
         }
@@ -90,6 +92,9 @@ class LedControlViewModel @Inject constructor(
         when (event) {
             is LedControlUiEvent.ToggleRenameDeviceDialog -> {
                 _uiState.update { it.copy(showRenameDeviceDialog = event.show) }
+            }
+            is LedControlUiEvent.TogglePixelControlDialog -> {
+                _uiState.update { it.copy(showPixelControlDialog = event.show) }
             }
         }
     }
@@ -153,6 +158,28 @@ class LedControlViewModel @Inject constructor(
                         it.copy(
                             infoMessage =
                                 UiText.StringResource(R.string.error_renaming_device),
+                        )
+                    }
+                }
+        }
+    }
+
+    fun setLedNum(pxlCount: Int) {
+        viewModelScope.launch {
+            val res = setLedNumUseCase(pxlCount)
+            res
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            infoMessage = UiText.StringResource(R.string.active_pixel_set),
+                            totalActivePixels = pxlCount,
+                        )
+                    }
+                }.onFailure {
+                    _uiState.update {
+                        it.copy(
+                            infoMessage =
+                                UiText.StringResource(R.string.error_setting_pixel_count),
                         )
                     }
                 }

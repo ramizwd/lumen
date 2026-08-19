@@ -5,6 +5,7 @@ import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.LedControllerState
 import com.example.lumen.domain.ble.usecase.config.SetDeviceNameUseCase
+import com.example.lumen.domain.ble.usecase.config.SetLedNumUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.connection.DisconnectUseCase
 import com.example.lumen.domain.ble.usecase.connection.ObserveSelectedDeviceUseCase
@@ -53,7 +54,7 @@ class LedControlViewModelTest {
             brightness = 50f,
             icModel = 1,
             channel = 1,
-            pixelCount = 50,
+            totalActivePixels = 50,
             red = "ff",
             green = "00",
             blue = "00",
@@ -66,6 +67,7 @@ class LedControlViewModelTest {
     private val customColorsFlow = MutableStateFlow<List<CustomColorSlot>>(emptyList())
 
     private lateinit var setDeviceNameUseCase: SetDeviceNameUseCase
+    private lateinit var setLedNumUseCase: SetLedNumUseCase
     private lateinit var observeSelectedDeviceUseCase: ObserveSelectedDeviceUseCase
     private lateinit var observeControllerStateUseCase: ObserveControllerStateUseCase
     private lateinit var observeBrightnessUseCase: ObserveBrightnessUseCase
@@ -83,6 +85,7 @@ class LedControlViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
         setDeviceNameUseCase = mockk()
+        setLedNumUseCase = mockk()
         observeSelectedDeviceUseCase = mockk()
         observeControllerStateUseCase = mockk()
         observeBrightnessUseCase = mockk()
@@ -94,6 +97,7 @@ class LedControlViewModelTest {
         disconnectUseCase = mockk(relaxed = true)
 
         coEvery { setDeviceNameUseCase(any()) } returns Result.success(Unit)
+        coEvery { setLedNumUseCase(any()) } returns Result.success(Unit)
         every { observeSelectedDeviceUseCase() } returns deviceFlow
         every { observeControllerStateUseCase() } returns controllerStateFlow
         every { observeBrightnessUseCase(any()) } returns brightnessFlow
@@ -127,7 +131,12 @@ class LedControlViewModelTest {
                 getCustomColorsUseCase,
             )
 
-        viewModel = LedControlViewModel(connectionUseCases, controlUseCases, setDeviceNameUseCase)
+        viewModel = LedControlViewModel(
+            connectionUseCases,
+            controlUseCases,
+            setDeviceNameUseCase,
+            setLedNumUseCase,
+        )
     }
 
     @AfterEach
@@ -147,8 +156,8 @@ class LedControlViewModelTest {
                 state.brightnessValue,
             )
             assertEquals(
-                controllerState.pixelCount,
-                state.pixelCount,
+                controllerState.totalActivePixels,
+                state.totalActivePixels,
             )
             assertEquals(
                 "${controllerState.red}${controllerState.green}${controllerState.blue}",
@@ -169,7 +178,7 @@ class LedControlViewModelTest {
             assertFalse(viewModel.uiState.value.isLedOn)
             assertEquals("ffffff", viewModel.uiState.value.ledHexColor)
             assertEquals(0f, viewModel.uiState.value.brightnessValue)
-            assertEquals(0, viewModel.uiState.value.pixelCount)
+            assertEquals(0, viewModel.uiState.value.totalActivePixels)
         }
 
     @Test
@@ -282,6 +291,39 @@ class LedControlViewModelTest {
             // Then
             assertEquals(
                 UiText.StringResource(R.string.error_renaming_device),
+                viewModel.uiState.value.infoMessage,
+            )
+        }
+
+    @Test
+    fun `setLedNum on failure updates infoMessage state with error text`() =
+        runTest {
+            // Given
+            coEvery { setLedNumUseCase(any()) } returns
+                Result.failure(Exception("Error"))
+
+            // When
+            viewModel.setLedNum(1)
+
+            // Then
+            assertEquals(
+                UiText.StringResource(R.string.error_setting_pixel_count),
+                viewModel.uiState.value.infoMessage,
+            )
+        }
+
+    @Test
+    fun `setLedNum returns an error message if LED num is invalid`() =
+        runTest {
+            // Given
+            coEvery { setLedNumUseCase(any()) } returns Result.failure(Exception("Error"))
+
+            // When
+            viewModel.setLedNum(0) // valid range: 1 - 1024
+
+            // Then
+            assertEquals(
+                UiText.StringResource(R.string.error_setting_pixel_count),
                 viewModel.uiState.value.infoMessage,
             )
         }

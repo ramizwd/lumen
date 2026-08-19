@@ -7,4 +7,8 @@ sealed interface LedControlUiEvent {
     data class ToggleRenameDeviceDialog(
         val show: Boolean,
     ) : LedControlUiEvent
+
+    data class TogglePixelControlDialog(
+        val show: Boolean,
+    ) : LedControlUiEvent
 }

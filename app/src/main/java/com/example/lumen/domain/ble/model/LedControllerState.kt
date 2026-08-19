@@ -10,7 +10,7 @@ data class LedControllerState(
     val brightness: Float,
     val icModel: Byte,
     val channel: Byte,
-    val pixelCount: Int,
+    val totalActivePixels: Int,
     val red: String,
     val green: String,
     val blue: String,
