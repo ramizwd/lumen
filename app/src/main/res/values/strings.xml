@@ -80,4 +80,8 @@
     <string name="pixel_range">Input a number between %d and %d</string>
     <string name="active_pixel_set">Active pixels set</string>
     <string name="error_setting_pixel_count">Error setting pixel count</string>
+    <string name="hardware_configuration">Hardware configuration</string>
+    <string name="ic_model">IC Model</string>
+    <string name="rgb_sequence">RGB Sequence</string>
+    <string name="done">Done</string>
 </resources>

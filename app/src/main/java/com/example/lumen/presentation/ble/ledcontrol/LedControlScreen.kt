@@ -29,6 +29,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
+import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.presentation.ble.ledcontrol.navigation.BottomNavBar
 import com.example.lumen.presentation.ble.ledcontrol.navigation.BottomNavItem
 import com.example.lumen.presentation.ble.ledcontrol.navigation.LedControlNavHost
@@ -100,6 +102,8 @@ fun LedControlScreen(
         onTurnLedOffClick = viewModel::turnLedOff,
         setLedColor = viewModel::setLedColor,
         setLedNum = viewModel::setLedNum,
+        setIcModel = viewModel::setIcModel,
+        setRgbSequence = viewModel::setRgbSequence,
         onSaveCustomColorSlot = viewModel::saveCustomColor,
         onChangeBrightness = viewModel::changeBrightness,
         onDisconnectClick = viewModel::disconnectFromDevice,
@@ -120,6 +124,8 @@ fun LedControlContent(
     onTurnLedOffClick: () -> Unit,
     setLedColor: (String) -> Unit,
     setLedNum: (Int) -> Unit,
+    setIcModel: (IcModel) -> Unit,
+    setRgbSequence: (RgbSequence) -> Unit,
     onSaveCustomColorSlot: (Int, String) -> Unit,
     onChangeBrightness: (Float) -> Unit,
     onDisconnectClick: () -> Unit,
@@ -198,6 +204,8 @@ fun LedControlContent(
                     onTurnLedOffClick = onTurnLedOffClick,
                     setLedColor = setLedColor,
                     setLedNum = setLedNum,
+                    setIcModel = setIcModel,
+                    setRgbSequence = setRgbSequence,
                     onSaveCustomColorSlot = onSaveCustomColorSlot,
                     onChangeBrightness = onChangeBrightness,
                     navController = navController,
@@ -213,6 +221,8 @@ fun LedControlContent(
                 onTurnLedOffClick = onTurnLedOffClick,
                 setLedColor = setLedColor,
                 setLedNum = setLedNum,
+                setIcModel = setIcModel,
+                setRgbSequence = setRgbSequence,
                 onSaveCustomColorSlot = onSaveCustomColorSlot,
                 onChangeBrightness = onChangeBrightness,
                 navController = navController,
@@ -261,6 +271,8 @@ fun LedControlContentPreview() {
                 onTurnLedOffClick = { },
                 setLedColor = { },
                 setLedNum = { },
+                setIcModel = { },
+                setRgbSequence = { },
                 onSaveCustomColorSlot = { _, _ -> },
                 onChangeBrightness = { },
                 onDisconnectClick = {},
@@ -307,6 +319,8 @@ fun LedControlContentLandscapePreview() {
                 onTurnLedOffClick = { },
                 setLedColor = { },
                 setLedNum = { },
+                setIcModel = { },
+                setRgbSequence = { },
                 onSaveCustomColorSlot = { _, _ -> },
                 onChangeBrightness = { },
                 onDisconnectClick = {},
@@ -353,6 +367,8 @@ fun LedControlContentTabletLandscapePreview() {
                 onTurnLedOffClick = { },
                 setLedColor = { },
                 setLedNum = { },
+                setIcModel = { },
+                setRgbSequence = { },
                 onSaveCustomColorSlot = { _, _ -> },
                 onChangeBrightness = { },
                 onDisconnectClick = {},

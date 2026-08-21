@@ -3,9 +3,14 @@ package com.example.lumen.presentation.ble.ledcontrol
 import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
+import com.example.lumen.domain.ble.model.IcModel
 import com.example.lumen.domain.ble.model.LedControllerState
+import com.example.lumen.domain.ble.model.RgbSequence
+import com.example.lumen.domain.ble.usecase.config.ConfigUseCases
 import com.example.lumen.domain.ble.usecase.config.SetDeviceNameUseCase
+import com.example.lumen.domain.ble.usecase.config.SetIcModelUseCase
 import com.example.lumen.domain.ble.usecase.config.SetLedNumUseCase
+import com.example.lumen.domain.ble.usecase.config.SetRgbSequenceUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.connection.DisconnectUseCase
 import com.example.lumen.domain.ble.usecase.connection.ObserveSelectedDeviceUseCase
@@ -52,8 +57,8 @@ class LedControlViewModelTest {
             preset = 1,
             speed = 1,
             brightness = 50f,
-            icModel = 1,
-            channel = 1,
+            icModel = IcModel.TM1804,
+            rgbSeq = RgbSequence.RGB,
             totalActivePixels = 50,
             red = "ff",
             green = "00",
@@ -76,6 +81,8 @@ class LedControlViewModelTest {
     private lateinit var changeBrightnessUseCase: ChangeBrightnessUseCase
     private lateinit var saveCustomColorUseCase: SaveCustomColorUseCase
     private lateinit var setLedColorUseCase: SetLedColorUseCase
+    private lateinit var setIcModelUseCase: SetIcModelUseCase
+    private lateinit var setRgbSequenceUseCase: SetRgbSequenceUseCase
     private lateinit var disconnectUseCase: DisconnectUseCase
 
     private lateinit var viewModel: LedControlViewModel
@@ -94,6 +101,8 @@ class LedControlViewModelTest {
         changeBrightnessUseCase = mockk(relaxed = true)
         saveCustomColorUseCase = mockk(relaxed = true)
         setLedColorUseCase = mockk(relaxed = true)
+        setIcModelUseCase = mockk(relaxed = true)
+        setRgbSequenceUseCase = mockk(relaxed = true)
         disconnectUseCase = mockk(relaxed = true)
 
         coEvery { setDeviceNameUseCase(any()) } returns Result.success(Unit)
@@ -131,11 +140,17 @@ class LedControlViewModelTest {
                 getCustomColorsUseCase,
             )
 
+        val configUseCases = ConfigUseCases(
+            setDeviceNameUseCase,
+            setLedNumUseCase,
+            setIcModelUseCase,
+            setRgbSequenceUseCase,
+        )
+
         viewModel = LedControlViewModel(
             connectionUseCases,
             controlUseCases,
-            setDeviceNameUseCase,
-            setLedNumUseCase,
+            configUseCases,
         )
     }
 
@@ -241,6 +256,16 @@ class LedControlViewModelTest {
 
             viewModel.onEvent(LedControlUiEvent.ToggleRenameDeviceDialog(false))
             assertFalse(viewModel.uiState.value.showRenameDeviceDialog)
+        }
+
+    @Test
+    fun `ToggleHardwareConfigDialog updates dialog visibility state`() =
+        runTest {
+            viewModel.onEvent(LedControlUiEvent.ToggleHardwareConfigDialog(true))
+            assertTrue(viewModel.uiState.value.showHardwareConfigDialog)
+
+            viewModel.onEvent(LedControlUiEvent.ToggleHardwareConfigDialog(false))
+            assertFalse(viewModel.uiState.value.showHardwareConfigDialog)
         }
 
     @Test
@@ -365,5 +390,25 @@ class LedControlViewModelTest {
 
             // Then
             coVerify(exactly = 0) { saveCustomColorUseCase(device.address, slot) }
+        }
+
+    @Test
+    fun `setIcModel updates state and calls use case`() =
+        runTest {
+            val expected = IcModel.SK6812
+            viewModel.setIcModel(expected)
+
+            assertEquals(expected, viewModel.uiState.value.icModel)
+            coVerify(exactly = 1) { setIcModelUseCase(expected) }
+        }
+
+    @Test
+    fun `setRgbSequence updates state and calls use case`() =
+        runTest {
+            val expected = RgbSequence.BGR
+            viewModel.setRgbSequence(expected)
+
+            assertEquals(expected, viewModel.uiState.value.rgbSeq)
+            coVerify(exactly = 1) { setRgbSequenceUseCase(expected) }
         }
 }

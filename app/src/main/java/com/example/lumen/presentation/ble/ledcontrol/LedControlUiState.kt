@@ -2,6 +2,8 @@ package com.example.lumen.presentation.ble.ledcontrol
 
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
+import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.presentation.common.utils.UiText
 
 /**
@@ -12,9 +14,12 @@ import com.example.lumen.presentation.common.utils.UiText
  * [ledHexColor] Holds the current hex color of the LED controller
  * [brightnessValue] Holds the current brightness value of the LED controller
  * [totalActivePixels] Holds the active LED strip pixel count
+ * [icModel] Holds the current IC model
+ * [rgbSeq] Holds the current RGB sequence
  * [infoMessage] holds general info messages related to write operations
  * [showRenameDeviceDialog] toggles rename device dialog
  * [showPixelControlDialog] toggles pixel control dialog
+ * [showHardwareConfigDialog] toggles hardware config dialog (IC model & RGB seq)
  */
 data class LedControlUiState(
     val selectedDevice: BleDevice? = null,
@@ -23,7 +28,10 @@ data class LedControlUiState(
     val ledHexColor: String = "ffffff",
     val brightnessValue: Float = 0f,
     val totalActivePixels: Int = 0,
+    val icModel: IcModel = IcModel.WS2811,
+    val rgbSeq: RgbSequence = RgbSequence.RGB,
     val infoMessage: UiText? = null,
     val showRenameDeviceDialog: Boolean = false,
     val showPixelControlDialog: Boolean = false,
+    val showHardwareConfigDialog: Boolean = false,
 )

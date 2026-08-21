@@ -11,4 +11,8 @@ sealed interface LedControlUiEvent {
     data class TogglePixelControlDialog(
         val show: Boolean,
     ) : LedControlUiEvent
+
+    data class ToggleHardwareConfigDialog(
+        val show: Boolean,
+    ) : LedControlUiEvent
 }
