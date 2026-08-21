@@ -2,13 +2,17 @@ package com.example.lumen.presentation.ble.ledcontrol
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -18,15 +22,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.R
+import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.presentation.ble.ledcontrol.components.BrightnessSlider
+import com.example.lumen.presentation.ble.ledcontrol.components.HardwareConfigDialog
 import com.example.lumen.presentation.ble.ledcontrol.components.LedToggleButton
 import com.example.lumen.presentation.common.components.DigitFieldDialog
+import com.example.lumen.presentation.common.components.PlainTooltip
 import com.example.lumen.presentation.common.components.SliderOrientation
 import com.example.lumen.presentation.common.utils.DeviceConfiguration
 import com.example.lumen.presentation.theme.LumenTheme
@@ -41,6 +50,8 @@ fun ControlScreen(
     onTurnLedOffClick: () -> Unit,
     onChangeBrightness: (Float) -> Unit,
     setLedNum: (Int) -> Unit,
+    setIcModel: (IcModel) -> Unit,
+    setRgbSequence: (RgbSequence) -> Unit,
     onEvent: (LedControlUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -72,12 +83,25 @@ fun ControlScreen(
         )
     }
 
+    if (uiState.showHardwareConfigDialog) {
+        HardwareConfigDialog(
+            currentIcModel = uiState.icModel,
+            currentRgbSeq = uiState.rgbSeq,
+            onIcModelChange = setIcModel,
+            onRgbSeqChange = setRgbSequence,
+            onDismissRequest = {
+                onEvent(LedControlUiEvent.ToggleHardwareConfigDialog(false))
+            },
+        )
+    }
+
     ControlContent(
         deviceConfig = deviceConfig,
         isOn = isOn,
         pixelCount = totalActivePixels,
         brightnessValue = brightnessValue,
         onPixelCountClick = { onEvent(LedControlUiEvent.TogglePixelControlDialog(true)) },
+        onHardwareConfigClick = { onEvent(LedControlUiEvent.ToggleHardwareConfigDialog(true)) },
         onTurnLedOnClick = onTurnLedOnClick,
         onTurnLedOffClick = onTurnLedOffClick,
         onChangeBrightness = onChangeBrightness,
@@ -92,6 +116,7 @@ fun ControlContent(
     pixelCount: Int,
     brightnessValue: Float,
     onPixelCountClick: () -> Unit,
+    onHardwareConfigClick: () -> Unit,
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     onChangeBrightness: (Float) -> Unit,
@@ -107,11 +132,15 @@ fun ControlContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
-                PixelCountText(
-                    enabled = isOn,
-                    pixelCount,
-                    onPixelCountClick,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    PixelCountText(
+                        enabled = isOn,
+                        pixelCount = pixelCount,
+                        onPixelCountClick = onPixelCountClick,
+                    )
+                }
 
                 BrightnessSlider(
                     enabled = isOn,
@@ -119,12 +148,39 @@ fun ControlContent(
                     onChangeBrightness = onChangeBrightness,
                 )
 
-                LedToggleButton(
-                    isOn = isOn,
-                    onTurnLedOnClick = onTurnLedOnClick,
-                    onTurnLedOffClick = onTurnLedOffClick,
-                    modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium),
-                )
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    LedToggleButton(
+                        isOn = isOn,
+                        onTurnLedOnClick = onTurnLedOnClick,
+                        onTurnLedOffClick = onTurnLedOffClick,
+                        modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium),
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .padding(end = MaterialTheme.spacing.medium),
+                    ) {
+                        PlainTooltip(
+                            text = stringResource(R.string.hardware_configuration),
+                            content = {
+                                FilledIconButton(
+                                    onClick = onHardwareConfigClick,
+                                    enabled = isOn,
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.settings_24px),
+                                        contentDescription =
+                                            stringResource(R.string.hardware_configuration),
+                                    )
+                                }
+                            },
+                        )
+                    }
+                }
             }
         }
 
@@ -134,11 +190,38 @@ fun ControlContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceAround,
             ) {
-                PixelCountText(
-                    enabled = isOn,
-                    pixelCount,
-                    onPixelCountClick,
-                )
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    PixelCountText(
+                        enabled = isOn,
+                        pixelCount = pixelCount,
+                        onPixelCountClick = onPixelCountClick,
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .padding(end = MaterialTheme.spacing.medium),
+                    ) {
+                        PlainTooltip(
+                            text = stringResource(R.string.hardware_configuration),
+                            content = {
+                                FilledIconButton(
+                                    onClick = onHardwareConfigClick,
+                                    enabled = isOn,
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.settings_24px),
+                                        contentDescription =
+                                            stringResource(R.string.hardware_configuration),
+                                    )
+                                }
+                            },
+                        )
+                    }
+                }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -214,6 +297,7 @@ fun ControlContentPreview() {
                 onTurnLedOffClick = {},
                 onChangeBrightness = {},
                 onPixelCountClick = {},
+                onHardwareConfigClick = {},
             )
         }
     }
@@ -233,6 +317,7 @@ fun ControlContentLandscapePreview() {
                 onTurnLedOffClick = {},
                 onChangeBrightness = {},
                 onPixelCountClick = {},
+                onHardwareConfigClick = {},
             )
         }
     }

@@ -4,8 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lumen.R
 import com.example.lumen.domain.ble.model.CustomColorSlot
-import com.example.lumen.domain.ble.usecase.config.SetDeviceNameUseCase
-import com.example.lumen.domain.ble.usecase.config.SetLedNumUseCase
+import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.RgbSequence
+import com.example.lumen.domain.ble.usecase.config.ConfigUseCases
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
 import com.example.lumen.presentation.common.utils.UiText
@@ -28,8 +29,7 @@ import javax.inject.Inject
 class LedControlViewModel @Inject constructor(
     private val connectionUseCases: ConnectionUseCases,
     private val controlUseCases: ControlUseCases,
-    private val setDeviceNameUseCase: SetDeviceNameUseCase,
-    private val setLedNumUseCase: SetLedNumUseCase,
+    private val configUseCases: ConfigUseCases,
 ) : ViewModel() {
     companion object {
         private const val LOG_TAG = "LedControlViewModel"
@@ -64,6 +64,8 @@ class LedControlViewModel @Inject constructor(
                     ledHexColor = initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
                     brightnessValue = initState?.brightness ?: 0f,
                     totalActivePixels = initState?.totalActivePixels ?: 0,
+                    icModel = initState?.icModel ?: IcModel.WS2811,
+                    rgbSeq = initState?.rgbSeq ?: RgbSequence.RGB,
                 )
             }
         }
@@ -95,6 +97,9 @@ class LedControlViewModel @Inject constructor(
             }
             is LedControlUiEvent.TogglePixelControlDialog -> {
                 _uiState.update { it.copy(showPixelControlDialog = event.show) }
+            }
+            is LedControlUiEvent.ToggleHardwareConfigDialog -> {
+                _uiState.update { it.copy(showHardwareConfigDialog = event.show) }
             }
         }
     }
@@ -147,7 +152,7 @@ class LedControlViewModel @Inject constructor(
 
     fun setDeviceName(name: String) {
         viewModelScope.launch {
-            val res = setDeviceNameUseCase(name)
+            val res = configUseCases.setDeviceNameUseCase(name)
             res
                 .onSuccess {
                     _uiState.update {
@@ -166,7 +171,7 @@ class LedControlViewModel @Inject constructor(
 
     fun setLedNum(pxlCount: Int) {
         viewModelScope.launch {
-            val res = setLedNumUseCase(pxlCount)
+            val res = configUseCases.setLedNumUseCase(pxlCount)
             res
                 .onSuccess {
                     _uiState.update {
@@ -183,6 +188,20 @@ class LedControlViewModel @Inject constructor(
                         )
                     }
                 }
+        }
+    }
+
+    fun setIcModel(icModel: IcModel) {
+        _uiState.update { it.copy(icModel = icModel) }
+        viewModelScope.launch {
+            configUseCases.setIcModelUseCase(icModel)
+        }
+    }
+
+    fun setRgbSequence(rgbSeq: RgbSequence) {
+        _uiState.update { it.copy(rgbSeq = rgbSeq) }
+        viewModelScope.launch {
+            configUseCases.setRgbSequenceUseCase(rgbSeq)
         }
     }
 

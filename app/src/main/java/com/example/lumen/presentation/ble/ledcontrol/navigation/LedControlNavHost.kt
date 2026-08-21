@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.presentation.ble.ledcontrol.ColorPickerScreen
 import com.example.lumen.presentation.ble.ledcontrol.ControlScreen
 import com.example.lumen.presentation.ble.ledcontrol.LedControlUiEvent
@@ -22,6 +24,8 @@ fun LedControlNavHost(
     onTurnLedOffClick: () -> Unit,
     setLedColor: (String) -> Unit,
     setLedNum: (Int) -> Unit,
+    setIcModel: (IcModel) -> Unit,
+    setRgbSequence: (RgbSequence) -> Unit,
     onSaveCustomColorSlot: (Int, String) -> Unit,
     onChangeBrightness: (Float) -> Unit,
     navController: NavHostController,
@@ -53,6 +57,8 @@ fun LedControlNavHost(
                 onTurnLedOffClick = onTurnLedOffClick,
                 onChangeBrightness = onChangeBrightness,
                 setLedNum = setLedNum,
+                setIcModel = setIcModel,
+                setRgbSequence = setRgbSequence,
                 onEvent = onEvent,
             )
         }

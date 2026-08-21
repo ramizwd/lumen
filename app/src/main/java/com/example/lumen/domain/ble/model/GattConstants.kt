@@ -24,6 +24,10 @@ object GattConstants {
 
     val SET_LED_NUM_COMMAND: ByteArray = byteArrayOf(0x00, 0x2D.toByte())
 
+    val SET_IC_MODEL_COMMAND: ByteArray = byteArrayOf(0x00, 0x00, 0x1C.toByte())
+
+    val SET_RGB_SEQ_COMMAND: ByteArray = byteArrayOf(0x00, 0x00, 0x3C.toByte())
+
     // Padding values (0s) and command byte (2A) of brightness hex
     const val BRIGHTNESS_SUFFIX_HEX = "00002A"
 
