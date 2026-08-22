@@ -14,15 +14,25 @@ class SetLedEffectUseCase @Inject constructor(
         private const val LOG_TAG = "SetLedEffectUseCase"
     }
 
-    suspend operator fun invoke(value: Int) {
-        val command = byteArrayOf(value.toByte()) + SET_EFFECT_COMMAND
+    suspend operator fun invoke(value: Int): Result<Unit> =
+        try {
+            require(value in 1..120) {
+                "Effect value must be between 1 and 120"
+            }
 
-        Timber.tag(LOG_TAG).d("Setting effect number: ${command.contentToString()}")
+            val command = byteArrayOf(value.toByte()) + SET_EFFECT_COMMAND
 
-        bleGattController.writeCharacteristic(
-            SERVICE_UUID,
-            CHARACTERISTIC_UUID,
-            command
-        )
-    }
+            Timber.tag(LOG_TAG).d("Setting effect number: ${command.contentToString()}")
+
+            bleGattController.writeCharacteristic(
+                SERVICE_UUID,
+                CHARACTERISTIC_UUID,
+                command
+            )
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Timber.tag(LOG_TAG).e(e, "Failed to set LED effect")
+            Result.failure(e)
+        }
 }

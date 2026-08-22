@@ -10,6 +10,7 @@ import com.example.lumen.domain.ble.usecase.config.ConfigUseCases
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
 import com.example.lumen.presentation.common.utils.UiText
+import com.example.lumen.utils.AppConstants.STATIC_COLOR_VALUE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -62,7 +63,7 @@ class LedControlViewModel @Inject constructor(
                 state.copy(
                     isLedOn = initState?.isOn ?: false,
                     ledHexColor = initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
-                    ledEffectValue = initState?.preset?.toInt() ?: 1,
+                    ledEffectValue = initState?.preset ?: STATIC_COLOR_VALUE,
                     brightnessValue = initState?.brightness ?: 0f,
                     totalActivePixels = initState?.totalActivePixels ?: 0,
                     icModel = initState?.icModel ?: IcModel.WS2811,
@@ -120,9 +121,13 @@ class LedControlViewModel @Inject constructor(
     }
 
     fun setLedColor(hexColor: String) {
-        _uiState.update { it.copy(ledHexColor = hexColor) }
+        _uiState.update {
+            it.copy(
+                ledHexColor = hexColor,
+                ledEffectValue = STATIC_COLOR_VALUE,
+            )
+        }
         viewModelScope.launch {
-            Timber.tag(LOG_TAG).i("setLedColor called")
             controlUseCases.setLedColorUseCase(hexColor)
         }
     }
@@ -140,9 +145,20 @@ class LedControlViewModel @Inject constructor(
     }
 
     fun setLedEffect(value: Int) {
-        _uiState.update { it.copy(ledEffectValue = value) }
         viewModelScope.launch {
-            controlUseCases.setLedEffectUseCase(value)
+            val res = controlUseCases.setLedEffectUseCase(value)
+            res.onSuccess {
+                _uiState.update {
+                    it.copy(ledEffectValue = value)
+                }
+            }.onFailure {
+                _uiState.update {
+                    it.copy(
+                        infoMessage =
+                            UiText.StringResource(R.string.error_setting_effect),
+                    )
+                }
+            }
         }
     }
 

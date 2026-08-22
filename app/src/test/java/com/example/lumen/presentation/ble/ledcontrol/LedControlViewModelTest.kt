@@ -21,8 +21,10 @@ import com.example.lumen.domain.ble.usecase.control.ObserveBrightnessUseCase
 import com.example.lumen.domain.ble.usecase.control.ObserveControllerStateUseCase
 import com.example.lumen.domain.ble.usecase.control.SaveCustomColorUseCase
 import com.example.lumen.domain.ble.usecase.control.SetLedColorUseCase
+import com.example.lumen.domain.ble.usecase.control.SetLedEffectUseCase
 import com.example.lumen.domain.ble.usecase.control.TurnLedOnOffUseCase
 import com.example.lumen.presentation.common.utils.UiText
+import com.example.lumen.utils.AppConstants.STATIC_COLOR_VALUE
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -81,6 +83,7 @@ class LedControlViewModelTest {
     private lateinit var changeBrightnessUseCase: ChangeBrightnessUseCase
     private lateinit var saveCustomColorUseCase: SaveCustomColorUseCase
     private lateinit var setLedColorUseCase: SetLedColorUseCase
+    private lateinit var setLedEffectUseCase: SetLedEffectUseCase
     private lateinit var setIcModelUseCase: SetIcModelUseCase
     private lateinit var setRgbSequenceUseCase: SetRgbSequenceUseCase
     private lateinit var disconnectUseCase: DisconnectUseCase
@@ -93,6 +96,7 @@ class LedControlViewModelTest {
 
         setDeviceNameUseCase = mockk()
         setLedNumUseCase = mockk()
+        setLedEffectUseCase = mockk()
         observeSelectedDeviceUseCase = mockk()
         observeControllerStateUseCase = mockk()
         observeBrightnessUseCase = mockk()
@@ -107,6 +111,7 @@ class LedControlViewModelTest {
 
         coEvery { setDeviceNameUseCase(any()) } returns Result.success(Unit)
         coEvery { setLedNumUseCase(any()) } returns Result.success(Unit)
+        coEvery { setLedEffectUseCase(any()) } returns Result.success(Unit)
         every { observeSelectedDeviceUseCase() } returns deviceFlow
         every { observeControllerStateUseCase() } returns controllerStateFlow
         every { observeBrightnessUseCase(any()) } returns brightnessFlow
@@ -138,6 +143,7 @@ class LedControlViewModelTest {
                 observeControllerStateUseCase,
                 saveCustomColorUseCase,
                 getCustomColorsUseCase,
+                setLedEffectUseCase,
             )
 
         val configUseCases = ConfigUseCases(
@@ -242,10 +248,39 @@ class LedControlViewModelTest {
     fun `setLedColor updates state and calls use case`() =
         runTest {
             val expectedHex = "ff00ff"
+            val expectedEffectVal = STATIC_COLOR_VALUE
             viewModel.setLedColor(expectedHex)
 
             assertEquals(expectedHex, viewModel.uiState.value.ledHexColor)
+            assertEquals(expectedEffectVal, viewModel.uiState.value.ledEffectValue)
             coVerify(exactly = 1) { setLedColorUseCase(expectedHex) }
+        }
+
+    @Test
+    fun `setLedEffect on success updates state and calls use case`() =
+        runTest {
+            val expected = 2
+            viewModel.setLedEffect(expected)
+
+            assertEquals(expected, viewModel.uiState.value.ledEffectValue)
+            coVerify(exactly = 1) { setLedEffectUseCase(expected) }
+        }
+
+    @Test
+    fun `setLedEffect on failure updates infoMessage state with error text`() =
+        runTest {
+            // Given
+            coEvery { setLedEffectUseCase(any()) } returns
+                    Result.failure(Exception("Error"))
+
+            // When
+            viewModel.setLedEffect(200) // out of range (1-120) value
+
+            // Then
+            assertEquals(
+                UiText.StringResource(R.string.error_setting_effect),
+                viewModel.uiState.value.infoMessage,
+            )
         }
 
     @Test

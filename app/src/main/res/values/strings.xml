@@ -86,4 +86,5 @@
     <string name="ic_model">IC Model</string>
     <string name="rgb_sequence">RGB Sequence</string>
     <string name="done">Done</string>
+    <string name="error_setting_effect">Error setting an effect</string>
 </resources>

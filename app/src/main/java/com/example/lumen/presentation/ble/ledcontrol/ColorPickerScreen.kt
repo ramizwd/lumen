@@ -43,7 +43,6 @@ import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
 import com.github.skydoves.colorpicker.compose.ColorPickerController
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
-import timber.log.Timber
 
 @Composable
 fun ColorPickerScreen(
@@ -190,6 +189,7 @@ fun ColorPickerContent(
                 ColorRows(
                     enabled = isOn,
                     currentHexColor = ledHexColor,
+                    currentLedEffect = currentLedEffect,
                     presetColors = presetColors,
                     selectedSlot = selectedSlot,
                     customColorSlots = customColorSlots,
@@ -256,6 +256,7 @@ fun ColorPickerContent(
                         enabled = isOn,
                         isCompact = true,
                         currentHexColor = ledHexColor,
+                        currentLedEffect = currentLedEffect,
                         presetColors = presetColors,
                         selectedSlot = selectedSlot,
                         customColorSlots = customColorSlots,

@@ -28,11 +28,13 @@ import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.PresetLedColors
 import com.example.lumen.presentation.common.utils.hexToComposeColor
 import com.example.lumen.presentation.theme.LumenTheme
+import com.example.lumen.utils.AppConstants.STATIC_COLOR_VALUE
 
 @Composable
 fun ColorRows(
     enabled: Boolean,
     currentHexColor: String,
+    currentLedEffect: Int,
     presetColors: List<String>,
     selectedSlot: Int,
     customColorSlots: List<CustomColorSlot>,
@@ -59,7 +61,9 @@ fun ColorRows(
     Column(modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             presetColors.forEach { color ->
-                val isSelected = currentHexColor == color && selectedSlot == 0
+                val isSelected = currentHexColor == color &&
+                        selectedSlot == 0 &&
+                        currentLedEffect == STATIC_COLOR_VALUE
 
                 ColorCircle(
                     color = color.hexToComposeColor(),
@@ -77,7 +81,9 @@ fun ColorRows(
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             customColorSlots.forEach { slot ->
-                val isSlotSelected = selectedSlot == slot.id && isCustomColorActive
+                val isSlotSelected = selectedSlot == slot.id &&
+                        isCustomColorActive &&
+                        currentLedEffect == STATIC_COLOR_VALUE
 
                 ColorCircle(
                     color = slot.hexColor.hexToComposeColor(),
@@ -162,6 +168,7 @@ fun ColorRowsPreview() {
             ColorRows(
                 enabled = true,
                 currentHexColor = "ffffff",
+                currentLedEffect = STATIC_COLOR_VALUE,
                 presetColors = PresetLedColors.entries.map { it.hex },
                 customColorSlots = customColorsList,
                 onSaveCustomColorSlot = { _, _ -> },
@@ -191,6 +198,7 @@ fun ColorRowsCompactPreview() {
                 enabled = true,
                 isCompact = true,
                 currentHexColor = "ffffff",
+                currentLedEffect = STATIC_COLOR_VALUE,
                 presetColors = PresetLedColors.entries.map { it.hex },
                 customColorSlots = customColorsList,
                 onSaveCustomColorSlot = { _, _ -> },
@@ -219,6 +227,7 @@ fun ColorRowsDisabledPreview() {
             ColorRows(
                 enabled = false,
                 currentHexColor = "ffffff",
+                currentLedEffect = STATIC_COLOR_VALUE,
                 presetColors = PresetLedColors.entries.map { it.hex },
                 customColorSlots = customColorsList,
                 onSaveCustomColorSlot = { _, _ -> },

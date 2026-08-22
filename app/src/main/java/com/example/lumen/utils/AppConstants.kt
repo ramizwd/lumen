@@ -13,4 +13,7 @@ object AppConstants {
     // Min/max allowed active LED count
     const val MIN_LED_NUM = 1
     const val MAX_LED_NUM = 1024
+
+    // Indicates if the controller is set to a static color
+    const val STATIC_COLOR_VALUE = 121
 }

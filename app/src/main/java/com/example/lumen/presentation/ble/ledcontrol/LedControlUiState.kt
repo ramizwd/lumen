@@ -5,6 +5,7 @@ import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.IcModel
 import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.presentation.common.utils.UiText
+import com.example.lumen.utils.AppConstants.STATIC_COLOR_VALUE
 
 /**
  * Device related UI states
@@ -26,7 +27,7 @@ data class LedControlUiState(
     val customColorSlots: List<CustomColorSlot> = emptyList(),
     val isLedOn: Boolean = false,
     val ledHexColor: String = "ffffff",
-    val ledEffectValue: Int = 1,
+    val ledEffectValue: Int = STATIC_COLOR_VALUE,
     val brightnessValue: Float = 0f,
     val totalActivePixels: Int = 0,
     val icModel: IcModel = IcModel.WS2811,
