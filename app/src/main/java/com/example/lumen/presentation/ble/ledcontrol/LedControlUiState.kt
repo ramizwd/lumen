@@ -26,6 +26,7 @@ data class LedControlUiState(
     val customColorSlots: List<CustomColorSlot> = emptyList(),
     val isLedOn: Boolean = false,
     val ledHexColor: String = "ffffff",
+    val ledEffectValue: Int = 1,
     val brightnessValue: Float = 0f,
     val totalActivePixels: Int = 0,
     val icModel: IcModel = IcModel.WS2811,

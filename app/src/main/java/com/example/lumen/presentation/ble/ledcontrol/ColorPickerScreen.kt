@@ -43,6 +43,7 @@ import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
 import com.github.skydoves.colorpicker.compose.ColorPickerController
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
+import timber.log.Timber
 
 @Composable
 fun ColorPickerScreen(
@@ -60,6 +61,7 @@ fun ColorPickerScreen(
 
     val isOn = uiState.isLedOn
     val ledHexColor = uiState.ledHexColor
+    val currentLedEffect = uiState.ledEffectValue
     val presetColors = PresetLedColors.entries.map { it.hex }
     val customColorSlots = uiState.customColorSlots
 
@@ -68,6 +70,7 @@ fun ColorPickerScreen(
         isOn = isOn,
         colorPickerController = colorPickerController,
         ledHexColor = ledHexColor,
+        currentLedEffect = currentLedEffect,
         presetColors = presetColors,
         customColorSlots = customColorSlots,
         onTurnLedOnClick = onTurnLedOnClick,
@@ -84,6 +87,7 @@ fun ColorPickerContent(
     isOn: Boolean,
     colorPickerController: ColorPickerController,
     ledHexColor: String,
+    currentLedEffect: Int,
     presetColors: List<String>,
     customColorSlots: List<CustomColorSlot>,
     onTurnLedOnClick: () -> Unit,
@@ -141,7 +145,6 @@ fun ColorPickerContent(
                         modifier = Modifier.height(360.dp),
                         controller = colorPickerController,
                         onSetHsvColor = { hexColor ->
-                            isUsingColorPicker = true
                             setLedColor(hexColor)
                         },
                         onStartInteraction = {
@@ -327,6 +330,7 @@ fun ColorPickerContentPreview() {
                 isOn = true,
                 colorPickerController = rememberColorPickerController(),
                 ledHexColor = "ffffff",
+                currentLedEffect = 121,
                 presetColors = presetColors,
                 customColorSlots = customColorsList,
                 onTurnLedOnClick = { },
@@ -359,6 +363,7 @@ fun ColorPickerContentLandscapePreview() {
                 isOn = true,
                 colorPickerController = rememberColorPickerController(),
                 ledHexColor = "ffffff",
+                currentLedEffect = 121,
                 presetColors = presetColors,
                 customColorSlots = customColorsList,
                 onTurnLedOnClick = { },
@@ -391,6 +396,7 @@ fun ColorPickerContentTabletLandscapePreview() {
                 isOn = true,
                 colorPickerController = rememberColorPickerController(),
                 ledHexColor = "ffffff",
+                currentLedEffect = 121,
                 presetColors = presetColors,
                 customColorSlots = customColorsList,
                 onTurnLedOnClick = { },

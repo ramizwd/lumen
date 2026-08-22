@@ -28,6 +28,8 @@ object GattConstants {
 
     val SET_RGB_SEQ_COMMAND: ByteArray = byteArrayOf(0x00, 0x00, 0x3C.toByte())
 
+    val SET_EFFECT_COMMAND: ByteArray = byteArrayOf(0x00, 0x00, 0x2C.toByte())
+
     // Padding values (0s) and command byte (2A) of brightness hex
     const val BRIGHTNESS_SUFFIX_HEX = "00002A"
 

@@ -93,24 +93,16 @@ fun ColorPicker(
         HsvColorPicker(
             modifier = Modifier
                 .clip(CircleShape)
-                .padding(14.dp)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = {
-                            onStartInteraction()
-                            try {
-                                awaitRelease()
-                            } finally {
-                                onEndInteraction()
-                            }
-                        },
-                    )
-                },
+                .padding(14.dp),
             controller = controller,
             onColorChanged = { colorEnvelope: ColorEnvelope ->
-                // Drop the alpha value
-                onSetHsvColor(colorEnvelope.hexCode.drop(2))
+                if (colorEnvelope.fromUser) {
+                    // Drop the alpha value
+                    onSetHsvColor(colorEnvelope.hexCode.drop(2))
+                }
             },
+            onStart = { onStartInteraction() },
+            onFinish = { onEndInteraction() },
             wheelImageBitmap = wheelBitmap(),
         )
     }

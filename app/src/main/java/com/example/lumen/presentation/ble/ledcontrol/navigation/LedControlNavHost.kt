@@ -14,6 +14,7 @@ import com.example.lumen.domain.ble.model.IcModel
 import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.presentation.ble.ledcontrol.ColorPickerScreen
 import com.example.lumen.presentation.ble.ledcontrol.ControlScreen
+import com.example.lumen.presentation.ble.ledcontrol.EffectsScreen
 import com.example.lumen.presentation.ble.ledcontrol.LedControlUiEvent
 import com.example.lumen.presentation.ble.ledcontrol.LedControlUiState
 
@@ -23,6 +24,7 @@ fun LedControlNavHost(
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     setLedColor: (String) -> Unit,
+    setLedEffect: (Int) -> Unit,
     setLedNum: (Int) -> Unit,
     setIcModel: (IcModel) -> Unit,
     setRgbSequence: (RgbSequence) -> Unit,
@@ -47,6 +49,13 @@ fun LedControlNavHost(
                 onTurnLedOffClick = onTurnLedOffClick,
                 setLedColor = setLedColor,
                 onSaveCustomColorSlot = onSaveCustomColorSlot,
+            )
+        }
+
+        composable<Screen.EffectsScreen> {
+            EffectsScreen(
+                uiState = uiState,
+                setLedEffect = setLedEffect,
             )
         }
 

@@ -62,6 +62,7 @@ class LedControlViewModel @Inject constructor(
                 state.copy(
                     isLedOn = initState?.isOn ?: false,
                     ledHexColor = initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
+                    ledEffectValue = initState?.preset?.toInt() ?: 1,
                     brightnessValue = initState?.brightness ?: 0f,
                     totalActivePixels = initState?.totalActivePixels ?: 0,
                     icModel = initState?.icModel ?: IcModel.WS2811,
@@ -121,6 +122,7 @@ class LedControlViewModel @Inject constructor(
     fun setLedColor(hexColor: String) {
         _uiState.update { it.copy(ledHexColor = hexColor) }
         viewModelScope.launch {
+            Timber.tag(LOG_TAG).i("setLedColor called")
             controlUseCases.setLedColorUseCase(hexColor)
         }
     }
@@ -137,16 +139,17 @@ class LedControlViewModel @Inject constructor(
         }
     }
 
+    fun setLedEffect(value: Int) {
+        _uiState.update { it.copy(ledEffectValue = value) }
+        viewModelScope.launch {
+            controlUseCases.setLedEffectUseCase(value)
+        }
+    }
+
     fun changeBrightness(value: Float) {
         _uiState.update { it.copy(brightnessValue = value) }
         viewModelScope.launch {
             brightnessChangeFlow.emit(value)
-        }
-    }
-
-    fun disconnectFromDevice() {
-        viewModelScope.launch {
-            connectionUseCases.disconnectUseCase()
         }
     }
 
@@ -202,6 +205,12 @@ class LedControlViewModel @Inject constructor(
         _uiState.update { it.copy(rgbSeq = rgbSeq) }
         viewModelScope.launch {
             configUseCases.setRgbSequenceUseCase(rgbSeq)
+        }
+    }
+
+    fun disconnectFromDevice() {
+        viewModelScope.launch {
+            connectionUseCases.disconnectUseCase()
         }
     }
 
