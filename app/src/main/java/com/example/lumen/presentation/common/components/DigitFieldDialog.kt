@@ -21,16 +21,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.lumen.R
-import com.example.lumen.utils.AppConstants.MAX_LED_NUM
-import com.example.lumen.utils.AppConstants.MIN_LED_NUM
+import com.example.lumen.domain.ble.model.LedConstants.ACTIVE_PIXELS_RANGE
 
 @Composable
 fun DigitFieldDialog(
     state: TextFieldState,
     modifier: Modifier = Modifier,
     title: String,
-    maxValue: Int = MAX_LED_NUM,
-    minValue: Int = MIN_LED_NUM,
+    allowedRange: IntRange = ACTIVE_PIXELS_RANGE,
     maxDigits: Int = 4,
     supportingText: String,
     onConfirmation: (Int) -> Unit,
@@ -42,7 +40,7 @@ fun DigitFieldDialog(
 
     val isValid by remember {
         derivedStateOf {
-            state.text.isNotEmpty() && inputNumber?.let { it in minValue..maxValue } ?: false
+            state.text.isNotEmpty() && inputNumber?.let { it in allowedRange } ?: false
         }
     }
 

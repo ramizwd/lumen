@@ -4,6 +4,7 @@ import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.domain.ble.model.LedControllerState
 import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.domain.ble.usecase.config.ConfigUseCases
@@ -24,7 +25,6 @@ import com.example.lumen.domain.ble.usecase.control.SetLedColorUseCase
 import com.example.lumen.domain.ble.usecase.control.SetLedEffectUseCase
 import com.example.lumen.domain.ble.usecase.control.TurnLedOnOffUseCase
 import com.example.lumen.presentation.common.utils.UiText
-import com.example.lumen.utils.AppConstants.STATIC_COLOR_VALUE
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -271,7 +271,7 @@ class LedControlViewModelTest {
         runTest {
             // Given
             coEvery { setLedEffectUseCase(any()) } returns
-                    Result.failure(Exception("Error"))
+                Result.failure(Exception("Error"))
 
             // When
             viewModel.setLedEffect(200) // out of range (1-120) value

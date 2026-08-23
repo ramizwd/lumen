@@ -1,9 +1,7 @@
 package com.example.lumen.utils
 
-import com.example.lumen.domain.ble.model.GattConstants.BRIGHTNESS_SUFFIX_HEX
 import com.example.lumen.domain.ble.model.GattConstants.COLOR_SUFFIX_HEX
-import com.example.lumen.utils.AppConstants.BRIGHTNESS_MAX
-import com.example.lumen.utils.AppConstants.BRIGHTNESS_MIN
+import com.example.lumen.domain.ble.model.LedConstants.BRIGHTNESS_RANGE
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 
@@ -15,9 +13,7 @@ class ConversionsTest {
     fun `toBrightnessCommandBytes value above max coerces to byte array`() {
         // Given
         val value = 1000f
-        val expectedBytes =
-            "${String.format("%02X", BRIGHTNESS_MAX.toInt())}${BRIGHTNESS_SUFFIX_HEX}"
-                .hexToByteArray()
+        val expectedBytes = BRIGHTNESS_RANGE.endInclusive.toBrightnessCommandBytes()
 
         // When
         val result = value.toBrightnessCommandBytes()
@@ -29,9 +25,7 @@ class ConversionsTest {
     @Test
     fun `toBrightnessCommandBytes value below min coerces to byte array`() {
         val value = -1f
-        val expectedBytes =
-            "${String.format("%02X", BRIGHTNESS_MIN.toInt())}${BRIGHTNESS_SUFFIX_HEX}"
-                .hexToByteArray()
+        val expectedBytes = BRIGHTNESS_RANGE.start.toBrightnessCommandBytes()
 
         val result = value.toBrightnessCommandBytes()
 

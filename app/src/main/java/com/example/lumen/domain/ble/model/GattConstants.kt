@@ -13,7 +13,7 @@ object GattConstants {
     val CHARACTERISTIC_UUID: UUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
     val CCCD_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
-    // Command Bytes
+    // Command bytes and their padding bytes
 
     val LED_ON_COMMAND: ByteArray = byteArrayOf(0x00, 0x00, 0x00, 0xAA.toByte())
     val LED_OFF_COMMAND: ByteArray = byteArrayOf(0x00, 0x00, 0x00, 0xAB.toByte())
@@ -30,8 +30,7 @@ object GattConstants {
 
     val SET_EFFECT_COMMAND: ByteArray = byteArrayOf(0x00, 0x00, 0x2C.toByte())
 
-    // Padding values (0s) and command byte (2A) of brightness hex
-    const val BRIGHTNESS_SUFFIX_HEX = "00002A"
+    val BRIGHTNESS_COMMAND = byteArrayOf(0x00, 0x00, 0x2A)
 
     // Color change command byte
     const val COLOR_SUFFIX_HEX = "1E"

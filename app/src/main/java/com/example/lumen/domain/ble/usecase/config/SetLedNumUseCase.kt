@@ -4,8 +4,7 @@ import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SET_LED_NUM_COMMAND
-import com.example.lumen.utils.AppConstants.MAX_LED_NUM
-import com.example.lumen.utils.AppConstants.MIN_LED_NUM
+import com.example.lumen.domain.ble.model.LedConstants.ACTIVE_PIXELS_RANGE
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -18,14 +17,19 @@ class SetLedNumUseCase @Inject constructor(
 
     suspend operator fun invoke(pxlCount: Int): Result<Unit> =
         try {
-            require(pxlCount in MIN_LED_NUM..MAX_LED_NUM) {
-                "LED count must be between $MIN_LED_NUM and $MAX_LED_NUM"
+            require(pxlCount in ACTIVE_PIXELS_RANGE) {
+                "LED count must be within the range"
             }
 
             val hiByte = (pxlCount shr 8).toByte()
             val loByte = (pxlCount and 0xFF).toByte()
 
-            val commandBytes = byteArrayOf(hiByte, loByte) + SET_LED_NUM_COMMAND
+            val commandBytes = byteArrayOf(
+                hiByte,
+                loByte,
+                SET_LED_NUM_COMMAND[0],
+                SET_LED_NUM_COMMAND[1],
+            )
 
             Timber.tag(LOG_TAG).d("Command to send: ${commandBytes.contentToString()}")
 

@@ -17,11 +17,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.R
+import com.example.lumen.domain.ble.model.LedConstants.BRIGHTNESS_RANGE
 import com.example.lumen.presentation.common.components.CustomSlider
 import com.example.lumen.presentation.common.components.SliderOrientation
 import com.example.lumen.presentation.theme.LumenTheme
-import com.example.lumen.utils.AppConstants.BRIGHTNESS_MAX
-import com.example.lumen.utils.AppConstants.BRIGHTNESS_MIN
 
 @Composable
 fun BrightnessSlider(
@@ -31,7 +30,7 @@ fun BrightnessSlider(
     modifier: Modifier = Modifier,
     orientation: SliderOrientation = SliderOrientation.VERTICAL,
 ) {
-    val sliderPercentage = ((brightnessValue.toInt() / BRIGHTNESS_MAX) * 100)
+    val sliderPercentage = ((brightnessValue.toInt() / BRIGHTNESS_RANGE.endInclusive) * 100)
 
     val percentageFormat =
         when {
@@ -57,7 +56,7 @@ fun BrightnessSlider(
             CustomSlider(
                 enabled = enabled,
                 value = brightnessValue,
-                valueRange = BRIGHTNESS_MIN..BRIGHTNESS_MAX,
+                valueRange = BRIGHTNESS_RANGE,
                 onValueChange = {
                     onChangeBrightness(it)
                 },
@@ -89,7 +88,7 @@ fun BrightnessSlider(
             CustomSlider(
                 enabled = enabled,
                 value = brightnessValue,
-                valueRange = BRIGHTNESS_MIN..BRIGHTNESS_MAX,
+                valueRange = BRIGHTNESS_RANGE,
                 onValueChange = {
                     onChangeBrightness(it)
                 },

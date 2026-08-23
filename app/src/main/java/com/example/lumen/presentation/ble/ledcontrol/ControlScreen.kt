@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.R
 import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.LedConstants.ACTIVE_PIXELS_RANGE
 import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.presentation.ble.ledcontrol.components.BrightnessSlider
 import com.example.lumen.presentation.ble.ledcontrol.components.HardwareConfigDialog
@@ -40,8 +41,6 @@ import com.example.lumen.presentation.common.components.SliderOrientation
 import com.example.lumen.presentation.common.utils.DeviceConfiguration
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
-import com.example.lumen.utils.AppConstants.MAX_LED_NUM
-import com.example.lumen.utils.AppConstants.MIN_LED_NUM
 
 @Composable
 fun ControlScreen(
@@ -70,8 +69,8 @@ fun ControlScreen(
             title = stringResource(R.string.set_active_pixel_range),
             supportingText = stringResource(
                 R.string.pixel_range,
-                MIN_LED_NUM,
-                MAX_LED_NUM,
+                ACTIVE_PIXELS_RANGE.first,
+                ACTIVE_PIXELS_RANGE.last,
             ),
             onConfirmation = {
                 setLedNum(it)

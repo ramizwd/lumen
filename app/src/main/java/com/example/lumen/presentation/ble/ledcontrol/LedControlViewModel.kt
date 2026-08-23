@@ -5,12 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.lumen.R
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.domain.ble.usecase.config.ConfigUseCases
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
 import com.example.lumen.presentation.common.utils.UiText
-import com.example.lumen.utils.AppConstants.STATIC_COLOR_VALUE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -147,18 +147,19 @@ class LedControlViewModel @Inject constructor(
     fun setLedEffect(value: Int) {
         viewModelScope.launch {
             val res = controlUseCases.setLedEffectUseCase(value)
-            res.onSuccess {
-                _uiState.update {
-                    it.copy(ledEffectValue = value)
+            res
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(ledEffectValue = value)
+                    }
+                }.onFailure {
+                    _uiState.update {
+                        it.copy(
+                            infoMessage =
+                                UiText.StringResource(R.string.error_setting_effect),
+                        )
+                    }
                 }
-            }.onFailure {
-                _uiState.update {
-                    it.copy(
-                        infoMessage =
-                            UiText.StringResource(R.string.error_setting_effect),
-                    )
-                }
-            }
         }
     }
 

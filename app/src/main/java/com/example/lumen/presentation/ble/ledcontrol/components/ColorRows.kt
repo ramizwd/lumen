@@ -25,10 +25,10 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.domain.ble.model.CustomColorSlot
+import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.domain.ble.model.PresetLedColors
 import com.example.lumen.presentation.common.utils.hexToComposeColor
 import com.example.lumen.presentation.theme.LumenTheme
-import com.example.lumen.utils.AppConstants.STATIC_COLOR_VALUE
 
 @Composable
 fun ColorRows(
@@ -62,8 +62,8 @@ fun ColorRows(
         Row(verticalAlignment = Alignment.CenterVertically) {
             presetColors.forEach { color ->
                 val isSelected = currentHexColor == color &&
-                        selectedSlot == 0 &&
-                        currentLedEffect == STATIC_COLOR_VALUE
+                    selectedSlot == 0 &&
+                    currentLedEffect == STATIC_COLOR_VALUE
 
                 ColorCircle(
                     color = color.hexToComposeColor(),
@@ -82,8 +82,8 @@ fun ColorRows(
         Row(verticalAlignment = Alignment.CenterVertically) {
             customColorSlots.forEach { slot ->
                 val isSlotSelected = selectedSlot == slot.id &&
-                        isCustomColorActive &&
-                        currentLedEffect == STATIC_COLOR_VALUE
+                    isCustomColorActive &&
+                    currentLedEffect == STATIC_COLOR_VALUE
 
                 ColorCircle(
                     color = slot.hexColor.hexToComposeColor(),

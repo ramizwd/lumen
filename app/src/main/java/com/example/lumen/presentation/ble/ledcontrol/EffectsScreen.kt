@@ -10,17 +10,15 @@ fun EffectsScreen(
     uiState: LedControlUiState,
     setLedEffect: (Int) -> Unit,
 ) {
-
-    Column() {
+    Column {
         Text("Current effect value: ${uiState.ledEffectValue}")
         Button(onClick = { setLedEffect(2) }) {
             Text("2")
         }
 
-        Button(onClick = { setLedEffect(121) }) { // TODO 121 indicates static color
+        Button(onClick = { setLedEffect(121) }) {
+            // TODO 121 indicates static color
             Text("121")
         }
     }
-
-
 }

@@ -3,9 +3,9 @@ package com.example.lumen.presentation.ble.ledcontrol
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.presentation.common.utils.UiText
-import com.example.lumen.utils.AppConstants.STATIC_COLOR_VALUE
 
 /**
  * Device related UI states

@@ -1,19 +1,22 @@
 package com.example.lumen.utils
 
-import com.example.lumen.domain.ble.model.GattConstants.BRIGHTNESS_SUFFIX_HEX
+import com.example.lumen.domain.ble.model.GattConstants.BRIGHTNESS_COMMAND
 import com.example.lumen.domain.ble.model.GattConstants.COLOR_SUFFIX_HEX
-import com.example.lumen.utils.AppConstants.BRIGHTNESS_MAX
-import com.example.lumen.utils.AppConstants.BRIGHTNESS_MIN
+import com.example.lumen.domain.ble.model.LedConstants.BRIGHTNESS_RANGE
 
 /**
- * Ensures the value is within the brightness range and converts it into hex string.
+ * Ensures the value is within the brightness range and converts it into byte.
  * @return the byte array representing brightness.
  */
 fun Float.toBrightnessCommandBytes(): ByteArray {
-    val brightness = this.coerceIn(BRIGHTNESS_MIN, BRIGHTNESS_MAX).toInt()
-    val hex = String.format("%02X", brightness)
+    val brightnessInt = this.coerceIn(BRIGHTNESS_RANGE.start, BRIGHTNESS_RANGE.endInclusive).toInt()
 
-    return "${hex}${BRIGHTNESS_SUFFIX_HEX}".hexToByteArray()
+    return byteArrayOf(
+        brightnessInt.toByte(),
+        BRIGHTNESS_COMMAND[0],
+        BRIGHTNESS_COMMAND[1],
+        BRIGHTNESS_COMMAND[2],
+    )
 }
 
 /**

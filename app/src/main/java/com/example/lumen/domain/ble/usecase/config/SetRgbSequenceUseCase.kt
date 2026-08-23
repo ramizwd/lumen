@@ -16,7 +16,12 @@ class SetRgbSequenceUseCase @Inject constructor(
     }
 
     suspend operator fun invoke(rgbSeq: RgbSequence) {
-        val commandBytes = byteArrayOf(rgbSeq.value) + SET_RGB_SEQ_COMMAND
+        val commandBytes = byteArrayOf(
+            rgbSeq.value,
+            SET_RGB_SEQ_COMMAND[0],
+            SET_RGB_SEQ_COMMAND[1],
+            SET_RGB_SEQ_COMMAND[2],
+        )
 
         Timber
             .tag(LOG_TAG)
