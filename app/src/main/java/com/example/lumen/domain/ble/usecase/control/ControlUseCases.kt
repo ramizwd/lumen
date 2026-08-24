@@ -10,8 +10,10 @@ data class ControlUseCases @Inject constructor(
     val setLedColorUseCase: SetLedColorUseCase,
     val changeBrightnessUseCase: ChangeBrightnessUseCase,
     val observeBrightnessUseCase: ObserveBrightnessUseCase,
+    val observeEffectSpeedUseCase: ObserveEffectSpeedUseCase,
     val observeControllerStateUseCase: ObserveControllerStateUseCase,
     val saveCustomColorUseCase: SaveCustomColorUseCase,
     val getCustomColorsUseCase: GetCustomColorsUseCase,
     val setLedEffectUseCase: SetLedEffectUseCase,
+    val setEffectSpeedUseCase: SetEffectSpeedUseCase,
 )

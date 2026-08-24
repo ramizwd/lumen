@@ -14,6 +14,7 @@ import com.example.lumen.presentation.common.utils.UiText
  * [isLedOn] Boolean than indicates if the LED controller is on/off
  * [ledHexColor] Holds the current hex color of the LED controller
  * [brightnessValue] Holds the current brightness value of the LED controller
+ * [speedValue] Holds the current speed value of an LED effect
  * [totalActivePixels] Holds the active LED strip pixel count
  * [icModel] Holds the current IC model
  * [rgbSeq] Holds the current RGB sequence
@@ -29,6 +30,7 @@ data class LedControlUiState(
     val ledHexColor: String = "ffffff",
     val ledEffectValue: Int = STATIC_COLOR_VALUE,
     val brightnessValue: Float = 0f,
+    val speedValue: Float = 0f,
     val totalActivePixels: Int = 0,
     val icModel: IcModel = IcModel.WS2811,
     val rgbSeq: RgbSequence = RgbSequence.RGB,

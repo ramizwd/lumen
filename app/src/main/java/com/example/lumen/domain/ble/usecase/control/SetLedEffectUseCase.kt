@@ -25,7 +25,7 @@ class SetLedEffectUseCase @Inject constructor(
                 value.toByte(),
                 SET_EFFECT_COMMAND[0],
                 SET_EFFECT_COMMAND[1],
-                SET_EFFECT_COMMAND[3],
+                SET_EFFECT_COMMAND[2],
             )
 
             Timber.tag(LOG_TAG).d("Setting effect number: ${command.contentToString()}")

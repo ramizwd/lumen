@@ -3,6 +3,7 @@ package com.example.lumen.utils
 import com.example.lumen.domain.ble.model.GattConstants.COLOR_SUFFIX_HEX
 import com.example.lumen.domain.ble.model.LedConstants.BRIGHTNESS_RANGE
 import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
@@ -40,5 +41,31 @@ class ConversionsTest {
         val result = value.hexToColorCommandBytes()
 
         assertArrayEquals(expectedBytes, result)
+    }
+
+    @Test
+    fun `calculatePercentage returns correct float`() {
+        val value = 127.5f
+        val max = 255f
+        val expected = 50f
+
+        val result = value.calculatePercentage(max)
+
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun `formatAsPercentage removes decimal for min and max values`() {
+        val valueMax = 100.0f
+        assertEquals(
+            "100",
+            valueMax.formatAsPercentage(),
+        )
+
+        val valueMin = 0.0f
+        assertEquals(
+            "0",
+            valueMin.formatAsPercentage(),
+        )
     }
 }

@@ -30,6 +30,8 @@ object GattConstants {
 
     val SET_EFFECT_COMMAND: ByteArray = byteArrayOf(0x00, 0x00, 0x2C.toByte())
 
+    val SET_SPEED_COMMAND: ByteArray = byteArrayOf(0x00, 0x00, 0x03.toByte())
+
     val BRIGHTNESS_COMMAND = byteArrayOf(0x00, 0x00, 0x2A)
 
     // Color change command byte

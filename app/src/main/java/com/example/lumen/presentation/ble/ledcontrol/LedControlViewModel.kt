@@ -44,6 +44,13 @@ class LedControlViewModel @Inject constructor(
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
 
+    private val speedChangeFlow =
+        MutableSharedFlow<Float>(
+            replay = 0,
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
+
     private val _uiState = MutableStateFlow(LedControlUiState())
     val uiState = _uiState.asStateFlow()
 
@@ -65,6 +72,7 @@ class LedControlViewModel @Inject constructor(
                     ledHexColor = initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
                     ledEffectValue = initState?.preset ?: STATIC_COLOR_VALUE,
                     brightnessValue = initState?.brightness ?: 0f,
+                    speedValue = initState?.speed ?: 0f,
                     totalActivePixels = initState?.totalActivePixels ?: 0,
                     icModel = initState?.icModel ?: IcModel.WS2811,
                     rgbSeq = initState?.rgbSeq ?: RgbSequence.RGB,
@@ -88,6 +96,25 @@ class LedControlViewModel @Inject constructor(
                 .observeBrightnessUseCase(brightnessChangeFlow)
                 .collect { value ->
                     controlUseCases.changeBrightnessUseCase(value)
+                }
+        }
+
+        viewModelScope.launch {
+            controlUseCases
+                .observeEffectSpeedUseCase(speedChangeFlow)
+                .collect { value ->
+                    controlUseCases
+                        .setEffectSpeedUseCase(value)
+                        .onFailure {
+                            _uiState.update {
+                                it.copy(
+                                    infoMessage =
+                                        UiText.StringResource(
+                                            R.string.error_adjusting_effect_speed,
+                                        ),
+                                )
+                            }
+                        }
                 }
         }
     }
@@ -160,6 +187,13 @@ class LedControlViewModel @Inject constructor(
                         )
                     }
                 }
+        }
+    }
+
+    fun setEffectSpeed(value: Float) {
+        _uiState.update { it.copy(speedValue = value) }
+        viewModelScope.launch {
+            speedChangeFlow.emit(value)
         }
     }
 

@@ -29,6 +29,7 @@
     <string name="no_device_to_retry_for">No device to retry connection for</string>
     <string name="error_opening_settings">Could not open app settings. Try again</string>
     <string name="brightness">Brightness</string>
+    <string name="speed">Speed</string>
     <string name="turn_led_off">Turn LED off</string>
     <string name="turn_led_on">Turn LED on</string>
     <string name="match_with_device_theme">Match with device theme</string>
@@ -87,4 +88,5 @@
     <string name="rgb_sequence">RGB Sequence</string>
     <string name="done">Done</string>
     <string name="error_setting_effect">Error setting an effect</string>
+    <string name="error_adjusting_effect_speed">Error adjusting effect speed</string>
 </resources>

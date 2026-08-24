@@ -20,6 +20,22 @@ fun Float.toBrightnessCommandBytes(): ByteArray {
 }
 
 /**
+ * Calculates the percentage of a value relative to a maximum.
+ * Uses toInt() to ensure consistency with the LED controller's integer-based state.
+ */
+fun Float.calculatePercentage(max: Float): Float = (this.toInt() / max) * 100
+
+/**
+ * Formats a float as a percentage string, hiding the decimal if it's 0 or 100
+ */
+fun Float.formatAsPercentage(): String =
+    if (this == 0f || this == 100f) {
+        "%.0f".format(this)
+    } else {
+        "%.1f".format(this)
+    }
+
+/**
  * Converts hex color to byte array.
  * Format: RR GG BB and 1E (command byte)
  */

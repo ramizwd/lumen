@@ -10,6 +10,8 @@ object LedConstants {
     // Available LED effect range
     val LED_EFFECT_RANGE = 1..120
 
+    val EFFECT_SPEED_RANGE = 0f..255f
+
     // Indicates if the controller is set to a static color
     const val STATIC_COLOR_VALUE = 121
 }

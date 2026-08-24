@@ -20,7 +20,9 @@ import com.example.lumen.domain.ble.usecase.control.ControlUseCases
 import com.example.lumen.domain.ble.usecase.control.GetCustomColorsUseCase
 import com.example.lumen.domain.ble.usecase.control.ObserveBrightnessUseCase
 import com.example.lumen.domain.ble.usecase.control.ObserveControllerStateUseCase
+import com.example.lumen.domain.ble.usecase.control.ObserveEffectSpeedUseCase
 import com.example.lumen.domain.ble.usecase.control.SaveCustomColorUseCase
+import com.example.lumen.domain.ble.usecase.control.SetEffectSpeedUseCase
 import com.example.lumen.domain.ble.usecase.control.SetLedColorUseCase
 import com.example.lumen.domain.ble.usecase.control.SetLedEffectUseCase
 import com.example.lumen.domain.ble.usecase.control.TurnLedOnOffUseCase
@@ -57,7 +59,7 @@ class LedControlViewModelTest {
         LedControllerState(
             isOn = true,
             preset = 1,
-            speed = 1,
+            speed = 1f,
             brightness = 50f,
             icModel = IcModel.TM1804,
             rgbSeq = RgbSequence.RGB,
@@ -71,6 +73,7 @@ class LedControlViewModelTest {
     private val deviceFlow = MutableStateFlow<BleDevice?>(null)
     private val controllerStateFlow = MutableStateFlow<LedControllerState?>(null)
     private val brightnessFlow = MutableSharedFlow<Float>()
+    private val speedFlow = MutableSharedFlow<Float>()
     private val customColorsFlow = MutableStateFlow<List<CustomColorSlot>>(emptyList())
 
     private lateinit var setDeviceNameUseCase: SetDeviceNameUseCase
@@ -78,9 +81,11 @@ class LedControlViewModelTest {
     private lateinit var observeSelectedDeviceUseCase: ObserveSelectedDeviceUseCase
     private lateinit var observeControllerStateUseCase: ObserveControllerStateUseCase
     private lateinit var observeBrightnessUseCase: ObserveBrightnessUseCase
+    private lateinit var observeEffectSpeedUseCase: ObserveEffectSpeedUseCase
     private lateinit var getCustomColorsUseCase: GetCustomColorsUseCase
     private lateinit var turnLedOnOffUseCase: TurnLedOnOffUseCase
     private lateinit var changeBrightnessUseCase: ChangeBrightnessUseCase
+    private lateinit var setEffectSpeedUseCase: SetEffectSpeedUseCase
     private lateinit var saveCustomColorUseCase: SaveCustomColorUseCase
     private lateinit var setLedColorUseCase: SetLedColorUseCase
     private lateinit var setLedEffectUseCase: SetLedEffectUseCase
@@ -100,9 +105,11 @@ class LedControlViewModelTest {
         observeSelectedDeviceUseCase = mockk()
         observeControllerStateUseCase = mockk()
         observeBrightnessUseCase = mockk()
+        observeEffectSpeedUseCase = mockk()
         getCustomColorsUseCase = mockk()
         turnLedOnOffUseCase = mockk(relaxed = true)
         changeBrightnessUseCase = mockk(relaxed = true)
+        setEffectSpeedUseCase = mockk(relaxed = true)
         saveCustomColorUseCase = mockk(relaxed = true)
         setLedColorUseCase = mockk(relaxed = true)
         setIcModelUseCase = mockk(relaxed = true)
@@ -115,6 +122,7 @@ class LedControlViewModelTest {
         every { observeSelectedDeviceUseCase() } returns deviceFlow
         every { observeControllerStateUseCase() } returns controllerStateFlow
         every { observeBrightnessUseCase(any()) } returns brightnessFlow
+        every { observeEffectSpeedUseCase(any()) } returns speedFlow
         every { getCustomColorsUseCase(any()) } returns customColorsFlow
 
         deviceFlow.value = device
@@ -140,10 +148,12 @@ class LedControlViewModelTest {
                 setLedColorUseCase,
                 changeBrightnessUseCase,
                 observeBrightnessUseCase,
+                observeEffectSpeedUseCase,
                 observeControllerStateUseCase,
                 saveCustomColorUseCase,
                 getCustomColorsUseCase,
                 setLedEffectUseCase,
+                setEffectSpeedUseCase,
             )
 
         val configUseCases = ConfigUseCases(
@@ -225,6 +235,19 @@ class LedControlViewModelTest {
         }
 
     @Test
+    fun `init collects from speed flow and calls setEffectSpeedUseCase`() =
+        runTest {
+            // Given
+            val value = 50f
+
+            // When
+            brightnessFlow.emit(value)
+
+            // Then
+            coVerify(exactly = 1) { setEffectSpeedUseCase(value) }
+        }
+
+    @Test
     fun `turnLedOn updates state and calls use case`() =
         runTest {
             // When
@@ -279,6 +302,23 @@ class LedControlViewModelTest {
             // Then
             assertEquals(
                 UiText.StringResource(R.string.error_setting_effect),
+                viewModel.uiState.value.infoMessage,
+            )
+        }
+
+    @Test
+    fun `setEffectSpeed on failure updates infoMessage state`() =
+        runTest {
+            // Given
+            coEvery { setEffectSpeedUseCase(any()) } returns
+                Result.failure(Exception("Error"))
+
+            // When
+            speedFlow.emit(200f)
+
+            // Then
+            assertEquals(
+                UiText.StringResource(R.string.error_adjusting_effect_speed),
                 viewModel.uiState.value.infoMessage,
             )
         }

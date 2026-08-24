@@ -6,7 +6,7 @@ package com.example.lumen.domain.ble.model
 data class LedControllerState(
     val isOn: Boolean,
     val preset: Int,
-    val speed: Byte,
+    val speed: Float,
     val brightness: Float,
     val icModel: IcModel,
     val rgbSeq: RgbSequence,
