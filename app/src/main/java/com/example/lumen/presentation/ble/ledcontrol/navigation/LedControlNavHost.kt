@@ -56,6 +56,8 @@ fun LedControlNavHost(
         composable<Screen.EffectsScreen> {
             EffectsScreen(
                 uiState = uiState,
+                onTurnLedOnClick = onTurnLedOnClick,
+                onTurnLedOffClick = onTurnLedOffClick,
                 setLedEffect = setLedEffect,
             )
         }

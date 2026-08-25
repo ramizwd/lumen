@@ -222,9 +222,7 @@ fun ColorPickerContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     ColorPicker(
-                        modifier = Modifier
-                            .width(240.dp)
-                            .height(240.dp),
+                        modifier = Modifier.height(240.dp),
                         controller = colorPickerController,
                         onSetHsvColor = { hexColor ->
                             isUsingColorPicker = true
