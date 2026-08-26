@@ -78,6 +78,7 @@ fun CircularSlider(
             .aspectRatio(1f)
             .pointerInput(enabled) {
                 if (!enabled) return@pointerInput
+                var lastSentValue: Int? = null
 
                 detectDragGestures(
                     onDragStart = { offset ->
@@ -100,10 +101,17 @@ fun CircularSlider(
 
                         if ((offset - thumbOffset).getDistance() <= 40.dp.toPx()) {
                             isDraggingThumb = true
+                            lastSentValue = currentValue
                         }
                     },
-                    onDragEnd = { isDraggingThumb = false },
-                    onDragCancel = { isDraggingThumb = false },
+                    onDragEnd = {
+                        isDraggingThumb = false
+                        lastSentValue = null
+                    },
+                    onDragCancel = {
+                        isDraggingThumb = false
+                        lastSentValue = null
+                    },
                     onDrag = { change, _ ->
                         if (!isDraggingThumb) return@detectDragGestures
 
@@ -124,9 +132,7 @@ fun CircularSlider(
                             normalizedDegrees > 360f - gapAngle / 2f
                         ) {
                             // Snap to start or end
-                            if (normalizedDegrees <
-                                180f
-                            ) {
+                            if (normalizedDegrees < 180f) {
                                 currentValueRange.first
                             } else {
                                 currentValueRange.last
@@ -142,7 +148,10 @@ fun CircularSlider(
                             ).roundToInt()
                         }
 
-                        currentOnValueChange(newValue)
+                        if (newValue != lastSentValue) {
+                            lastSentValue = newValue
+                            currentOnValueChange(newValue)
+                        }
                         change.consume()
                     },
                 )
