@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,14 +23,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.lumen.R
+import com.example.lumen.domain.ble.model.LedConstants.EFFECT_CYCLE_VALUE
 import com.example.lumen.domain.ble.model.LedConstants.LED_EFFECT_RANGE
 import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.presentation.ble.ledcontrol.components.EffectPicker
 import com.example.lumen.presentation.ble.ledcontrol.components.LedToggleButton
+import com.example.lumen.presentation.common.components.PlainTooltip
 import com.example.lumen.presentation.common.utils.DeviceConfiguration
+import com.example.lumen.presentation.common.utils.UiText
 import com.example.lumen.presentation.common.utils.hexToComposeColor
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
@@ -40,6 +45,7 @@ fun EffectsScreen(
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     setLedEffect: (Int) -> Unit,
+    setEffectCycle: () -> Unit,
 ) {
     val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
     val deviceConfig = DeviceConfiguration.fromWindowSizeClass(windowSizeClass)
@@ -47,14 +53,17 @@ fun EffectsScreen(
     val isOn = uiState.isLedOn
     val ledHexColor = uiState.ledHexColor
     val currentLedEffect = uiState.ledEffectValue
+    val effectPickerTxt = uiState.effectPickerTxt
 
     EffectsContent(
         isOn = isOn,
         ledHexColor = ledHexColor,
         currentLedEffect = currentLedEffect,
+        effectPickerTxt = effectPickerTxt,
         onTurnLedOnClick = onTurnLedOnClick,
         onTurnLedOffClick = onTurnLedOffClick,
         setLedEffect = setLedEffect,
+        setEffectCycle = setEffectCycle,
         deviceConfig = deviceConfig,
         modifier = Modifier,
     )
@@ -65,15 +74,19 @@ fun EffectsContent(
     isOn: Boolean,
     ledHexColor: String,
     currentLedEffect: Int,
+    effectPickerTxt: UiText,
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     setLedEffect: (Int) -> Unit,
+    setEffectCycle: () -> Unit,
     deviceConfig: DeviceConfiguration,
     modifier: Modifier = Modifier,
 ) {
     var index by remember(currentLedEffect) {
         mutableIntStateOf(currentLedEffect)
     }
+
+    val isAutoCycleOn = EFFECT_CYCLE_VALUE == currentLedEffect
 
     when (deviceConfig) {
         DeviceConfiguration.TABLET_PORTRAIT,
@@ -95,6 +108,7 @@ fun EffectsContent(
                         setLedEffect(it)
                     },
                     currentLedEffect = currentLedEffect,
+                    effectPickerTxt = effectPickerTxt,
                     currentLedColor = ledHexColor.hexToComposeColor(),
                     modifier = Modifier.size(360.dp),
                 )
@@ -108,8 +122,8 @@ fun EffectsContent(
                         enabled = isOn,
                         onClick = {
                             val prevValue = when (index) {
-                                STATIC_COLOR_VALUE -> LED_EFFECT_RANGE.last
-                                LED_EFFECT_RANGE.first -> LED_EFFECT_RANGE.last
+                                STATIC_COLOR_VALUE, LED_EFFECT_RANGE.first, EFFECT_CYCLE_VALUE,
+                                -> LED_EFFECT_RANGE.last
                                 else -> index - 1
                             }
                             index = prevValue
@@ -128,8 +142,7 @@ fun EffectsContent(
                         enabled = isOn,
                         onClick = {
                             val nextValue = when (index) {
-                                STATIC_COLOR_VALUE -> LED_EFFECT_RANGE.first
-                                LED_EFFECT_RANGE.last -> LED_EFFECT_RANGE.first
+                                STATIC_COLOR_VALUE, LED_EFFECT_RANGE.last -> LED_EFFECT_RANGE.first
                                 else -> index + 1
                             }
                             index = nextValue
@@ -144,6 +157,28 @@ fun EffectsContent(
                         )
                     }
                 }
+
+                PlainTooltip(
+                    text = stringResource(R.string.effect_auto_cycle),
+                    content = {
+                        FilledTonalIconToggleButton(
+                            modifier = modifier,
+                            enabled = isOn,
+                            checked = isAutoCycleOn,
+                            onCheckedChange = { if (!isAutoCycleOn) setEffectCycle() },
+                        ) {
+                            Icon(
+                                painter =
+                                    if (isAutoCycleOn) {
+                                        painterResource(R.drawable.autorenew_semibold_24px)
+                                    } else {
+                                        painterResource(R.drawable.autorenew_24px)
+                                    },
+                                contentDescription = stringResource(R.string.effect_auto_cycle),
+                            )
+                        }
+                    },
+                )
 
                 LedToggleButton(
                     isOn = isOn,
@@ -173,6 +208,7 @@ fun EffectsContent(
                             setLedEffect(it)
                         },
                         currentLedEffect = currentLedEffect,
+                        effectPickerTxt = effectPickerTxt,
                         currentLedColor = ledHexColor.hexToComposeColor(),
                         modifier = Modifier.size(300.dp),
                     )
@@ -231,6 +267,28 @@ fun EffectsContent(
                         }
                     }
 
+                    PlainTooltip(
+                        text = stringResource(R.string.effect_auto_cycle),
+                        content = {
+                            FilledTonalIconToggleButton(
+                                modifier = modifier,
+                                enabled = isOn,
+                                checked = isAutoCycleOn,
+                                onCheckedChange = { if (!isAutoCycleOn) setEffectCycle() },
+                            ) {
+                                Icon(
+                                    painter =
+                                        if (isAutoCycleOn) {
+                                            painterResource(R.drawable.autorenew_semibold_24px)
+                                        } else {
+                                            painterResource(R.drawable.autorenew_24px)
+                                        },
+                                    contentDescription = stringResource(R.string.effect_auto_cycle),
+                                )
+                            }
+                        },
+                    )
+
                     LedToggleButton(
                         isOn = isOn,
                         onTurnLedOnClick = onTurnLedOnClick,
@@ -252,7 +310,9 @@ fun EffectContentPreview() {
                 isOn = true,
                 ledHexColor = "00ffff",
                 currentLedEffect = STATIC_COLOR_VALUE,
+                effectPickerTxt = UiText.StringResource(R.string.static_color),
                 setLedEffect = { },
+                setEffectCycle = { },
                 onTurnLedOnClick = { },
                 onTurnLedOffClick = { },
                 deviceConfig = DeviceConfiguration.MOBILE_PORTRAIT,
@@ -270,7 +330,9 @@ fun EffectContentLandscapePreview() {
                 isOn = true,
                 ledHexColor = "00ffff",
                 currentLedEffect = STATIC_COLOR_VALUE,
+                effectPickerTxt = UiText.StringResource(R.string.static_color),
                 setLedEffect = { },
+                setEffectCycle = { },
                 onTurnLedOnClick = { },
                 onTurnLedOffClick = { },
                 deviceConfig = DeviceConfiguration.MOBILE_LANDSCAPE,
@@ -288,7 +350,9 @@ fun EffectContentTabletLandscapePreview() {
                 isOn = true,
                 ledHexColor = "00ffff",
                 currentLedEffect = STATIC_COLOR_VALUE,
+                effectPickerTxt = UiText.StringResource(R.string.static_color),
                 setLedEffect = { },
+                setEffectCycle = { },
                 onTurnLedOnClick = { },
                 onTurnLedOffClick = { },
                 deviceConfig = DeviceConfiguration.TABLET_LANDSCAPE,

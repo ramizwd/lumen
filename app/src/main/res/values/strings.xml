@@ -90,4 +90,6 @@
     <string name="error_setting_effect">Error setting an effect</string>
     <string name="error_adjusting_effect_speed">Error adjusting effect speed</string>
     <string name="static_color">STATIC</string>
+    <string name="cycle">CYCLE</string>
+    <string name="effect_auto_cycle">Effect auto cycle</string>
 </resources>

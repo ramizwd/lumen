@@ -14,4 +14,7 @@ object LedConstants {
 
     // Indicates if the controller is set to a static color
     const val STATIC_COLOR_VALUE = 121
+
+    // Indicates if the controller is set to effects auto cycle
+    const val EFFECT_CYCLE_VALUE = 0
 }

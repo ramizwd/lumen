@@ -9,16 +9,18 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.lumen.R
+import com.example.lumen.domain.ble.model.LedConstants.EFFECT_CYCLE_VALUE
 import com.example.lumen.domain.ble.model.LedConstants.LED_EFFECT_RANGE
 import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.presentation.common.components.CircularSlider
+import com.example.lumen.presentation.common.utils.UiText
 import com.example.lumen.presentation.theme.LumenTheme
 
 @Composable
@@ -27,6 +29,7 @@ fun EffectPicker(
     effectNumber: Int,
     onValueChange: (Int) -> Unit,
     currentLedEffect: Int,
+    effectPickerTxt: UiText,
     currentLedColor: Color,
     modifier: Modifier = Modifier,
 ) {
@@ -45,6 +48,19 @@ fun EffectPicker(
         label = "content_alpha",
     )
 
+    val textStyle = when (currentLedEffect) {
+        STATIC_COLOR_VALUE, EFFECT_CYCLE_VALUE -> MaterialTheme.typography.displayMedium
+        else -> MaterialTheme.typography.displayLarge
+    }
+
+    val defaultSliderValue = remember(currentLedEffect) {
+        when (currentLedEffect) {
+            STATIC_COLOR_VALUE -> STATIC_COLOR_VALUE
+            EFFECT_CYCLE_VALUE -> EFFECT_CYCLE_VALUE
+            else -> null
+        }
+    }
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier,
@@ -55,24 +71,16 @@ fun EffectPicker(
             onValueChange = onValueChange,
             valueRange = LED_EFFECT_RANGE,
             indicatorCount = LED_EFFECT_RANGE.last,
-            defaultValue = STATIC_COLOR_VALUE,
+            defaultValue = defaultSliderValue,
             thumbColor = thumbColor,
             modifier = Modifier.fillMaxSize(),
         )
 
-        if (currentLedEffect == STATIC_COLOR_VALUE) {
-            Text(
-                text = stringResource(R.string.static_color),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.alpha(contentAlpha),
-            )
-        } else {
-            Text(
-                text = effectNumber.toString(),
-                style = MaterialTheme.typography.displayLarge,
-                modifier = Modifier.alpha(contentAlpha),
-            )
-        }
+        Text(
+            text = effectPickerTxt.asString(),
+            style = textStyle,
+            modifier = Modifier.alpha(contentAlpha),
+        )
     }
 }
 
@@ -86,6 +94,7 @@ fun EffectPickerPreview() {
                 effectNumber = STATIC_COLOR_VALUE,
                 onValueChange = { },
                 currentLedEffect = STATIC_COLOR_VALUE,
+                effectPickerTxt = UiText.StringResource(R.string.static_color),
                 currentLedColor = Color.Cyan,
             )
         }
@@ -102,6 +111,7 @@ fun EffectPickerActivePreview() {
                 effectNumber = 10,
                 onValueChange = { },
                 currentLedEffect = 10,
+                effectPickerTxt = UiText.DynamicString(10.toString()),
                 currentLedColor = Color.Cyan,
             )
         }

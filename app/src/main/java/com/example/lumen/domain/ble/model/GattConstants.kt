@@ -32,6 +32,8 @@ object GattConstants {
 
     val SET_SPEED_COMMAND: ByteArray = byteArrayOf(0x00, 0x00, 0x03.toByte())
 
+    val SET_CYCLE_COMMAND: ByteArray = byteArrayOf(0x00, 0x00, 0x00, 0x06.toByte())
+
     val BRIGHTNESS_COMMAND = byteArrayOf(0x00, 0x00, 0x2A)
 
     // Color change command byte

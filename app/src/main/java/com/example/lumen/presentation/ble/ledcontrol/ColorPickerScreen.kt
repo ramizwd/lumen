@@ -177,6 +177,7 @@ fun ColorPickerContent(
                         MatchDeviceThemeButton(
                             enabled = isOn,
                             currentHexColor = ledHexColor,
+                            currentLedEffect = currentLedEffect,
                             onMatchWithDeviceTheme = { hexColor ->
                                 selectedSlot = 0
                                 isUsingColorPicker = false
@@ -288,6 +289,7 @@ fun ColorPickerContent(
                         MatchDeviceThemeButton(
                             enabled = isOn,
                             currentHexColor = ledHexColor,
+                            currentLedEffect = currentLedEffect,
                             onMatchWithDeviceTheme = { hexColor ->
                                 selectedSlot = 0
                                 isUsingColorPicker = false

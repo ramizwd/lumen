@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.lumen.R
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.LedConstants.EFFECT_CYCLE_VALUE
 import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.domain.ble.usecase.config.ConfigUseCases
@@ -71,6 +72,9 @@ class LedControlViewModel @Inject constructor(
                     isLedOn = initState?.isOn ?: false,
                     ledHexColor = initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
                     ledEffectValue = initState?.preset ?: STATIC_COLOR_VALUE,
+                    effectPickerTxt = getEffectPickerText(
+                        initState?.preset ?: STATIC_COLOR_VALUE,
+                    ),
                     brightnessValue = initState?.brightness ?: 0f,
                     speedValue = initState?.speed ?: 0f,
                     totalActivePixels = initState?.totalActivePixels ?: 0,
@@ -152,6 +156,7 @@ class LedControlViewModel @Inject constructor(
             it.copy(
                 ledHexColor = hexColor,
                 ledEffectValue = STATIC_COLOR_VALUE,
+                effectPickerTxt = getEffectPickerText(STATIC_COLOR_VALUE),
             )
         }
         viewModelScope.launch {
@@ -177,7 +182,10 @@ class LedControlViewModel @Inject constructor(
             res
                 .onSuccess {
                     _uiState.update {
-                        it.copy(ledEffectValue = value)
+                        it.copy(
+                            ledEffectValue = value,
+                            effectPickerTxt = getEffectPickerText(value),
+                        )
                     }
                 }.onFailure {
                     _uiState.update {
@@ -194,6 +202,18 @@ class LedControlViewModel @Inject constructor(
         _uiState.update { it.copy(speedValue = value) }
         viewModelScope.launch {
             speedChangeFlow.emit(value)
+        }
+    }
+
+    fun setEffectCycle() {
+        _uiState.update {
+            it.copy(
+                ledEffectValue = EFFECT_CYCLE_VALUE,
+                effectPickerTxt = getEffectPickerText(EFFECT_CYCLE_VALUE),
+            )
+        }
+        viewModelScope.launch {
+            controlUseCases.setEffectCycleUseCase()
         }
     }
 
@@ -268,6 +288,13 @@ class LedControlViewModel @Inject constructor(
     fun clearInfoMessage() {
         _uiState.update { it.copy(infoMessage = null) }
     }
+
+    private fun getEffectPickerText(effectValue: Int): UiText =
+        when (effectValue) {
+            STATIC_COLOR_VALUE -> UiText.StringResource(R.string.static_color)
+            EFFECT_CYCLE_VALUE -> UiText.StringResource(R.string.cycle)
+            else -> UiText.DynamicString(effectValue.toString())
+        }
 
     override fun onCleared() {
         // TODO here until figuring out persistent controller state

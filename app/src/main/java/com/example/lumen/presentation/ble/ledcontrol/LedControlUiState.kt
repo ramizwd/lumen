@@ -1,5 +1,6 @@
 package com.example.lumen.presentation.ble.ledcontrol
 
+import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.IcModel
@@ -13,6 +14,8 @@ import com.example.lumen.presentation.common.utils.UiText
  * [customColorSlots] list of custom colors set by the user
  * [isLedOn] Boolean than indicates if the LED controller is on/off
  * [ledHexColor] Holds the current hex color of the LED controller
+ * [ledEffectValue] Holds the current effect value
+ * [effectPickerTxt] Holds the current effect picker text
  * [brightnessValue] Holds the current brightness value of the LED controller
  * [speedValue] Holds the current speed value of an LED effect
  * [totalActivePixels] Holds the active LED strip pixel count
@@ -29,6 +32,7 @@ data class LedControlUiState(
     val isLedOn: Boolean = false,
     val ledHexColor: String = "ffffff",
     val ledEffectValue: Int = STATIC_COLOR_VALUE,
+    val effectPickerTxt: UiText = UiText.StringResource(R.string.static_color),
     val brightnessValue: Float = 0f,
     val speedValue: Float = 0f,
     val totalActivePixels: Int = 0,

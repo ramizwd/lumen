@@ -4,6 +4,7 @@ import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.LedConstants.EFFECT_CYCLE_VALUE
 import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.domain.ble.model.LedControllerState
 import com.example.lumen.domain.ble.model.RgbSequence
@@ -22,6 +23,7 @@ import com.example.lumen.domain.ble.usecase.control.ObserveBrightnessUseCase
 import com.example.lumen.domain.ble.usecase.control.ObserveControllerStateUseCase
 import com.example.lumen.domain.ble.usecase.control.ObserveEffectSpeedUseCase
 import com.example.lumen.domain.ble.usecase.control.SaveCustomColorUseCase
+import com.example.lumen.domain.ble.usecase.control.SetEffectCycleUseCase
 import com.example.lumen.domain.ble.usecase.control.SetEffectSpeedUseCase
 import com.example.lumen.domain.ble.usecase.control.SetLedColorUseCase
 import com.example.lumen.domain.ble.usecase.control.SetLedEffectUseCase
@@ -58,7 +60,7 @@ class LedControlViewModelTest {
     private val controllerState =
         LedControllerState(
             isOn = true,
-            preset = 1,
+            preset = 10,
             speed = 1f,
             brightness = 50f,
             icModel = IcModel.TM1804,
@@ -89,6 +91,7 @@ class LedControlViewModelTest {
     private lateinit var saveCustomColorUseCase: SaveCustomColorUseCase
     private lateinit var setLedColorUseCase: SetLedColorUseCase
     private lateinit var setLedEffectUseCase: SetLedEffectUseCase
+    private lateinit var setEffectCycleUseCase: SetEffectCycleUseCase
     private lateinit var setIcModelUseCase: SetIcModelUseCase
     private lateinit var setRgbSequenceUseCase: SetRgbSequenceUseCase
     private lateinit var disconnectUseCase: DisconnectUseCase
@@ -102,6 +105,7 @@ class LedControlViewModelTest {
         setDeviceNameUseCase = mockk()
         setLedNumUseCase = mockk()
         setLedEffectUseCase = mockk()
+        setEffectCycleUseCase = mockk(relaxed = true)
         observeSelectedDeviceUseCase = mockk()
         observeControllerStateUseCase = mockk()
         observeBrightnessUseCase = mockk()
@@ -154,6 +158,7 @@ class LedControlViewModelTest {
                 getCustomColorsUseCase,
                 setLedEffectUseCase,
                 setEffectSpeedUseCase,
+                setEffectCycleUseCase = setEffectCycleUseCase,
             )
 
         val configUseCases = ConfigUseCases(
@@ -193,6 +198,10 @@ class LedControlViewModelTest {
             assertEquals(
                 "${controllerState.red}${controllerState.green}${controllerState.blue}",
                 state.ledHexColor,
+            )
+            assertEquals(
+                UiText.DynamicString(controllerState.preset.toString()),
+                state.effectPickerTxt,
             )
         }
 
@@ -241,7 +250,7 @@ class LedControlViewModelTest {
             val value = 50f
 
             // When
-            brightnessFlow.emit(value)
+            speedFlow.emit(value)
 
             // Then
             coVerify(exactly = 1) { setEffectSpeedUseCase(value) }
@@ -276,6 +285,10 @@ class LedControlViewModelTest {
 
             assertEquals(expectedHex, viewModel.uiState.value.ledHexColor)
             assertEquals(expectedEffectVal, viewModel.uiState.value.ledEffectValue)
+            assertEquals(
+                UiText.StringResource(R.string.static_color),
+                viewModel.uiState.value.effectPickerTxt,
+            )
             coVerify(exactly = 1) { setLedColorUseCase(expectedHex) }
         }
 
@@ -286,7 +299,27 @@ class LedControlViewModelTest {
             viewModel.setLedEffect(expected)
 
             assertEquals(expected, viewModel.uiState.value.ledEffectValue)
+            assertEquals(
+                UiText.DynamicString(expected.toString()),
+                viewModel.uiState.value.effectPickerTxt,
+            )
             coVerify(exactly = 1) { setLedEffectUseCase(expected) }
+        }
+
+    @Test
+    fun `setEffectCycle updates state and calls use case`() =
+        runTest {
+            viewModel.setEffectCycle()
+
+            assertEquals(
+                EFFECT_CYCLE_VALUE,
+                viewModel.uiState.value.ledEffectValue
+            )
+            assertEquals(
+                UiText.StringResource(R.string.cycle),
+                viewModel.uiState.value.effectPickerTxt,
+            )
+            coVerify(exactly = 1) { setEffectCycleUseCase() }
         }
 
     @Test
