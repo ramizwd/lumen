@@ -92,4 +92,8 @@
     <string name="static_color">STATIC</string>
     <string name="cycle">CYCLE</string>
     <string name="effect_auto_cycle">Effect auto cycle</string>
+    <string name="add_effect_to_favorites">Add effect to favorites</string>
+    <string name="remove_effect_from_favorites">Remove effect from favorites</string>
+    <string name="error_adding_effect_to_fav">Error adding effect to favorites</string>
+    <string name="error_removing_effect_from_fav">Error removing effect from favorites</string>
 </resources>

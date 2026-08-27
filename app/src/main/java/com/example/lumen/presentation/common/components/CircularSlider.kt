@@ -2,7 +2,9 @@ package com.example.lumen.presentation.common.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -23,10 +25,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.presentation.theme.LumenTheme
-import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
-import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
@@ -38,6 +38,7 @@ fun CircularSlider(
     valueRange: IntRange,
     modifier: Modifier = Modifier,
     indicatorCount: Int = 0,
+    markedIndicators: Set<Int>,
     defaultValue: Int? = null,
     thumbColor: Color = MaterialTheme.colorScheme.primary,
 ) {
@@ -49,7 +50,6 @@ fun CircularSlider(
     val currentOnValueChange by rememberUpdatedState(onValueChange)
     val currentValue by rememberUpdatedState(value)
     val currentValueRange by rememberUpdatedState(valueRange)
-    val currentDefaultValue by rememberUpdatedState(defaultValue)
 
     var isDraggingThumb by remember { mutableStateOf(false) }
 
@@ -78,49 +78,16 @@ fun CircularSlider(
             .aspectRatio(1f)
             .pointerInput(enabled) {
                 if (!enabled) return@pointerInput
-                var lastSentValue: Int? = null
 
-                detectDragGestures(
-                    onDragStart = { offset ->
-                        val centerX = size.width / 2f
-                        val centerY = size.height / 2f
-                        val radius = min(size.width, size.height) / 2f * radiusRatio
+                awaitEachGesture {
+                    val down = awaitFirstDown()
+                    val centerX = size.width / 2f
+                    val centerY = size.height / 2f
 
-                        val angleRad = if (currentValue == currentDefaultValue) {
-                            -PI / 2 // Top center
-                        } else {
-                            val p =
-                                (currentValue - currentValueRange.first).toFloat() /
-                                    (currentValueRange.last - currentValueRange.first)
-                            Math.toRadians((startAngle + p * sweepAngle).toDouble())
-                        }
-
-                        val thumbX = centerX + radius * cos(angleRad).toFloat()
-                        val thumbY = centerY + radius * sin(angleRad).toFloat()
-                        val thumbOffset = Offset(thumbX, thumbY)
-
-                        if ((offset - thumbOffset).getDistance() <= 40.dp.toPx()) {
-                            isDraggingThumb = true
-                            lastSentValue = currentValue
-                        }
-                    },
-                    onDragEnd = {
-                        isDraggingThumb = false
-                        lastSentValue = null
-                    },
-                    onDragCancel = {
-                        isDraggingThumb = false
-                        lastSentValue = null
-                    },
-                    onDrag = { change, _ ->
-                        if (!isDraggingThumb) return@detectDragGestures
-
-                        val centerX = size.width / 2f
-                        val centerY = size.height / 2f
-                        val touchPosition = change.position
+                    fun calculateValue(offset: Offset): Int {
                         val touchAngle = atan2(
-                            touchPosition.y - centerY,
-                            touchPosition.x - centerX,
+                            offset.y - centerY,
+                            offset.x - centerX,
                         ).toDouble()
 
                         val degrees = Math.toDegrees(touchAngle).toFloat()
@@ -128,7 +95,7 @@ fun CircularSlider(
                         var normalizedDegrees = (degrees + 90f) % 360f
                         if (normalizedDegrees < 0) normalizedDegrees += 360f
 
-                        val newValue = if (normalizedDegrees < gapAngle / 2f ||
+                        return if (normalizedDegrees < gapAngle / 2f ||
                             normalizedDegrees > 360f - gapAngle / 2f
                         ) {
                             // Snap to start or end
@@ -147,14 +114,28 @@ fun CircularSlider(
                                     p * (currentValueRange.last - currentValueRange.first)
                             ).roundToInt()
                         }
+                    }
 
-                        if (newValue != lastSentValue) {
-                            lastSentValue = newValue
-                            currentOnValueChange(newValue)
+                    val newValue = calculateValue(down.position)
+                    if (newValue != currentValue) {
+                        currentOnValueChange(newValue)
+                    }
+                    isDraggingThumb = true
+                    var lastSentValue = newValue
+
+                    try {
+                        drag(down.id) { change ->
+                            val dragValue = calculateValue(change.position)
+                            if (dragValue != lastSentValue) {
+                                lastSentValue = dragValue
+                                currentOnValueChange(dragValue)
+                            }
+                            change.consume()
                         }
-                        change.consume()
-                    },
-                )
+                    } finally {
+                        isDraggingThumb = false
+                    }
+                }
             },
     ) {
         val center = Offset(size.width / 2, size.height / 2)
@@ -171,6 +152,7 @@ fun CircularSlider(
                 val angleDeg = startAngle + p * sweepAngle
                 val angleRad = Math.toRadians(angleDeg.toDouble())
                 val isSelected = currentValue == value
+                val isMarked = markedIndicators.contains(currentValue)
 
                 val tickLength = if (isSelected) 12.dp.toPx() else 8.dp.toPx()
                 val strokeWidth = if (isSelected) 3.dp.toPx() else 1.dp.toPx()
@@ -181,7 +163,7 @@ fun CircularSlider(
                 val endY = center.y + (indicatorRadius + tickLength) * sin(angleRad).toFloat()
 
                 drawLine(
-                    color = if (isSelected) activeTrackColor else inactiveTrackColor,
+                    color = if (isSelected || isMarked) activeTrackColor else inactiveTrackColor,
                     start = Offset(startX, startY),
                     end = Offset(endX, endY),
                     strokeWidth = strokeWidth,
@@ -246,6 +228,7 @@ fun CircularSliderPreview() {
         Surface {
             CircularSlider(
                 enabled = true,
+                markedIndicators = setOf(10, 15, 24, 50, 77),
                 value = index,
                 onValueChange = {
                     index = it
@@ -267,6 +250,7 @@ fun CircularSliderDisabledPreview() {
         Surface {
             CircularSlider(
                 enabled = false,
+                markedIndicators = setOf(10, 15, 24, 50, 77),
                 value = 10,
                 onValueChange = { },
                 valueRange = range,
@@ -286,6 +270,7 @@ fun CircularSliderDefaultPreview() {
         Surface {
             CircularSlider(
                 enabled = false,
+                markedIndicators = setOf(10, 15, 24, 50, 77),
                 defaultValue = 0,
                 value = index,
                 onValueChange = {

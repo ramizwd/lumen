@@ -2,6 +2,7 @@ package com.example.lumen.domain.ble.usecase.control
 
 import com.example.lumen.domain.ble.ColorPreferenceManager
 import com.example.lumen.domain.ble.model.CustomColorSlot
+import com.example.lumen.domain.ble.model.LedConstants.CUSTOM_COLOR_SLOTS_RANGE
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -17,8 +18,11 @@ class SaveCustomColorUseCase @Inject constructor(
         slot: CustomColorSlot,
     ) {
         try {
+            require(slot.id in CUSTOM_COLOR_SLOTS_RANGE) {
+                "Slot ID must be within range $CUSTOM_COLOR_SLOTS_RANGE"
+            }
             colorPreferenceManager.saveCustomColor(deviceAddress, slot)
-        } catch (e: IllegalArgumentException) {
+        } catch (e: Exception) {
             Timber.tag(LOG_TAG).e(e, "Error saving color")
         }
     }

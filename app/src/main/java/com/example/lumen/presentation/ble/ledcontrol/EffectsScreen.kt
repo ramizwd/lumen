@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,6 +48,8 @@ fun EffectsScreen(
     onTurnLedOffClick: () -> Unit,
     setLedEffect: (Int) -> Unit,
     setEffectCycle: () -> Unit,
+    addFavEffect: (Int) -> Unit,
+    removeFavEffect: (Int) -> Unit,
 ) {
     val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
     val deviceConfig = DeviceConfiguration.fromWindowSizeClass(windowSizeClass)
@@ -54,16 +58,20 @@ fun EffectsScreen(
     val ledHexColor = uiState.ledHexColor
     val currentLedEffect = uiState.ledEffectValue
     val effectPickerTxt = uiState.effectPickerTxt
+    val favoriteEffects = uiState.favoriteEffects
 
     EffectsContent(
         isOn = isOn,
         ledHexColor = ledHexColor,
         currentLedEffect = currentLedEffect,
         effectPickerTxt = effectPickerTxt,
+        favoriteEffects = favoriteEffects,
         onTurnLedOnClick = onTurnLedOnClick,
         onTurnLedOffClick = onTurnLedOffClick,
         setLedEffect = setLedEffect,
         setEffectCycle = setEffectCycle,
+        addFavEffect = addFavEffect,
+        removeFavEffect = removeFavEffect,
         deviceConfig = deviceConfig,
         modifier = Modifier,
     )
@@ -75,10 +83,13 @@ fun EffectsContent(
     ledHexColor: String,
     currentLedEffect: Int,
     effectPickerTxt: UiText,
+    favoriteEffects: Set<Int>,
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     setLedEffect: (Int) -> Unit,
     setEffectCycle: () -> Unit,
+    addFavEffect: (Int) -> Unit,
+    removeFavEffect: (Int) -> Unit,
     deviceConfig: DeviceConfiguration,
     modifier: Modifier = Modifier,
 ) {
@@ -87,6 +98,7 @@ fun EffectsContent(
     }
 
     val isAutoCycleOn = EFFECT_CYCLE_VALUE == currentLedEffect
+    val isFavEffect = favoriteEffects.contains(currentLedEffect)
 
     when (deviceConfig) {
         DeviceConfiguration.TABLET_PORTRAIT,
@@ -100,18 +112,101 @@ fun EffectsContent(
             ) {
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.largeIncreased))
 
-                EffectPicker(
-                    enabled = isOn,
-                    effectNumber = index,
-                    onValueChange = {
-                        index = it
-                        setLedEffect(it)
-                    },
-                    currentLedEffect = currentLedEffect,
-                    effectPickerTxt = effectPickerTxt,
-                    currentLedColor = ledHexColor.hexToComposeColor(),
-                    modifier = Modifier.size(360.dp),
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    EffectPicker(
+                        enabled = isOn,
+                        effectNumber = index,
+                        onValueChange = {
+                            index = it
+                            setLedEffect(it)
+                        },
+                        currentLedEffect = currentLedEffect,
+                        favoriteEffects = favoriteEffects,
+                        effectPickerTxt = effectPickerTxt,
+                        currentLedColor = ledHexColor.hexToComposeColor(),
+                        modifier = Modifier.size(360.dp),
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = MaterialTheme.spacing.largeIncreased,
+                                end = MaterialTheme.spacing.largeIncreased,
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        PlainTooltip(
+                            text = stringResource(R.string.effect_auto_cycle),
+                            content = {
+                                FilledTonalIconToggleButton(
+                                    modifier = modifier,
+                                    enabled = isOn,
+                                    checked = isAutoCycleOn,
+                                    onCheckedChange = { if (!isAutoCycleOn) setEffectCycle() },
+                                ) {
+                                    Icon(
+                                        painter =
+                                            if (isAutoCycleOn) {
+                                                painterResource(R.drawable.autorenew_semibold_24px)
+                                            } else {
+                                                painterResource(R.drawable.autorenew_24px)
+                                            },
+                                        contentDescription = stringResource(
+                                            R.string.effect_auto_cycle,
+                                        ),
+                                    )
+                                }
+                            },
+                        )
+
+                        Spacer(Modifier.width(240.dp))
+
+                        PlainTooltip(
+                            text = stringResource(
+                                if (isFavEffect) {
+                                    R.string.remove_from_favorites
+                                } else {
+                                    R.string.add_to_favorites
+                                },
+                            ),
+                            content = {
+                                FilledIconToggleButton(
+                                    modifier = modifier,
+                                    enabled = isOn,
+                                    checked = isFavEffect,
+                                    onCheckedChange = {
+                                        if (!isFavEffect) {
+                                            addFavEffect(currentLedEffect)
+                                        } else {
+                                            removeFavEffect(currentLedEffect)
+                                        }
+                                    },
+                                ) {
+                                    Icon(
+                                        painter =
+                                            if (isFavEffect) {
+                                                painterResource(R.drawable.favorite_filled_24px)
+                                            } else {
+                                                painterResource(R.drawable.favorite_24px)
+                                            },
+                                        contentDescription = stringResource(
+                                            if (isFavEffect) {
+                                                R.string.remove_from_favorites
+                                            } else {
+                                                R.string.add_to_favorites
+                                            },
+                                        ),
+                                    )
+                                }
+                            },
+                        )
+                    }
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -158,28 +253,6 @@ fun EffectsContent(
                     }
                 }
 
-                PlainTooltip(
-                    text = stringResource(R.string.effect_auto_cycle),
-                    content = {
-                        FilledTonalIconToggleButton(
-                            modifier = modifier,
-                            enabled = isOn,
-                            checked = isAutoCycleOn,
-                            onCheckedChange = { if (!isAutoCycleOn) setEffectCycle() },
-                        ) {
-                            Icon(
-                                painter =
-                                    if (isAutoCycleOn) {
-                                        painterResource(R.drawable.autorenew_semibold_24px)
-                                    } else {
-                                        painterResource(R.drawable.autorenew_24px)
-                                    },
-                                contentDescription = stringResource(R.string.effect_auto_cycle),
-                            )
-                        }
-                    },
-                )
-
                 LedToggleButton(
                     isOn = isOn,
                     onTurnLedOnClick = onTurnLedOnClick,
@@ -209,6 +282,7 @@ fun EffectsContent(
                         },
                         currentLedEffect = currentLedEffect,
                         effectPickerTxt = effectPickerTxt,
+                        favoriteEffects = favoriteEffects,
                         currentLedColor = ledHexColor.hexToComposeColor(),
                         modifier = Modifier.size(300.dp),
                     )
@@ -267,27 +341,80 @@ fun EffectsContent(
                         }
                     }
 
-                    PlainTooltip(
-                        text = stringResource(R.string.effect_auto_cycle),
-                        content = {
-                            FilledTonalIconToggleButton(
-                                modifier = modifier,
-                                enabled = isOn,
-                                checked = isAutoCycleOn,
-                                onCheckedChange = { if (!isAutoCycleOn) setEffectCycle() },
-                            ) {
-                                Icon(
-                                    painter =
-                                        if (isAutoCycleOn) {
-                                            painterResource(R.drawable.autorenew_semibold_24px)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = MaterialTheme.spacing.largeIncreased,
+                                end = MaterialTheme.spacing.largeIncreased,
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceAround,
+                    ) {
+                        PlainTooltip(
+                            text = stringResource(R.string.effect_auto_cycle),
+                            content = {
+                                FilledTonalIconToggleButton(
+                                    modifier = modifier,
+                                    enabled = isOn,
+                                    checked = isAutoCycleOn,
+                                    onCheckedChange = { if (!isAutoCycleOn) setEffectCycle() },
+                                ) {
+                                    Icon(
+                                        painter =
+                                            if (isAutoCycleOn) {
+                                                painterResource(R.drawable.autorenew_semibold_24px)
+                                            } else {
+                                                painterResource(R.drawable.autorenew_24px)
+                                            },
+                                        contentDescription = stringResource(
+                                            R.string.effect_auto_cycle,
+                                        ),
+                                    )
+                                }
+                            },
+                        )
+
+                        PlainTooltip(
+                            text = stringResource(
+                                if (isFavEffect) {
+                                    R.string.remove_from_favorites
+                                } else {
+                                    R.string.add_to_favorites
+                                },
+                            ),
+                            content = {
+                                FilledIconToggleButton(
+                                    modifier = modifier,
+                                    enabled = isOn,
+                                    checked = isFavEffect,
+                                    onCheckedChange = {
+                                        if (!isFavEffect) {
+                                            addFavEffect(currentLedEffect)
                                         } else {
-                                            painterResource(R.drawable.autorenew_24px)
-                                        },
-                                    contentDescription = stringResource(R.string.effect_auto_cycle),
-                                )
-                            }
-                        },
-                    )
+                                            removeFavEffect(currentLedEffect)
+                                        }
+                                    },
+                                ) {
+                                    Icon(
+                                        painter =
+                                            if (isFavEffect) {
+                                                painterResource(R.drawable.favorite_filled_24px)
+                                            } else {
+                                                painterResource(R.drawable.favorite_24px)
+                                            },
+                                        contentDescription = stringResource(
+                                            if (isFavEffect) {
+                                                R.string.remove_from_favorites
+                                            } else {
+                                                R.string.add_to_favorites
+                                            },
+                                        ),
+                                    )
+                                }
+                            },
+                        )
+                    }
 
                     LedToggleButton(
                         isOn = isOn,
@@ -311,8 +438,11 @@ fun EffectContentPreview() {
                 ledHexColor = "00ffff",
                 currentLedEffect = STATIC_COLOR_VALUE,
                 effectPickerTxt = UiText.StringResource(R.string.static_color),
+                favoriteEffects = setOf(10, 15, 24, 50, 77),
                 setLedEffect = { },
                 setEffectCycle = { },
+                addFavEffect = { },
+                removeFavEffect = { },
                 onTurnLedOnClick = { },
                 onTurnLedOffClick = { },
                 deviceConfig = DeviceConfiguration.MOBILE_PORTRAIT,
@@ -331,8 +461,11 @@ fun EffectContentLandscapePreview() {
                 ledHexColor = "00ffff",
                 currentLedEffect = STATIC_COLOR_VALUE,
                 effectPickerTxt = UiText.StringResource(R.string.static_color),
+                favoriteEffects = emptySet(),
                 setLedEffect = { },
                 setEffectCycle = { },
+                addFavEffect = { },
+                removeFavEffect = { },
                 onTurnLedOnClick = { },
                 onTurnLedOffClick = { },
                 deviceConfig = DeviceConfiguration.MOBILE_LANDSCAPE,
@@ -351,8 +484,11 @@ fun EffectContentTabletLandscapePreview() {
                 ledHexColor = "00ffff",
                 currentLedEffect = STATIC_COLOR_VALUE,
                 effectPickerTxt = UiText.StringResource(R.string.static_color),
+                favoriteEffects = emptySet(),
                 setLedEffect = { },
                 setEffectCycle = { },
+                addFavEffect = { },
+                removeFavEffect = { },
                 onTurnLedOnClick = { },
                 onTurnLedOffClick = { },
                 deviceConfig = DeviceConfiguration.TABLET_LANDSCAPE,

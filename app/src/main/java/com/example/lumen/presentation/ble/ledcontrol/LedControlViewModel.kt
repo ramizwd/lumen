@@ -6,13 +6,16 @@ import com.example.lumen.R
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.IcModel
 import com.example.lumen.domain.ble.model.LedConstants.EFFECT_CYCLE_VALUE
+import com.example.lumen.domain.ble.model.LedConstants.LED_EFFECT_RANGE
 import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.domain.ble.usecase.config.ConfigUseCases
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
+import com.example.lumen.domain.ble.usecase.prefs.PrefsUseCases
 import com.example.lumen.presentation.common.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,11 +30,13 @@ import javax.inject.Inject
  * ViewModel for managing UI state related to the connected device and its state,
  * also responsible for invoking control operations.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class LedControlViewModel @Inject constructor(
     private val connectionUseCases: ConnectionUseCases,
     private val controlUseCases: ControlUseCases,
     private val configUseCases: ConfigUseCases,
+    private val prefsUseCases: PrefsUseCases,
 ) : ViewModel() {
     companion object {
         private const val LOG_TAG = "LedControlViewModel"
@@ -120,6 +125,14 @@ class LedControlViewModel @Inject constructor(
                             }
                         }
                 }
+        }
+
+        viewModelScope.launch {
+            uiState.value.selectedDevice?.let { device ->
+                prefsUseCases.getFavEffectsUseCase(device.address).collect { effects ->
+                    _uiState.update { it.copy(favoriteEffects = effects) }
+                }
+            }
         }
     }
 
@@ -214,6 +227,43 @@ class LedControlViewModel @Inject constructor(
         }
         viewModelScope.launch {
             controlUseCases.setEffectCycleUseCase()
+        }
+    }
+
+    fun addFavEffect(value: Int) {
+        if (value !in LED_EFFECT_RANGE) return
+
+        viewModelScope.launch {
+            uiState.value.selectedDevice?.let { device ->
+                val res = prefsUseCases.addFavEffectUseCase(value, device.address)
+                res.onFailure {
+                    _uiState.update {
+                        it.copy(
+                            infoMessage =
+                                UiText.StringResource(R.string.error_adding_effect_to_fav),
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun removeFavEffect(value: Int) {
+        viewModelScope.launch {
+            uiState.value.selectedDevice?.let { device ->
+                prefsUseCases
+                    .removeFavEffectUseCase(value, device.address)
+                    .onFailure {
+                        _uiState.update {
+                            it.copy(
+                                infoMessage =
+                                    UiText.StringResource(
+                                        R.string.error_removing_effect_from_fav,
+                                    ),
+                            )
+                        }
+                    }
+            }
         }
     }
 

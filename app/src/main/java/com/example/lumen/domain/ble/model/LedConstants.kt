@@ -17,4 +17,6 @@ object LedConstants {
 
     // Indicates if the controller is set to effects auto cycle
     const val EFFECT_CYCLE_VALUE = 0
+
+    val CUSTOM_COLOR_SLOTS_RANGE = 1..7
 }

@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,10 +30,13 @@ fun EffectPicker(
     effectNumber: Int,
     onValueChange: (Int) -> Unit,
     currentLedEffect: Int,
+    favoriteEffects: Set<Int>,
     effectPickerTxt: UiText,
     currentLedColor: Color,
     modifier: Modifier = Modifier,
 ) {
+    val isFavEffect = favoriteEffects.contains(currentLedEffect)
+
     val thumbColor by animateColorAsState(
         targetValue =
             when {
@@ -46,6 +50,15 @@ fun EffectPicker(
     val contentAlpha by animateFloatAsState(
         targetValue = if (enabled) 1f else 0.5f,
         label = "content_alpha",
+    )
+
+    val contentColor by animateColorAsState(
+        targetValue = if (isFavEffect) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            LocalContentColor.current
+        },
+        label = "content_color",
     )
 
     val textStyle = when (currentLedEffect) {
@@ -71,6 +84,7 @@ fun EffectPicker(
             onValueChange = onValueChange,
             valueRange = LED_EFFECT_RANGE,
             indicatorCount = LED_EFFECT_RANGE.last,
+            markedIndicators = favoriteEffects,
             defaultValue = defaultSliderValue,
             thumbColor = thumbColor,
             modifier = Modifier.fillMaxSize(),
@@ -79,6 +93,7 @@ fun EffectPicker(
         Text(
             text = effectPickerTxt.asString(),
             style = textStyle,
+            color = contentColor,
             modifier = Modifier.alpha(contentAlpha),
         )
     }
@@ -94,6 +109,7 @@ fun EffectPickerPreview() {
                 effectNumber = STATIC_COLOR_VALUE,
                 onValueChange = { },
                 currentLedEffect = STATIC_COLOR_VALUE,
+                favoriteEffects = setOf(10, 15, 24, 50, 77),
                 effectPickerTxt = UiText.StringResource(R.string.static_color),
                 currentLedColor = Color.Cyan,
             )
@@ -111,6 +127,7 @@ fun EffectPickerActivePreview() {
                 effectNumber = 10,
                 onValueChange = { },
                 currentLedEffect = 10,
+                favoriteEffects = setOf(10, 15, 24, 50, 77),
                 effectPickerTxt = UiText.DynamicString(10.toString()),
                 currentLedColor = Color.Cyan,
             )

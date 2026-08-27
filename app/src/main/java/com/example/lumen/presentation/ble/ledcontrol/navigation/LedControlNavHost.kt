@@ -26,6 +26,8 @@ fun LedControlNavHost(
     setLedColor: (String) -> Unit,
     setLedEffect: (Int) -> Unit,
     setEffectCycle: () -> Unit,
+    addFavEffect: (Int) -> Unit,
+    removeFavEffect: (Int) -> Unit,
     setLedNum: (Int) -> Unit,
     setIcModel: (IcModel) -> Unit,
     setRgbSequence: (RgbSequence) -> Unit,
@@ -61,6 +63,8 @@ fun LedControlNavHost(
                 onTurnLedOffClick = onTurnLedOffClick,
                 setLedEffect = setLedEffect,
                 setEffectCycle = setEffectCycle,
+                addFavEffect = addFavEffect,
+                removeFavEffect = removeFavEffect,
             )
         }
 
