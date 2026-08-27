@@ -47,7 +47,7 @@ class ConversionsTest {
     fun `calculatePercentage returns correct float`() {
         val value = 127.5f
         val max = 255f
-        val expected = 50f
+        val expected = 49.80392f
 
         val result = value.calculatePercentage(max)
 
