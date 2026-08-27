@@ -14,6 +14,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewDynamicColors
 import com.example.lumen.R
+import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.presentation.common.components.PlainTooltip
 import com.example.lumen.presentation.common.utils.toNoAlphaHexString
 import com.example.lumen.presentation.theme.LumenTheme
@@ -22,6 +23,7 @@ import com.example.lumen.presentation.theme.LumenTheme
 fun MatchDeviceThemeButton(
     enabled: Boolean,
     currentHexColor: String?,
+    currentLedEffect: Int,
     onMatchWithDeviceTheme: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -37,7 +39,8 @@ fun MatchDeviceThemeButton(
     // convert to hex and drop the alpha value
     val maxBrightnessColorHex = Color.HSVToColor(hsv).toNoAlphaHexString()
 
-    val isSelected = maxBrightnessColorHex == currentHexColor
+    val isSelected = maxBrightnessColorHex == currentHexColor &&
+        currentLedEffect == STATIC_COLOR_VALUE
 
     PlainTooltip(
         text = stringResource(R.string.match_with_device_theme),
@@ -75,6 +78,7 @@ fun MatchDeviceThemeButtonPreview() {
             MatchDeviceThemeButton(
                 enabled = true,
                 currentHexColor = "ffffff",
+                currentLedEffect = STATIC_COLOR_VALUE,
                 onMatchWithDeviceTheme = { },
             )
         }
@@ -89,6 +93,7 @@ fun MatchDeviceThemeButtonDisabledPreview() {
             MatchDeviceThemeButton(
                 enabled = false,
                 currentHexColor = "ffffff",
+                currentLedEffect = STATIC_COLOR_VALUE,
                 onMatchWithDeviceTheme = { },
             )
         }

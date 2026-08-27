@@ -16,7 +16,12 @@ class SetIcModelUseCase @Inject constructor(
     }
 
     suspend operator fun invoke(icModel: IcModel) {
-        val commandBytes = byteArrayOf(icModel.value) + SET_IC_MODEL_COMMAND
+        val commandBytes = byteArrayOf(
+            icModel.value,
+            SET_IC_MODEL_COMMAND[0],
+            SET_IC_MODEL_COMMAND[1],
+            SET_IC_MODEL_COMMAND[2],
+        )
 
         Timber
             .tag(LOG_TAG)

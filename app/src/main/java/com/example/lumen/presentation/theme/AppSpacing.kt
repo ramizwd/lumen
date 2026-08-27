@@ -16,6 +16,7 @@ data class AppSpacing(
     val largeIncreased: Dp = 24.dp,
     val extraLarge: Dp = 28.dp,
     val extraLargeIncreased: Dp = 32.dp,
+    val extraExtraLarge: Dp = 64.dp,
 )
 
 val LocalAppSpacing = compositionLocalOf { AppSpacing() }

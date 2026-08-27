@@ -24,7 +24,7 @@ You can find a comprehensive list of commands [here](https://gist.github.com/mbu
 - **Orientation Supported**: Portrait and Landscape
 
 ## Features
-The following highlights both core functionalities and new or improved features compared to the official app. 
+The following highlights both core functionalities and new/improved features compared to the official app. 
 
 **Core Functionality:**
 - Scan for nearby Bluetooth devices
@@ -36,6 +36,7 @@ The following highlights both core functionalities and new or improved features 
 - Rename the controller
 - Controlling specific amount of pixels on the LED strip
 - Setting RGB sequence and IC model
+- Apply 120 effects, change their speed, and mark them as favorite
 
 **Lumen-specific Improvements & New Features:**
 - Offers vastly greater number of color combinations by using an HSV color picker instead of a
@@ -48,11 +49,6 @@ The following highlights both core functionalities and new or improved features 
 - Cancel an ongoing connection attempt
 - Match the LED colors based on your current color theme
 - Pick random colors
-
-> [!NOTE]
-> The app is still in development, thus the following features that exist in the official app
-> are currently missing here.
-> - Choosing from the available 120 light effects, changing speed, and favoring them
 
 ## Dependencies
 This project utilizes the following open source third-party libraries.

@@ -10,6 +10,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Unit tests for [ObserveBrightnessUseCase]
@@ -36,10 +37,10 @@ class ObserveBrightnessUseCaseTest {
                 runCurrent()
                 expectNoEvents()
 
-                advanceTimeBy(100)
+                advanceTimeBy(100.milliseconds)
                 expectNoEvents()
 
-                advanceTimeBy(150)
+                advanceTimeBy(150.milliseconds)
                 runCurrent()
 
                 assertEquals(90f, expectMostRecentItem())
@@ -51,12 +52,12 @@ class ObserveBrightnessUseCaseTest {
         runTest {
             useCase(flow).test {
                 flow.tryEmit(10f)
-                advanceTimeBy(250)
+                advanceTimeBy(250.milliseconds)
                 runCurrent()
                 assertEquals(10f, expectMostRecentItem())
 
                 flow.tryEmit(50f)
-                advanceTimeBy(250)
+                advanceTimeBy(250.milliseconds)
                 runCurrent()
                 assertEquals(50f, expectMostRecentItem())
             }

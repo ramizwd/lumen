@@ -7,6 +7,6 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
-class ObserveBrightnessUseCase @Inject constructor() {
+class ObserveEffectSpeedUseCase @Inject constructor() {
     operator fun invoke(flow: Flow<Float>) = flow.sample(250.milliseconds)
 }

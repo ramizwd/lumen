@@ -29,14 +29,17 @@
     <string name="no_device_to_retry_for">No device to retry connection for</string>
     <string name="error_opening_settings">Could not open app settings. Try again</string>
     <string name="brightness">Brightness</string>
+    <string name="speed">Speed</string>
     <string name="turn_led_off">Turn LED off</string>
     <string name="turn_led_on">Turn LED on</string>
     <string name="match_with_device_theme">Match with device theme</string>
     <string name="random_color">Pick a random color</string>
     <string name="colors">Colors</string>
     <string name="controls">Controls</string>
+    <string name="effects">Effects</string>
     <string name="navigate_to_colors">Navigate to colors</string>
     <string name="navigate_to_controls">Navigate to controls</string>
+    <string name="navigate_to_effects">Navigate to effects</string>
     <string name="navigate_back">Navigate back</string>
     <string name="disconnect">Disconnect</string>
     <string name="active">Active</string>
@@ -84,4 +87,13 @@
     <string name="ic_model">IC Model</string>
     <string name="rgb_sequence">RGB Sequence</string>
     <string name="done">Done</string>
+    <string name="error_setting_effect">Error setting an effect</string>
+    <string name="error_adjusting_effect_speed">Error adjusting effect speed</string>
+    <string name="static_color">STATIC</string>
+    <string name="cycle">CYCLE</string>
+    <string name="effect_auto_cycle">Effect auto cycle</string>
+    <string name="add_effect_to_favorites">Add effect to favorites</string>
+    <string name="remove_effect_from_favorites">Remove effect from favorites</string>
+    <string name="error_adding_effect_to_fav">Error adding effect to favorites</string>
+    <string name="error_removing_effect_from_fav">Error removing effect from favorites</string>
 </resources>

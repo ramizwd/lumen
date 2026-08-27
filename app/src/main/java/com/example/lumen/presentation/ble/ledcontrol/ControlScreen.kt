@@ -30,18 +30,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.R
 import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.LedConstants.ACTIVE_PIXELS_RANGE
+import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.presentation.ble.ledcontrol.components.BrightnessSlider
 import com.example.lumen.presentation.ble.ledcontrol.components.HardwareConfigDialog
 import com.example.lumen.presentation.ble.ledcontrol.components.LedToggleButton
+import com.example.lumen.presentation.ble.ledcontrol.components.SpeedSlider
 import com.example.lumen.presentation.common.components.DigitFieldDialog
 import com.example.lumen.presentation.common.components.PlainTooltip
 import com.example.lumen.presentation.common.components.SliderOrientation
 import com.example.lumen.presentation.common.utils.DeviceConfiguration
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
-import com.example.lumen.utils.AppConstants.MAX_LED_NUM
-import com.example.lumen.utils.AppConstants.MIN_LED_NUM
 
 @Composable
 fun ControlScreen(
@@ -49,6 +50,7 @@ fun ControlScreen(
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     onChangeBrightness: (Float) -> Unit,
+    onSetEffectSpeed: (Float) -> Unit,
     setLedNum: (Int) -> Unit,
     setIcModel: (IcModel) -> Unit,
     setRgbSequence: (RgbSequence) -> Unit,
@@ -56,8 +58,10 @@ fun ControlScreen(
     modifier: Modifier = Modifier,
 ) {
     val isOn = uiState.isLedOn
+    val currentLedEffect = uiState.ledEffectValue
     val totalActivePixels = uiState.totalActivePixels
     val brightnessValue = uiState.brightnessValue
+    val speedValue = uiState.speedValue
 
     val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
     val deviceConfig = DeviceConfiguration.fromWindowSizeClass(windowSizeClass)
@@ -70,8 +74,8 @@ fun ControlScreen(
             title = stringResource(R.string.set_active_pixel_range),
             supportingText = stringResource(
                 R.string.pixel_range,
-                MIN_LED_NUM,
-                MAX_LED_NUM,
+                ACTIVE_PIXELS_RANGE.first,
+                ACTIVE_PIXELS_RANGE.last,
             ),
             onConfirmation = {
                 setLedNum(it)
@@ -98,13 +102,16 @@ fun ControlScreen(
     ControlContent(
         deviceConfig = deviceConfig,
         isOn = isOn,
+        currentLedEffect = currentLedEffect,
         pixelCount = totalActivePixels,
         brightnessValue = brightnessValue,
+        speedValue = speedValue,
         onPixelCountClick = { onEvent(LedControlUiEvent.TogglePixelControlDialog(true)) },
         onHardwareConfigClick = { onEvent(LedControlUiEvent.ToggleHardwareConfigDialog(true)) },
         onTurnLedOnClick = onTurnLedOnClick,
         onTurnLedOffClick = onTurnLedOffClick,
         onChangeBrightness = onChangeBrightness,
+        onSetEffectSpeed = onSetEffectSpeed,
         modifier = modifier,
     )
 }
@@ -113,13 +120,16 @@ fun ControlScreen(
 fun ControlContent(
     deviceConfig: DeviceConfiguration,
     isOn: Boolean,
+    currentLedEffect: Int,
     pixelCount: Int,
     brightnessValue: Float,
+    speedValue: Float,
     onPixelCountClick: () -> Unit,
     onHardwareConfigClick: () -> Unit,
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     onChangeBrightness: (Float) -> Unit,
+    onSetEffectSpeed: (Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (deviceConfig) {
@@ -142,11 +152,23 @@ fun ControlContent(
                     )
                 }
 
-                BrightnessSlider(
-                    enabled = isOn,
-                    brightnessValue = brightnessValue,
-                    onChangeBrightness = onChangeBrightness,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    BrightnessSlider(
+                        enabled = isOn,
+                        brightnessValue = brightnessValue,
+                        onChangeBrightness = onChangeBrightness,
+                    )
+
+                    Spacer(modifier = Modifier.padding(MaterialTheme.spacing.largeIncreased))
+
+                    SpeedSlider(
+                        enabled = isOn && currentLedEffect != STATIC_COLOR_VALUE,
+                        speedValue = speedValue,
+                        onSetEffectSpeed = onSetEffectSpeed,
+                    )
+                }
 
                 Box(
                     modifier = Modifier.fillMaxWidth(),
@@ -234,12 +256,28 @@ fun ControlContent(
                         modifier = Modifier.padding(start = MaterialTheme.spacing.medium),
                     )
 
-                    BrightnessSlider(
-                        enabled = isOn,
-                        brightnessValue = brightnessValue,
-                        onChangeBrightness = onChangeBrightness,
-                        orientation = SliderOrientation.HORIZONTAL,
-                    )
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        SpeedSlider(
+                            enabled = isOn && currentLedEffect != STATIC_COLOR_VALUE,
+                            speedValue = speedValue,
+                            onSetEffectSpeed = onSetEffectSpeed,
+                            orientation = SliderOrientation.HORIZONTAL,
+                        )
+
+                        Spacer(
+                            modifier = Modifier.padding(MaterialTheme.spacing.largeIncreased),
+                        )
+
+                        BrightnessSlider(
+                            enabled = isOn,
+                            brightnessValue = brightnessValue,
+                            onChangeBrightness = onChangeBrightness,
+                            orientation = SliderOrientation.HORIZONTAL,
+                        )
+                    }
                 }
             }
         }
@@ -290,12 +328,15 @@ fun ControlContentPreview() {
         Surface {
             ControlContent(
                 deviceConfig = DeviceConfiguration.MOBILE_PORTRAIT,
+                currentLedEffect = STATIC_COLOR_VALUE,
                 pixelCount = 26,
                 brightnessValue = 180f,
+                speedValue = 100f,
                 isOn = true,
                 onTurnLedOnClick = {},
                 onTurnLedOffClick = {},
                 onChangeBrightness = {},
+                onSetEffectSpeed = {},
                 onPixelCountClick = {},
                 onHardwareConfigClick = {},
             )
@@ -310,12 +351,15 @@ fun ControlContentLandscapePreview() {
         Surface {
             ControlContent(
                 deviceConfig = DeviceConfiguration.MOBILE_LANDSCAPE,
+                currentLedEffect = STATIC_COLOR_VALUE,
                 pixelCount = 26,
                 brightnessValue = 180f,
+                speedValue = 100f,
                 isOn = true,
                 onTurnLedOnClick = {},
                 onTurnLedOffClick = {},
                 onChangeBrightness = {},
+                onSetEffectSpeed = {},
                 onPixelCountClick = {},
                 onHardwareConfigClick = {},
             )

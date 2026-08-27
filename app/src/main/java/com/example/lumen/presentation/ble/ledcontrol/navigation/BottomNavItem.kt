@@ -18,6 +18,13 @@ enum class BottomNavItem(
         R.string.colors,
         R.string.navigate_to_colors,
     ),
+    EFFECTS(
+        Screen.EffectsScreen,
+        R.drawable.wand_shine_24px,
+        R.drawable.wand_shine_filled_24px,
+        R.string.effects,
+        R.string.navigate_to_effects,
+    ),
     CONTROLS(
         Screen.ControlScreen,
         R.drawable.discover_tune_24px,

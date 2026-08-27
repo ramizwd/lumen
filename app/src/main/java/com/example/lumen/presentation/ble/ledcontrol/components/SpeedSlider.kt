@@ -17,7 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.lumen.R
-import com.example.lumen.domain.ble.model.LedConstants.BRIGHTNESS_RANGE
+import com.example.lumen.domain.ble.model.LedConstants.EFFECT_SPEED_RANGE
 import com.example.lumen.presentation.common.components.CustomSlider
 import com.example.lumen.presentation.common.components.SliderOrientation
 import com.example.lumen.presentation.theme.LumenTheme
@@ -25,23 +25,15 @@ import com.example.lumen.utils.calculatePercentage
 import com.example.lumen.utils.formatAsPercentage
 
 @Composable
-fun BrightnessSlider(
+fun SpeedSlider(
     enabled: Boolean,
-    brightnessValue: Float,
-    onChangeBrightness: (Float) -> Unit,
+    speedValue: Float,
+    onSetEffectSpeed: (Float) -> Unit,
     modifier: Modifier = Modifier,
     orientation: SliderOrientation = SliderOrientation.VERTICAL,
 ) {
-    val sliderPercentage = brightnessValue.calculatePercentage(BRIGHTNESS_RANGE.endInclusive)
+    val sliderPercentage = speedValue.calculatePercentage(EFFECT_SPEED_RANGE.endInclusive)
     val percentageFormat = sliderPercentage.formatAsPercentage()
-
-    val brightnessIcon =
-        when (sliderPercentage) {
-            in 80.1f..100f -> R.drawable.brightness_max_24px
-            in 20.1f..80f -> R.drawable.brightness_medium_24px
-            in 0.1f..20f -> R.drawable.brightness_low_24px
-            else -> R.drawable.brightness_zero_24px
-        }
 
     if (orientation == SliderOrientation.HORIZONTAL) {
         Row(
@@ -51,13 +43,13 @@ fun BrightnessSlider(
         ) {
             CustomSlider(
                 enabled = enabled,
-                value = brightnessValue,
-                valueRange = BRIGHTNESS_RANGE,
+                value = speedValue,
+                valueRange = EFFECT_SPEED_RANGE,
                 onValueChange = {
-                    onChangeBrightness(it)
+                    onSetEffectSpeed(it)
                 },
-                icon = brightnessIcon,
-                iconDescription = stringResource(R.string.brightness),
+                icon = R.drawable.bolt_24px,
+                iconDescription = stringResource(R.string.speed),
                 orientation = orientation,
                 modifier = Modifier.weight(1f),
             )
@@ -83,13 +75,13 @@ fun BrightnessSlider(
 
             CustomSlider(
                 enabled = enabled,
-                value = brightnessValue,
-                valueRange = BRIGHTNESS_RANGE,
+                value = speedValue,
+                valueRange = EFFECT_SPEED_RANGE,
                 onValueChange = {
-                    onChangeBrightness(it)
+                    onSetEffectSpeed(it)
                 },
-                icon = brightnessIcon,
-                iconDescription = stringResource(R.string.brightness),
+                icon = R.drawable.bolt_24px,
+                iconDescription = stringResource(R.string.speed),
                 orientation = orientation,
             )
         }
@@ -98,15 +90,15 @@ fun BrightnessSlider(
 
 @PreviewLightDark
 @Composable
-fun BrightnessSliderPreview() {
+fun SpeedSliderPreview() {
     var sliderValue by remember { mutableFloatStateOf(180f) }
 
     LumenTheme {
         Surface {
-            BrightnessSlider(
+            SpeedSlider(
                 enabled = true,
-                brightnessValue = sliderValue,
-                onChangeBrightness = {
+                speedValue = sliderValue,
+                onSetEffectSpeed = {
                     sliderValue = it
                 },
             )
@@ -116,16 +108,16 @@ fun BrightnessSliderPreview() {
 
 @PreviewLightDark
 @Composable
-fun BrightnessSliderHorizontalPreview() {
+fun SpeedSliderHorizontalPreview() {
     var sliderValue by remember { mutableFloatStateOf(180f) }
 
     LumenTheme {
         Surface {
-            BrightnessSlider(
+            SpeedSlider(
                 enabled = true,
-                brightnessValue = sliderValue,
+                speedValue = sliderValue,
                 orientation = SliderOrientation.HORIZONTAL,
-                onChangeBrightness = {
+                onSetEffectSpeed = {
                     sliderValue = it
                 },
             )

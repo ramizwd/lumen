@@ -11,4 +11,7 @@ data class PrefsUseCases @Inject constructor(
     val removeFavDeviceAddressUseCase: RemoveFavDeviceAddressUseCase,
     val getDeviceListPreferenceUseCase: GetDeviceListPreferenceUseCase,
     val saveDeviceListPreferenceUseCase: SaveDeviceListPreferenceUseCase,
+    val getFavEffectsUseCase: GetFavEffectsUseCase,
+    val addFavEffectUseCase: AddFavEffectUseCase,
+    val removeFavEffectUseCase: RemoveFavEffectUseCase,
 )

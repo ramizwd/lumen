@@ -4,6 +4,9 @@ import com.example.lumen.R
 import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.LedConstants.EFFECT_CYCLE_VALUE
+import com.example.lumen.domain.ble.model.LedConstants.LED_EFFECT_RANGE
+import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.domain.ble.model.LedControllerState
 import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.domain.ble.usecase.config.ConfigUseCases
@@ -19,9 +22,17 @@ import com.example.lumen.domain.ble.usecase.control.ControlUseCases
 import com.example.lumen.domain.ble.usecase.control.GetCustomColorsUseCase
 import com.example.lumen.domain.ble.usecase.control.ObserveBrightnessUseCase
 import com.example.lumen.domain.ble.usecase.control.ObserveControllerStateUseCase
+import com.example.lumen.domain.ble.usecase.control.ObserveEffectSpeedUseCase
 import com.example.lumen.domain.ble.usecase.control.SaveCustomColorUseCase
+import com.example.lumen.domain.ble.usecase.control.SetEffectCycleUseCase
+import com.example.lumen.domain.ble.usecase.control.SetEffectSpeedUseCase
 import com.example.lumen.domain.ble.usecase.control.SetLedColorUseCase
+import com.example.lumen.domain.ble.usecase.control.SetLedEffectUseCase
 import com.example.lumen.domain.ble.usecase.control.TurnLedOnOffUseCase
+import com.example.lumen.domain.ble.usecase.prefs.AddFavEffectUseCase
+import com.example.lumen.domain.ble.usecase.prefs.GetFavEffectsUseCase
+import com.example.lumen.domain.ble.usecase.prefs.PrefsUseCases
+import com.example.lumen.domain.ble.usecase.prefs.RemoveFavEffectUseCase
 import com.example.lumen.presentation.common.utils.UiText
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -54,8 +65,8 @@ class LedControlViewModelTest {
     private val controllerState =
         LedControllerState(
             isOn = true,
-            preset = 1,
-            speed = 1,
+            preset = 10,
+            speed = 1f,
             brightness = 50f,
             icModel = IcModel.TM1804,
             rgbSeq = RgbSequence.RGB,
@@ -69,18 +80,29 @@ class LedControlViewModelTest {
     private val deviceFlow = MutableStateFlow<BleDevice?>(null)
     private val controllerStateFlow = MutableStateFlow<LedControllerState?>(null)
     private val brightnessFlow = MutableSharedFlow<Float>()
+    private val speedFlow = MutableSharedFlow<Float>()
     private val customColorsFlow = MutableStateFlow<List<CustomColorSlot>>(emptyList())
+    private val effectsFlow = MutableStateFlow<Set<Int>>(emptySet())
 
     private lateinit var setDeviceNameUseCase: SetDeviceNameUseCase
     private lateinit var setLedNumUseCase: SetLedNumUseCase
     private lateinit var observeSelectedDeviceUseCase: ObserveSelectedDeviceUseCase
     private lateinit var observeControllerStateUseCase: ObserveControllerStateUseCase
     private lateinit var observeBrightnessUseCase: ObserveBrightnessUseCase
+    private lateinit var observeEffectSpeedUseCase: ObserveEffectSpeedUseCase
     private lateinit var getCustomColorsUseCase: GetCustomColorsUseCase
+    private lateinit var getFavEffectsUseCase: GetFavEffectsUseCase
+
     private lateinit var turnLedOnOffUseCase: TurnLedOnOffUseCase
     private lateinit var changeBrightnessUseCase: ChangeBrightnessUseCase
+    private lateinit var setEffectSpeedUseCase: SetEffectSpeedUseCase
     private lateinit var saveCustomColorUseCase: SaveCustomColorUseCase
     private lateinit var setLedColorUseCase: SetLedColorUseCase
+    private lateinit var setLedEffectUseCase: SetLedEffectUseCase
+    private lateinit var setEffectCycleUseCase: SetEffectCycleUseCase
+    private lateinit var addFavEffectUseCase: AddFavEffectUseCase
+    private lateinit var removeFavEffectUseCase: RemoveFavEffectUseCase
+
     private lateinit var setIcModelUseCase: SetIcModelUseCase
     private lateinit var setRgbSequenceUseCase: SetRgbSequenceUseCase
     private lateinit var disconnectUseCase: DisconnectUseCase
@@ -93,12 +115,19 @@ class LedControlViewModelTest {
 
         setDeviceNameUseCase = mockk()
         setLedNumUseCase = mockk()
+        setLedEffectUseCase = mockk()
+        setEffectCycleUseCase = mockk(relaxed = true)
         observeSelectedDeviceUseCase = mockk()
         observeControllerStateUseCase = mockk()
         observeBrightnessUseCase = mockk()
+        observeEffectSpeedUseCase = mockk()
         getCustomColorsUseCase = mockk()
+        getFavEffectsUseCase = mockk()
+        addFavEffectUseCase = mockk(relaxed = true)
+        removeFavEffectUseCase = mockk(relaxed = true)
         turnLedOnOffUseCase = mockk(relaxed = true)
         changeBrightnessUseCase = mockk(relaxed = true)
+        setEffectSpeedUseCase = mockk(relaxed = true)
         saveCustomColorUseCase = mockk(relaxed = true)
         setLedColorUseCase = mockk(relaxed = true)
         setIcModelUseCase = mockk(relaxed = true)
@@ -107,14 +136,22 @@ class LedControlViewModelTest {
 
         coEvery { setDeviceNameUseCase(any()) } returns Result.success(Unit)
         coEvery { setLedNumUseCase(any()) } returns Result.success(Unit)
+        coEvery { setLedEffectUseCase(any()) } returns Result.success(Unit)
+        coEvery { addFavEffectUseCase(any(), any()) } returns
+            Result.success(Unit)
+        coEvery { removeFavEffectUseCase(any(), any()) } returns
+            Result.success(Unit)
         every { observeSelectedDeviceUseCase() } returns deviceFlow
         every { observeControllerStateUseCase() } returns controllerStateFlow
         every { observeBrightnessUseCase(any()) } returns brightnessFlow
+        every { observeEffectSpeedUseCase(any()) } returns speedFlow
         every { getCustomColorsUseCase(any()) } returns customColorsFlow
+        every { getFavEffectsUseCase(any()) } returns effectsFlow
 
         deviceFlow.value = device
         controllerStateFlow.value = controllerState
         customColorsFlow.value = emptyList()
+        effectsFlow.value = emptySet()
 
         createViewModel()
     }
@@ -135,9 +172,13 @@ class LedControlViewModelTest {
                 setLedColorUseCase,
                 changeBrightnessUseCase,
                 observeBrightnessUseCase,
+                observeEffectSpeedUseCase,
                 observeControllerStateUseCase,
                 saveCustomColorUseCase,
                 getCustomColorsUseCase,
+                setLedEffectUseCase,
+                setEffectSpeedUseCase,
+                setEffectCycleUseCase,
             )
 
         val configUseCases = ConfigUseCases(
@@ -147,10 +188,22 @@ class LedControlViewModelTest {
             setRgbSequenceUseCase,
         )
 
+        val prefsUseCases = PrefsUseCases(
+            getFavoriteDeviceAddressesUseCase = mockk(),
+            addFavDeviceAddressUseCase = mockk(),
+            removeFavDeviceAddressUseCase = mockk(),
+            getDeviceListPreferenceUseCase = mockk(),
+            saveDeviceListPreferenceUseCase = mockk(),
+            getFavEffectsUseCase = getFavEffectsUseCase,
+            addFavEffectUseCase = addFavEffectUseCase,
+            removeFavEffectUseCase = removeFavEffectUseCase,
+        )
+
         viewModel = LedControlViewModel(
             connectionUseCases,
             controlUseCases,
             configUseCases,
+            prefsUseCases,
         )
     }
 
@@ -177,6 +230,10 @@ class LedControlViewModelTest {
             assertEquals(
                 "${controllerState.red}${controllerState.green}${controllerState.blue}",
                 state.ledHexColor,
+            )
+            assertEquals(
+                UiText.DynamicString(controllerState.preset.toString()),
+                state.effectPickerTxt,
             )
         }
 
@@ -219,6 +276,28 @@ class LedControlViewModelTest {
         }
 
     @Test
+    fun `init collects from speed flow and calls setEffectSpeedUseCase`() =
+        runTest {
+            // Given
+            val value = 50f
+
+            // When
+            speedFlow.emit(value)
+
+            // Then
+            coVerify(exactly = 1) { setEffectSpeedUseCase(value) }
+        }
+
+    @Test
+    fun `init collects favorite effects`() =
+        runTest {
+            val expectedState = setOf(1, 2, 3)
+            effectsFlow.value = expectedState
+
+            assertEquals(expectedState, viewModel.uiState.value.favoriteEffects)
+        }
+
+    @Test
     fun `turnLedOn updates state and calls use case`() =
         runTest {
             // When
@@ -242,10 +321,183 @@ class LedControlViewModelTest {
     fun `setLedColor updates state and calls use case`() =
         runTest {
             val expectedHex = "ff00ff"
+            val expectedEffectVal = STATIC_COLOR_VALUE
             viewModel.setLedColor(expectedHex)
 
             assertEquals(expectedHex, viewModel.uiState.value.ledHexColor)
+            assertEquals(expectedEffectVal, viewModel.uiState.value.ledEffectValue)
+            assertEquals(
+                UiText.StringResource(R.string.static_color),
+                viewModel.uiState.value.effectPickerTxt,
+            )
             coVerify(exactly = 1) { setLedColorUseCase(expectedHex) }
+        }
+
+    @Test
+    fun `setLedEffect on success updates state and calls use case`() =
+        runTest {
+            val expected = 2
+            viewModel.setLedEffect(expected)
+
+            assertEquals(expected, viewModel.uiState.value.ledEffectValue)
+            assertEquals(
+                UiText.DynamicString(expected.toString()),
+                viewModel.uiState.value.effectPickerTxt,
+            )
+            coVerify(exactly = 1) { setLedEffectUseCase(expected) }
+        }
+
+    @Test
+    fun `setEffectCycle updates state and calls use case`() =
+        runTest {
+            viewModel.setEffectCycle()
+
+            assertEquals(
+                EFFECT_CYCLE_VALUE,
+                viewModel.uiState.value.ledEffectValue,
+            )
+            assertEquals(
+                UiText.StringResource(R.string.cycle),
+                viewModel.uiState.value.effectPickerTxt,
+            )
+            coVerify(exactly = 1) { setEffectCycleUseCase() }
+        }
+
+    @Test
+    fun `addFavEffect updates state and calls use case`() =
+        runTest {
+            // Given
+            val effectValue = 1
+            coEvery { addFavEffectUseCase(effectValue, device.address) } returns
+                Result.success(Unit)
+
+            // When
+            viewModel.addFavEffect(effectValue)
+
+            // Then
+            coVerify(exactly = 1) { addFavEffectUseCase(effectValue, device.address) }
+
+            // When (simulating repository update picked up by init collector)
+            effectsFlow.value = setOf(effectValue)
+
+            // Then
+            assertTrue(
+                viewModel.uiState.value.favoriteEffects
+                    .contains(effectValue),
+            )
+        }
+
+    @Test
+    fun `addFavEffect should not call use case if device is null`() =
+        runTest {
+            // Given
+            deviceFlow.value = null
+            createViewModel()
+
+            // When
+            viewModel.addFavEffect(1)
+
+            // Then
+            coVerify(exactly = 0) { addFavEffectUseCase(any(), any()) }
+        }
+
+    @Test
+    fun `addFavEffect returns if value out of range`() =
+        runTest {
+            val expected = LED_EFFECT_RANGE.last + 1
+
+            viewModel.addFavEffect(expected)
+
+            coVerify(exactly = 0) { addFavEffectUseCase(any(), any()) }
+        }
+
+    @Test
+    fun `addFavEffect on failure updates infoMessage state`() =
+        runTest {
+            coEvery { addFavEffectUseCase(any(), any()) } returns
+                Result.failure(Exception("Error"))
+
+            viewModel.addFavEffect(1)
+
+            assertEquals(
+                UiText.StringResource(R.string.error_adding_effect_to_fav),
+                viewModel.uiState.value.infoMessage,
+            )
+        }
+
+    @Test
+    fun `removeFavEffect calls use case`() =
+        runTest {
+            viewModel.removeFavEffect(1)
+
+            coVerify(exactly = 1) {
+                removeFavEffectUseCase(1, device.address)
+            }
+        }
+
+    @Test
+    fun `removeFavEffect should not call use case if device is null`() =
+        runTest {
+            // Given
+            deviceFlow.value = null
+            createViewModel()
+
+            // When
+            viewModel.removeFavEffect(1)
+
+            // Then
+            coVerify(exactly = 0) { removeFavEffectUseCase(any(), any()) }
+        }
+
+    @Test
+    fun `removeFavEffect on failure updates infoMessage state`() =
+        runTest {
+            // Given
+            coEvery { removeFavEffectUseCase(any(), any()) } returns
+                Result.failure(Exception("Error"))
+
+            // When
+            viewModel.removeFavEffect(1)
+
+            // Then
+            assertEquals(
+                UiText.StringResource(R.string.error_removing_effect_from_fav),
+                viewModel.uiState.value.infoMessage,
+            )
+        }
+
+    @Test
+    fun `setLedEffect on failure updates infoMessage state with error text`() =
+        runTest {
+            // Given
+            coEvery { setLedEffectUseCase(any()) } returns
+                Result.failure(Exception("Error"))
+
+            // When
+            viewModel.setLedEffect(200) // out of range (1-120) value
+
+            // Then
+            assertEquals(
+                UiText.StringResource(R.string.error_setting_effect),
+                viewModel.uiState.value.infoMessage,
+            )
+        }
+
+    @Test
+    fun `setEffectSpeed on failure updates infoMessage state`() =
+        runTest {
+            // Given
+            coEvery { setEffectSpeedUseCase(any()) } returns
+                Result.failure(Exception("Error"))
+
+            // When
+            speedFlow.emit(200f)
+
+            // Then
+            assertEquals(
+                UiText.StringResource(R.string.error_adjusting_effect_speed),
+                viewModel.uiState.value.infoMessage,
+            )
         }
 
     @Test

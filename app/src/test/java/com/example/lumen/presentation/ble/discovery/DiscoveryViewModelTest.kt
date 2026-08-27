@@ -133,6 +133,9 @@ class DiscoveryViewModelTest {
                 removeFavDeviceAddressUseCase,
                 getDeviceListPreferenceUseCase,
                 saveDeviceListPreferenceUseCase,
+                getFavEffectsUseCase = mockk(),
+                addFavEffectUseCase = mockk(),
+                removeFavEffectUseCase = mockk(),
             )
 
         viewModel =
@@ -478,9 +481,9 @@ class DiscoveryViewModelTest {
     @Test
     fun `stopScanUseCase is called when ViewModel is cleared`() =
         runTest {
-            val method = viewModel.javaClass.superclass.getDeclaredMethod("onCleared")
-            method.isAccessible = true
-            method.invoke(viewModel)
+            val method = viewModel.javaClass.superclass?.getDeclaredMethod("onCleared")
+            method?.isAccessible = true
+            method?.invoke(viewModel)
 
             verify(exactly = 1) { stopScanUseCase() }
         }

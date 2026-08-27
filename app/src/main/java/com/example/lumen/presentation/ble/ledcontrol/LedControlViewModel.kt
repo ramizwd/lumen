@@ -5,12 +5,17 @@ import androidx.lifecycle.viewModelScope
 import com.example.lumen.R
 import com.example.lumen.domain.ble.model.CustomColorSlot
 import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.LedConstants.EFFECT_CYCLE_VALUE
+import com.example.lumen.domain.ble.model.LedConstants.LED_EFFECT_RANGE
+import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.domain.ble.usecase.config.ConfigUseCases
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
+import com.example.lumen.domain.ble.usecase.prefs.PrefsUseCases
 import com.example.lumen.presentation.common.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,11 +30,13 @@ import javax.inject.Inject
  * ViewModel for managing UI state related to the connected device and its state,
  * also responsible for invoking control operations.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class LedControlViewModel @Inject constructor(
     private val connectionUseCases: ConnectionUseCases,
     private val controlUseCases: ControlUseCases,
     private val configUseCases: ConfigUseCases,
+    private val prefsUseCases: PrefsUseCases,
 ) : ViewModel() {
     companion object {
         private const val LOG_TAG = "LedControlViewModel"
@@ -39,6 +46,13 @@ class LedControlViewModel @Inject constructor(
         MutableSharedFlow<Float>(
             replay = 0,
             // makes sure the UI thread doesn't hang if the bg coroutine processing the brightness is busy
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
+
+    private val speedChangeFlow =
+        MutableSharedFlow<Float>(
+            replay = 0,
             extraBufferCapacity = 1,
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
@@ -62,7 +76,12 @@ class LedControlViewModel @Inject constructor(
                 state.copy(
                     isLedOn = initState?.isOn ?: false,
                     ledHexColor = initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
+                    ledEffectValue = initState?.preset ?: STATIC_COLOR_VALUE,
+                    effectPickerTxt = getEffectPickerText(
+                        initState?.preset ?: STATIC_COLOR_VALUE,
+                    ),
                     brightnessValue = initState?.brightness ?: 0f,
+                    speedValue = initState?.speed ?: 0f,
                     totalActivePixels = initState?.totalActivePixels ?: 0,
                     icModel = initState?.icModel ?: IcModel.WS2811,
                     rgbSeq = initState?.rgbSeq ?: RgbSequence.RGB,
@@ -87,6 +106,33 @@ class LedControlViewModel @Inject constructor(
                 .collect { value ->
                     controlUseCases.changeBrightnessUseCase(value)
                 }
+        }
+
+        viewModelScope.launch {
+            controlUseCases
+                .observeEffectSpeedUseCase(speedChangeFlow)
+                .collect { value ->
+                    controlUseCases
+                        .setEffectSpeedUseCase(value)
+                        .onFailure {
+                            _uiState.update {
+                                it.copy(
+                                    infoMessage =
+                                        UiText.StringResource(
+                                            R.string.error_adjusting_effect_speed,
+                                        ),
+                                )
+                            }
+                        }
+                }
+        }
+
+        viewModelScope.launch {
+            uiState.value.selectedDevice?.let { device ->
+                prefsUseCases.getFavEffectsUseCase(device.address).collect { effects ->
+                    _uiState.update { it.copy(favoriteEffects = effects) }
+                }
+            }
         }
     }
 
@@ -119,7 +165,13 @@ class LedControlViewModel @Inject constructor(
     }
 
     fun setLedColor(hexColor: String) {
-        _uiState.update { it.copy(ledHexColor = hexColor) }
+        _uiState.update {
+            it.copy(
+                ledHexColor = hexColor,
+                ledEffectValue = STATIC_COLOR_VALUE,
+                effectPickerTxt = getEffectPickerText(STATIC_COLOR_VALUE),
+            )
+        }
         viewModelScope.launch {
             controlUseCases.setLedColorUseCase(hexColor)
         }
@@ -137,16 +189,88 @@ class LedControlViewModel @Inject constructor(
         }
     }
 
+    fun setLedEffect(value: Int) {
+        viewModelScope.launch {
+            val res = controlUseCases.setLedEffectUseCase(value)
+            res
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            ledEffectValue = value,
+                            effectPickerTxt = getEffectPickerText(value),
+                        )
+                    }
+                }.onFailure {
+                    _uiState.update {
+                        it.copy(
+                            infoMessage =
+                                UiText.StringResource(R.string.error_setting_effect),
+                        )
+                    }
+                }
+        }
+    }
+
+    fun setEffectSpeed(value: Float) {
+        _uiState.update { it.copy(speedValue = value) }
+        viewModelScope.launch {
+            speedChangeFlow.emit(value)
+        }
+    }
+
+    fun setEffectCycle() {
+        _uiState.update {
+            it.copy(
+                ledEffectValue = EFFECT_CYCLE_VALUE,
+                effectPickerTxt = getEffectPickerText(EFFECT_CYCLE_VALUE),
+            )
+        }
+        viewModelScope.launch {
+            controlUseCases.setEffectCycleUseCase()
+        }
+    }
+
+    fun addFavEffect(value: Int) {
+        if (value !in LED_EFFECT_RANGE) return
+
+        viewModelScope.launch {
+            uiState.value.selectedDevice?.let { device ->
+                val res = prefsUseCases.addFavEffectUseCase(value, device.address)
+                res.onFailure {
+                    _uiState.update {
+                        it.copy(
+                            infoMessage =
+                                UiText.StringResource(R.string.error_adding_effect_to_fav),
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun removeFavEffect(value: Int) {
+        viewModelScope.launch {
+            uiState.value.selectedDevice?.let { device ->
+                prefsUseCases
+                    .removeFavEffectUseCase(value, device.address)
+                    .onFailure {
+                        _uiState.update {
+                            it.copy(
+                                infoMessage =
+                                    UiText.StringResource(
+                                        R.string.error_removing_effect_from_fav,
+                                    ),
+                            )
+                        }
+                    }
+            }
+        }
+    }
+
     fun changeBrightness(value: Float) {
         _uiState.update { it.copy(brightnessValue = value) }
         viewModelScope.launch {
             brightnessChangeFlow.emit(value)
-        }
-    }
-
-    fun disconnectFromDevice() {
-        viewModelScope.launch {
-            connectionUseCases.disconnectUseCase()
         }
     }
 
@@ -205,9 +329,22 @@ class LedControlViewModel @Inject constructor(
         }
     }
 
+    fun disconnectFromDevice() {
+        viewModelScope.launch {
+            connectionUseCases.disconnectUseCase()
+        }
+    }
+
     fun clearInfoMessage() {
         _uiState.update { it.copy(infoMessage = null) }
     }
+
+    private fun getEffectPickerText(effectValue: Int): UiText =
+        when (effectValue) {
+            STATIC_COLOR_VALUE -> UiText.StringResource(R.string.static_color)
+            EFFECT_CYCLE_VALUE -> UiText.StringResource(R.string.cycle)
+            else -> UiText.DynamicString(effectValue.toString())
+        }
 
     override fun onCleared() {
         // TODO here until figuring out persistent controller state

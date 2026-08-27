@@ -14,6 +14,7 @@ import com.example.lumen.domain.ble.model.IcModel
 import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.presentation.ble.ledcontrol.ColorPickerScreen
 import com.example.lumen.presentation.ble.ledcontrol.ControlScreen
+import com.example.lumen.presentation.ble.ledcontrol.EffectsScreen
 import com.example.lumen.presentation.ble.ledcontrol.LedControlUiEvent
 import com.example.lumen.presentation.ble.ledcontrol.LedControlUiState
 
@@ -23,11 +24,16 @@ fun LedControlNavHost(
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     setLedColor: (String) -> Unit,
+    setLedEffect: (Int) -> Unit,
+    setEffectCycle: () -> Unit,
+    addFavEffect: (Int) -> Unit,
+    removeFavEffect: (Int) -> Unit,
     setLedNum: (Int) -> Unit,
     setIcModel: (IcModel) -> Unit,
     setRgbSequence: (RgbSequence) -> Unit,
     onSaveCustomColorSlot: (Int, String) -> Unit,
     onChangeBrightness: (Float) -> Unit,
+    onSetEffectSpeed: (Float) -> Unit,
     navController: NavHostController,
     startDestination: Screen,
     onEvent: (LedControlUiEvent) -> Unit,
@@ -50,12 +56,25 @@ fun LedControlNavHost(
             )
         }
 
+        composable<Screen.EffectsScreen> {
+            EffectsScreen(
+                uiState = uiState,
+                onTurnLedOnClick = onTurnLedOnClick,
+                onTurnLedOffClick = onTurnLedOffClick,
+                setLedEffect = setLedEffect,
+                setEffectCycle = setEffectCycle,
+                addFavEffect = addFavEffect,
+                removeFavEffect = removeFavEffect,
+            )
+        }
+
         composable<Screen.ControlScreen> {
             ControlScreen(
                 uiState = uiState,
                 onTurnLedOnClick = onTurnLedOnClick,
                 onTurnLedOffClick = onTurnLedOffClick,
                 onChangeBrightness = onChangeBrightness,
+                onSetEffectSpeed = onSetEffectSpeed,
                 setLedNum = setLedNum,
                 setIcModel = setIcModel,
                 setRgbSequence = setRgbSequence,

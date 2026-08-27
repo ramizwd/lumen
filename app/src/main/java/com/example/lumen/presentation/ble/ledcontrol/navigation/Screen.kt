@@ -8,5 +8,7 @@ import kotlinx.serialization.Serializable
 sealed class Screen {
     @Serializable data object ColorPickerScreen : Screen()
 
+    @Serializable data object EffectsScreen : Screen()
+
     @Serializable data object ControlScreen : Screen()
 }
