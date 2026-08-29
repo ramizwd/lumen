@@ -34,7 +34,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Constraints
@@ -67,6 +69,8 @@ fun CustomSlider(
     iconDescription: String? = null,
     iconSize: Dp = 32.dp,
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
+
     val animatedValue by animateFloatAsState(
         targetValue = value,
         animationSpec = spring(stiffness = stiffness),
@@ -125,6 +129,12 @@ fun CustomSlider(
         value = value,
         onValueChange = {
             onValueChange(it)
+            when (it) {
+                valueRange.endInclusive ->
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                valueRange.start ->
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOff)
+            }
         },
         valueRange = valueRange,
         modifier =

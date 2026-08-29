@@ -1,7 +1,11 @@
 package com.example.lumen.presentation.ble.ledcontrol.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.LocalContentColor
@@ -44,7 +48,7 @@ fun EffectPicker(
                 enabled -> MaterialTheme.colorScheme.primary
                 else -> MaterialTheme.colorScheme.outline
             },
-        label = "active_track_color",
+        label = "thumb_color",
     )
 
     val contentAlpha by animateFloatAsState(
@@ -90,12 +94,20 @@ fun EffectPicker(
             modifier = Modifier.fillMaxSize(),
         )
 
-        Text(
-            text = effectPickerTxt.asString(),
-            style = textStyle,
-            color = contentColor,
-            modifier = Modifier.alpha(contentAlpha),
-        )
+        AnimatedContent(
+            targetState = effectPickerTxt,
+            transitionSpec = {
+                fadeIn() togetherWith fadeOut()
+            },
+            label = "effect_picker_text_animation",
+        ) { targetText ->
+            Text(
+                text = targetText.asString(),
+                style = textStyle,
+                color = contentColor,
+                modifier = Modifier.alpha(contentAlpha),
+            )
+        }
     }
 }
 

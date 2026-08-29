@@ -21,7 +21,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.lumen.presentation.theme.LumenTheme
@@ -42,6 +44,8 @@ fun CircularSlider(
     defaultValue: Int? = null,
     thumbColor: Color = MaterialTheme.colorScheme.primary,
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
+
     val radiusRatio = 0.7f
     val gapAngle = 40f
     val sweepAngle = 360f - gapAngle
@@ -119,6 +123,7 @@ fun CircularSlider(
                     val newValue = calculateValue(down.position)
                     if (newValue != currentValue) {
                         currentOnValueChange(newValue)
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                     }
                     isDraggingThumb = true
                     var lastSentValue = newValue
@@ -129,6 +134,8 @@ fun CircularSlider(
                             if (dragValue != lastSentValue) {
                                 lastSentValue = dragValue
                                 currentOnValueChange(dragValue)
+                                hapticFeedback
+                                    .performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                             }
                             change.consume()
                         }

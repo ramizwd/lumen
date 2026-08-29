@@ -1,8 +1,11 @@
 package com.example.lumen.presentation.ble.ledcontrol.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -13,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -34,6 +38,20 @@ fun SpeedSlider(
 ) {
     val sliderPercentage = speedValue.calculatePercentage(EFFECT_SPEED_RANGE.endInclusive)
     val percentageFormat = sliderPercentage.formatAsPercentage()
+
+    val textAlpha by animateFloatAsState(
+        targetValue = if (enabled) 1f else 0.5f,
+        label = "text_alpha",
+    )
+
+    val textColor by animateColorAsState(
+        targetValue = if (enabled) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            LocalContentColor.current
+        },
+        label = "text_color",
+    )
 
     if (orientation == SliderOrientation.HORIZONTAL) {
         Row(
@@ -58,7 +76,8 @@ fun SpeedSlider(
                 text = "$percentageFormat%",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.weight(0.2f),
+                color = textColor,
+                modifier = Modifier.alpha(textAlpha).weight(0.2f),
             )
         }
     } else {
@@ -71,6 +90,8 @@ fun SpeedSlider(
                 text = "$percentageFormat%",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
+                color = textColor,
+                modifier = Modifier.alpha(textAlpha),
             )
 
             CustomSlider(

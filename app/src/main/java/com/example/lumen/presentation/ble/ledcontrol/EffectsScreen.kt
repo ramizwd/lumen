@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.FilledIconToggleButton
-import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -24,17 +22,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.lumen.R
 import com.example.lumen.domain.ble.model.LedConstants.EFFECT_CYCLE_VALUE
 import com.example.lumen.domain.ble.model.LedConstants.LED_EFFECT_RANGE
 import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
+import com.example.lumen.presentation.ble.ledcontrol.components.CycleEffectsButton
+import com.example.lumen.presentation.ble.ledcontrol.components.EffectFavoriteButton
 import com.example.lumen.presentation.ble.ledcontrol.components.EffectPicker
 import com.example.lumen.presentation.ble.ledcontrol.components.LedToggleButton
-import com.example.lumen.presentation.common.components.PlainTooltip
 import com.example.lumen.presentation.common.utils.DeviceConfiguration
 import com.example.lumen.presentation.common.utils.UiText
 import com.example.lumen.presentation.common.utils.hexToComposeColor
@@ -93,6 +93,8 @@ fun EffectsContent(
     deviceConfig: DeviceConfiguration,
     modifier: Modifier = Modifier,
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
+
     var index by remember(currentLedEffect) {
         mutableIntStateOf(currentLedEffect)
     }
@@ -140,70 +142,19 @@ fun EffectsContent(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
                     ) {
-                        PlainTooltip(
-                            text = stringResource(R.string.effect_auto_cycle),
-                            content = {
-                                FilledTonalIconToggleButton(
-                                    modifier = modifier,
-                                    enabled = isOn,
-                                    checked = isAutoCycleOn,
-                                    onCheckedChange = { if (!isAutoCycleOn) setEffectCycle() },
-                                ) {
-                                    Icon(
-                                        painter =
-                                            if (isAutoCycleOn) {
-                                                painterResource(R.drawable.autorenew_semibold_24px)
-                                            } else {
-                                                painterResource(R.drawable.autorenew_24px)
-                                            },
-                                        contentDescription = stringResource(
-                                            R.string.effect_auto_cycle,
-                                        ),
-                                    )
-                                }
-                            },
+                        CycleEffectsButton(
+                            enabled = isOn,
+                            isAutoCycleOn = isAutoCycleOn,
+                            onSetCycle = setEffectCycle,
                         )
 
                         Spacer(Modifier.width(240.dp))
 
-                        PlainTooltip(
-                            text = stringResource(
-                                if (isFavEffect) {
-                                    R.string.remove_from_favorites
-                                } else {
-                                    R.string.add_to_favorites
-                                },
-                            ),
-                            content = {
-                                FilledIconToggleButton(
-                                    modifier = modifier,
-                                    enabled = isOn,
-                                    checked = isFavEffect,
-                                    onCheckedChange = {
-                                        if (!isFavEffect) {
-                                            addFavEffect(currentLedEffect)
-                                        } else {
-                                            removeFavEffect(currentLedEffect)
-                                        }
-                                    },
-                                ) {
-                                    Icon(
-                                        painter =
-                                            if (isFavEffect) {
-                                                painterResource(R.drawable.favorite_filled_24px)
-                                            } else {
-                                                painterResource(R.drawable.favorite_24px)
-                                            },
-                                        contentDescription = stringResource(
-                                            if (isFavEffect) {
-                                                R.string.remove_from_favorites
-                                            } else {
-                                                R.string.add_to_favorites
-                                            },
-                                        ),
-                                    )
-                                }
-                            },
+                        EffectFavoriteButton(
+                            enabled = isOn,
+                            isFavorite = isFavEffect,
+                            onFavor = { addFavEffect(currentLedEffect) },
+                            onRemove = { removeFavEffect(currentLedEffect) },
                         )
                     }
                 }
@@ -223,6 +174,7 @@ fun EffectsContent(
                             }
                             index = prevValue
                             setLedEffect(prevValue)
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                         },
                         modifier = Modifier.size(MaterialTheme.spacing.extraExtraLarge),
                     ) {
@@ -242,6 +194,7 @@ fun EffectsContent(
                             }
                             index = nextValue
                             setLedEffect(nextValue)
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                         },
                         modifier = Modifier.size(MaterialTheme.spacing.extraExtraLarge),
                     ) {
@@ -269,7 +222,9 @@ fun EffectsContent(
                 horizontalArrangement = Arrangement.SpaceAround,
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize().weight(1f),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
@@ -289,7 +244,9 @@ fun EffectsContent(
                 }
 
                 Column(
-                    modifier = Modifier.fillMaxSize().weight(1.2f),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1.2f),
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
@@ -310,6 +267,7 @@ fun EffectsContent(
                                 }
                                 index = prevValue
                                 setLedEffect(prevValue)
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                             },
                             modifier = Modifier.size(MaterialTheme.spacing.extraExtraLarge),
                         ) {
@@ -330,6 +288,7 @@ fun EffectsContent(
                                 }
                                 index = nextValue
                                 setLedEffect(nextValue)
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                             },
                             modifier = Modifier.size(MaterialTheme.spacing.extraExtraLarge),
                         ) {
@@ -351,68 +310,17 @@ fun EffectsContent(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceAround,
                     ) {
-                        PlainTooltip(
-                            text = stringResource(R.string.effect_auto_cycle),
-                            content = {
-                                FilledTonalIconToggleButton(
-                                    modifier = modifier,
-                                    enabled = isOn,
-                                    checked = isAutoCycleOn,
-                                    onCheckedChange = { if (!isAutoCycleOn) setEffectCycle() },
-                                ) {
-                                    Icon(
-                                        painter =
-                                            if (isAutoCycleOn) {
-                                                painterResource(R.drawable.autorenew_semibold_24px)
-                                            } else {
-                                                painterResource(R.drawable.autorenew_24px)
-                                            },
-                                        contentDescription = stringResource(
-                                            R.string.effect_auto_cycle,
-                                        ),
-                                    )
-                                }
-                            },
+                        CycleEffectsButton(
+                            enabled = isOn,
+                            isAutoCycleOn = isAutoCycleOn,
+                            onSetCycle = setEffectCycle,
                         )
 
-                        PlainTooltip(
-                            text = stringResource(
-                                if (isFavEffect) {
-                                    R.string.remove_from_favorites
-                                } else {
-                                    R.string.add_to_favorites
-                                },
-                            ),
-                            content = {
-                                FilledIconToggleButton(
-                                    modifier = modifier,
-                                    enabled = isOn,
-                                    checked = isFavEffect,
-                                    onCheckedChange = {
-                                        if (!isFavEffect) {
-                                            addFavEffect(currentLedEffect)
-                                        } else {
-                                            removeFavEffect(currentLedEffect)
-                                        }
-                                    },
-                                ) {
-                                    Icon(
-                                        painter =
-                                            if (isFavEffect) {
-                                                painterResource(R.drawable.favorite_filled_24px)
-                                            } else {
-                                                painterResource(R.drawable.favorite_24px)
-                                            },
-                                        contentDescription = stringResource(
-                                            if (isFavEffect) {
-                                                R.string.remove_from_favorites
-                                            } else {
-                                                R.string.add_to_favorites
-                                            },
-                                        ),
-                                    )
-                                }
-                            },
+                        EffectFavoriteButton(
+                            enabled = isOn,
+                            isFavorite = isFavEffect,
+                            onFavor = { addFavEffect(currentLedEffect) },
+                            onRemove = { removeFavEffect(currentLedEffect) },
                         )
                     }
 
