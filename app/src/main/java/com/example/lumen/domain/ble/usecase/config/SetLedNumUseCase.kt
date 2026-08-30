@@ -33,13 +33,11 @@ class SetLedNumUseCase @Inject constructor(
 
             Timber.tag(LOG_TAG).d("Command to send: ${commandBytes.contentToString()}")
 
-            bleGattController.writeCharacteristic(
+            return bleGattController.writeCharacteristic(
                 SERVICE_UUID,
                 CHARACTERISTIC_UUID,
                 commandBytes,
             )
-
-            Result.success(Unit)
         } catch (e: Exception) {
             Timber.tag(LOG_TAG).e(e, "Failed to set LED count")
             Result.failure(e)

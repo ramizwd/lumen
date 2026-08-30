@@ -119,6 +119,7 @@ class BleGattControllerImpl(
                         leGattCallback,
                     )
                 } else {
+                    @Suppress("DEPRECATION")
                     device?.connectGatt(context, false, leGattCallback)
                 }
         } catch (e: IllegalArgumentException) {
@@ -160,28 +161,31 @@ class BleGattControllerImpl(
         serviceUUID: UUID,
         charaUUID: UUID,
         data: ByteArray,
-    ) {
+    ): Result<Unit> {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
             _connectionEvents.emit(ConnectionResult.Failure.PermsMissing)
-            return
+            return Result.failure(Exception("Bluetooth permission missing"))
         }
 
-        bluetoothGatt?.let { gatt ->
+        return bluetoothGatt?.let { gatt ->
             val service =
                 gatt.getService(serviceUUID) ?: run {
                     Timber.tag(LOG_TAG).d("Service $serviceUUID not found")
-                    return
+                    return Result.failure(Exception("Service not found"))
                 }
 
             val chara =
                 service.getCharacteristic(charaUUID) ?: run {
                     Timber.tag(LOG_TAG).d("Characteristic $charaUUID not found")
-                    return
+                    return Result.failure(Exception("Characteristic not found"))
                 }
 
             charaWriteOperation(chara, data)
-        } ?: Timber.tag(LOG_TAG).e("GATT not initialized for writeCharacteristic")
+        } ?: run {
+            Timber.tag(LOG_TAG).e("GATT not initialized for writeCharacteristic")
+            Result.failure(Exception("GATT not initialized"))
+        }
     }
 
     // Object that handles GATT connection state
@@ -325,9 +329,11 @@ class BleGattControllerImpl(
                 gatt: BluetoothGatt,
                 characteristic: BluetoothGattCharacteristic,
             ) {
+                @Suppress("DEPRECATION")
                 super.onCharacteristicChanged(gatt, characteristic)
 
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    @Suppress("DEPRECATION")
                     val value = characteristic.value
 
                     Timber.tag(LOG_TAG).d(
@@ -364,8 +370,10 @@ class BleGattControllerImpl(
                 descriptor: BluetoothGattDescriptor,
                 status: Int,
             ) {
+                @Suppress("DEPRECATION")
                 super.onDescriptorRead(gatt, descriptor, status)
 
+                @Suppress("DEPRECATION")
                 Timber.tag(LOG_TAG).d(
                     "onDescriptorRead: %s value: %s",
                     descriptor.uuid,
@@ -416,7 +424,9 @@ class BleGattControllerImpl(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     gatt.writeDescriptor(descriptor, descValue)
                 } else {
+                    @Suppress("DEPRECATION")
                     descriptor.value = descValue
+                    @Suppress("DEPRECATION")
                     gatt.writeDescriptor(descriptor)
                 }
             } ?: Timber.tag(LOG_TAG).w("CCCD not found for ${chara.uuid}")
@@ -461,29 +471,29 @@ class BleGattControllerImpl(
     private fun charaWriteOperation(
         chara: BluetoothGattCharacteristic,
         data: ByteArray,
-    ) {
-        bluetoothGatt?.let { gatt ->
+    ): Result<Unit> {
+        return try {
+            val gatt = bluetoothGatt ?: return Result.failure(Exception("GATT not initialized"))
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                try {
-                    gatt.writeCharacteristic(
-                        chara,
-                        data,
-                        BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT,
-                    )
-                } catch (e: Exception) {
-                    Timber.tag(LOG_TAG).e(e, "Error writing to characteristic")
-                    _connectionEvents.tryEmit(ConnectionResult.Failure.CommandFailed)
-                }
+                gatt.writeCharacteristic(
+                    chara,
+                    data,
+                    BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT,
+                )
             } else {
-                try {
-                    chara.value = data
-                    gatt.writeCharacteristic(chara)
-                } catch (e: Exception) {
-                    Timber.tag(LOG_TAG).e(e, "Error writing to characteristic")
-                    _connectionEvents.tryEmit(ConnectionResult.Failure.CommandFailed)
-                }
+                @Suppress("DEPRECATION")
+                chara.value = data
+                @Suppress("DEPRECATION")
+                gatt.writeCharacteristic(chara)
             }
-        } ?: Timber.tag(LOG_TAG).e("GATT not initialized for charaWriteOperation")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Timber.tag(LOG_TAG).e(e, "Error writing to characteristic")
+            // for error requesting device state during connection
+            _connectionEvents.tryEmit(ConnectionResult.Failure.ConnectionFailed)
+            Result.failure(e)
+        }
     }
 
     private fun retryConnection() {

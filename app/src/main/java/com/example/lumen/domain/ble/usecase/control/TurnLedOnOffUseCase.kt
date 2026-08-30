@@ -15,7 +15,7 @@ class TurnLedOnOffUseCase @Inject constructor(
         private const val LOG_TAG = "TurnLedOnOffUseCase"
     }
 
-    suspend operator fun invoke(isLedOn: Boolean) {
+    suspend operator fun invoke(isLedOn: Boolean): Result<Unit> {
         val command =
             if (isLedOn) {
                 Timber.tag(LOG_TAG).d("Turn LED on")
@@ -25,7 +25,7 @@ class TurnLedOnOffUseCase @Inject constructor(
                 LED_OFF_COMMAND
             }
 
-        bleGattController.writeCharacteristic(
+        return bleGattController.writeCharacteristic(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
             command,

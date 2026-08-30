@@ -15,7 +15,7 @@ class SetRgbSequenceUseCase @Inject constructor(
         private const val LOG_TAG = "SetRgbSequenceUseCase"
     }
 
-    suspend operator fun invoke(rgbSeq: RgbSequence) {
+    suspend operator fun invoke(rgbSeq: RgbSequence): Result<Unit> {
         val commandBytes = byteArrayOf(
             rgbSeq.value,
             SET_RGB_SEQ_COMMAND[0],
@@ -27,7 +27,7 @@ class SetRgbSequenceUseCase @Inject constructor(
             .tag(LOG_TAG)
             .d("Setting RGB sequence to $rgbSeq: ${commandBytes.contentToString()}")
 
-        bleGattController.writeCharacteristic(
+        return bleGattController.writeCharacteristic(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
             commandBytes,

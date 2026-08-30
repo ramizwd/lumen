@@ -15,7 +15,7 @@ class SetIcModelUseCase @Inject constructor(
         private const val LOG_TAG = "SetIcModelUseCase"
     }
 
-    suspend operator fun invoke(icModel: IcModel) {
+    suspend operator fun invoke(icModel: IcModel): Result<Unit> {
         val commandBytes = byteArrayOf(
             icModel.value,
             SET_IC_MODEL_COMMAND[0],
@@ -27,7 +27,7 @@ class SetIcModelUseCase @Inject constructor(
             .tag(LOG_TAG)
             .d("Setting IC model to $icModel: ${commandBytes.contentToString()}")
 
-        bleGattController.writeCharacteristic(
+        return bleGattController.writeCharacteristic(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
             commandBytes,

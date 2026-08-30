@@ -30,13 +30,11 @@ class SetLedEffectUseCase @Inject constructor(
 
             Timber.tag(LOG_TAG).d("Setting effect number: ${command.contentToString()}")
 
-            bleGattController.writeCharacteristic(
+            return bleGattController.writeCharacteristic(
                 SERVICE_UUID,
                 CHARACTERISTIC_UUID,
                 command,
             )
-
-            Result.success(Unit)
         } catch (e: Exception) {
             Timber.tag(LOG_TAG).e(e, "Failed to set LED effect")
             Result.failure(e)

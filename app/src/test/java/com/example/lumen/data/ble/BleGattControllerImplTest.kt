@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothProfile.STATE_CONNECTED
 import android.bluetooth.BluetoothProfile.STATE_DISCONNECTED
+import android.bluetooth.BluetoothStatusCodes
 import android.content.Context
 import app.cash.turbine.test
 import com.example.lumen.domain.ble.model.BleDevice
@@ -33,9 +34,11 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNull
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Unit tests for [BleGattControllerImpl]
@@ -68,6 +71,11 @@ class BleGattControllerImplTest {
         gatt = mockk(relaxed = true)
         characteristic = mockk(relaxed = true)
         descriptor = mockk(relaxed = true)
+
+        every { gatt.writeCharacteristic(any()) } returns true
+        every {
+            gatt.writeCharacteristic(any(), any(), any())
+        } returns BluetoothStatusCodes.SUCCESS
 
         every { context.hasPermission(any()) } returns true
         every { btAdapter.isEnabled } returns true
@@ -236,11 +244,11 @@ class BleGattControllerImplTest {
 
                 assertEquals(ConnectionState.RETRYING, awaitItem())
 
-                advanceTimeBy(200)
+                advanceTimeBy(200.milliseconds)
 
                 expectNoEvents()
 
-                advanceTimeBy(400)
+                advanceTimeBy(400.milliseconds)
 
                 verify(exactly = 2) {
                     remoteDevice.connectGatt(
@@ -273,7 +281,7 @@ class BleGattControllerImplTest {
                     STATE_DISCONNECTED,
                 )
 
-                advanceTimeBy(600)
+                advanceTimeBy(600.milliseconds)
             }
 
             controllerWithScope.connectionEvents.test {
@@ -367,7 +375,7 @@ class BleGattControllerImplTest {
 
             verify(exactly = 1) { gatt.close() }
 
-            advanceTimeBy(600) // advance time by more than retry delay
+            advanceTimeBy(600.milliseconds) // advance time by more than retry delay
 
             verify(exactly = 1) {
                 remoteDevice.connectGatt(
@@ -411,7 +419,7 @@ class BleGattControllerImplTest {
 
             verify(exactly = 1) { gatt.close() }
 
-            advanceTimeBy(600)
+            advanceTimeBy(600.milliseconds)
 
             verify(exactly = 1) {
                 remoteDevice.connectGatt(
@@ -444,12 +452,13 @@ class BleGattControllerImplTest {
         runTest {
             controller.connect(device)
 
-            controller.writeCharacteristic(
+            val result = controller.writeCharacteristic(
                 SERVICE_UUID,
                 CHARACTERISTIC_UUID,
                 commandBytes,
             )
 
+            assertTrue(result.isSuccess)
             verify(exactly = 1) {
                 gatt.writeCharacteristic(characteristic)
                 characteristic.value = commandBytes
@@ -461,13 +470,14 @@ class BleGattControllerImplTest {
         runTest {
             every { context.hasPermission(any()) } returns false
 
-            controller.writeCharacteristic(
-                SERVICE_UUID,
-                CHARACTERISTIC_UUID,
-                commandBytes,
-            )
-
             controller.connectionEvents.test {
+                val result = controller.writeCharacteristic(
+                    SERVICE_UUID,
+                    CHARACTERISTIC_UUID,
+                    commandBytes,
+                )
+
+                assertTrue(result.isFailure)
                 assertEquals(
                     ConnectionResult.Failure.PermsMissing,
                     awaitItem(),
@@ -489,15 +499,16 @@ class BleGattControllerImplTest {
                 gatt.writeCharacteristic(any(), any(), any())
             } throws RuntimeException("BT error")
 
-            controller.writeCharacteristic(
-                SERVICE_UUID,
-                CHARACTERISTIC_UUID,
-                commandBytes,
-            )
-
             controller.connectionEvents.test {
+                val result = controller.writeCharacteristic(
+                    SERVICE_UUID,
+                    CHARACTERISTIC_UUID,
+                    commandBytes,
+                )
+
+                assertTrue(result.isFailure)
                 assertEquals(
-                    ConnectionResult.Failure.CommandFailed,
+                    ConnectionResult.Failure.ConnectionFailed,
                     awaitItem(),
                 )
             }

@@ -25,5 +25,5 @@ interface BleGattController {
         serviceUUID: UUID,
         charaUUID: UUID,
         data: ByteArray,
-    )
+    ): Result<Unit>
 }

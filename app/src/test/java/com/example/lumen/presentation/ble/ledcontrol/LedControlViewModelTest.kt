@@ -309,6 +309,27 @@ class LedControlViewModelTest {
         }
 
     @Test
+    fun `turnLedOn on failure reverts state`() =
+        runTest {
+            // Given
+            controllerStateFlow.value = controllerState.copy(isOn = false)
+            createViewModel()
+            assertFalse(viewModel.uiState.value.isLedOn)
+
+            coEvery { turnLedOnOffUseCase(true) } returns Result.failure(Exception("Error"))
+
+            // When
+            viewModel.turnLedOn()
+
+            // Then
+            assertFalse(viewModel.uiState.value.isLedOn)
+            assertEquals(
+                UiText.StringResource(R.string.error_turning_led_on),
+                viewModel.uiState.value.infoMessage,
+            )
+        }
+
+    @Test
     fun `turnLedOff updates state and calls use case`() =
         runTest {
             viewModel.turnLedOff()

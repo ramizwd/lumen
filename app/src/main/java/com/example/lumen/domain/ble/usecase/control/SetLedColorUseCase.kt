@@ -9,11 +9,10 @@ import javax.inject.Inject
 class SetLedColorUseCase @Inject constructor(
     private val bleGattController: BleGattController,
 ) {
-    suspend operator fun invoke(hexColor: String) {
+    suspend operator fun invoke(hexColor: String): Result<Unit> =
         bleGattController.writeCharacteristic(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
             hexColor.hexToColorCommandBytes(),
         )
-    }
 }

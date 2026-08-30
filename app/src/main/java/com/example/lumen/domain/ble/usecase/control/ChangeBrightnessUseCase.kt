@@ -14,10 +14,10 @@ class ChangeBrightnessUseCase @Inject constructor(
         private const val LOG_TAG = "ChangeBrightnessUseCase"
     }
 
-    suspend operator fun invoke(value: Float) {
+    suspend operator fun invoke(value: Float): Result<Unit> {
         Timber.tag(LOG_TAG).d("Value: $value")
 
-        bleGattController.writeCharacteristic(
+        return bleGattController.writeCharacteristic(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
             value.toBrightnessCommandBytes(),

@@ -19,8 +19,6 @@ sealed interface ConnectionResult {
 
         data object DeviceNotFound : Failure
 
-        data object CommandFailed : Failure
-
         data object CannotRetry : Failure
 
         data object ConnectionFailed : Failure

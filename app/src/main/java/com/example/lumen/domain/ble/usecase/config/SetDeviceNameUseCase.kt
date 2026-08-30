@@ -29,16 +29,18 @@ class SetDeviceNameUseCase @Inject constructor(
 
             Timber.tag(LOG_TAG).d("commandByteList: ${commandBytes.toHexString()}")
 
-            bleGattController.writeCharacteristic(
+            val res = bleGattController.writeCharacteristic(
                 SERVICE_UUID,
                 CHARACTERISTIC_UUID,
                 commandBytes,
             )
 
-            bleGattController.disconnect()
-            bleScanController.startScan()
+            if (res.isSuccess) {
+                bleGattController.disconnect()
+                bleScanController.startScan()
+            }
 
-            Result.success(Unit)
+            res
         } catch (e: Exception) {
             Timber.tag(LOG_TAG).e(e, "Failed to set device name")
             Result.failure(e)

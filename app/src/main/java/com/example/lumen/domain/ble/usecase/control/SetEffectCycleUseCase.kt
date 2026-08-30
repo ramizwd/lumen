@@ -9,11 +9,10 @@ import javax.inject.Inject
 class SetEffectCycleUseCase @Inject constructor(
     private val bleGattController: BleGattController,
 ) {
-    suspend operator fun invoke() {
+    suspend operator fun invoke(): Result<Unit> =
         bleGattController.writeCharacteristic(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
             SET_CYCLE_COMMAND,
         )
-    }
 }

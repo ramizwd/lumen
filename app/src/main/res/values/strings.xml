@@ -4,7 +4,6 @@
     <string name="nearby_devices_perms_missing">Nearby devices permission missing!</string>
     <string name="bt_disabled">Bluetooth is disabled</string>
     <string name="device_not_found">Device not found</string>
-    <string name="error_sending_command">Error sending command</string>
     <string name="cannot_retry_no_device">Cannot retry, no device selected</string>
     <string name="connection_failed">Connection failed</string>
     <string name="ble_scanning_not_supported">BLE scanning is not supported</string>
@@ -96,4 +95,11 @@
     <string name="remove_effect_from_favorites">Remove effect from favorites</string>
     <string name="error_adding_effect_to_fav">Error adding effect to favorites</string>
     <string name="error_removing_effect_from_fav">Error removing effect from favorites</string>
+    <string name="error_turning_led_on">Error turning LED on</string>
+    <string name="error_turning_led_off">Error turning LED off</string>
+    <string name="error_setting_led_color">Error setting LED color</string>
+    <string name="error_changing_brightness">Error changing brightness</string>
+    <string name="error_setting_cycle">Error setting effect to auto cycle</string>
+    <string name="error_setting_ic_model">Error setting IC model</string>
+    <string name="error_setting_rgb_sequence">Error setting RGB sequence</string>
 </resources>

@@ -104,7 +104,14 @@ class LedControlViewModel @Inject constructor(
             controlUseCases
                 .observeBrightnessUseCase(brightnessChangeFlow)
                 .collect { value ->
-                    controlUseCases.changeBrightnessUseCase(value)
+                    controlUseCases.changeBrightnessUseCase(value).onFailure {
+                        _uiState.update {
+                            it.copy(
+                                infoMessage =
+                                    UiText.StringResource(R.string.error_changing_brightness),
+                            )
+                        }
+                    }
                 }
         }
 
@@ -151,20 +158,40 @@ class LedControlViewModel @Inject constructor(
     }
 
     fun turnLedOn() {
+        val prevState = uiState.value.isLedOn
         _uiState.update { it.copy(isLedOn = true) }
         viewModelScope.launch {
-            controlUseCases.turnLedOnOffUseCase(true)
+            controlUseCases.turnLedOnOffUseCase(true).onFailure {
+                _uiState.update {
+                    it.copy(
+                        isLedOn = prevState,
+                        infoMessage = UiText.StringResource(R.string.error_turning_led_on),
+                    )
+                }
+            }
         }
     }
 
     fun turnLedOff() {
+        val prevState = uiState.value.isLedOn
         _uiState.update { it.copy(isLedOn = false) }
         viewModelScope.launch {
-            controlUseCases.turnLedOnOffUseCase(false)
+            controlUseCases.turnLedOnOffUseCase(false).onFailure {
+                _uiState.update {
+                    it.copy(
+                        isLedOn = prevState,
+                        infoMessage = UiText.StringResource(R.string.error_turning_led_off),
+                    )
+                }
+            }
         }
     }
 
     fun setLedColor(hexColor: String) {
+        val prevColor = uiState.value.ledHexColor
+        val prevEffect = uiState.value.ledEffectValue
+        val prevEffectTxt = uiState.value.effectPickerTxt
+
         _uiState.update {
             it.copy(
                 ledHexColor = hexColor,
@@ -173,7 +200,16 @@ class LedControlViewModel @Inject constructor(
             )
         }
         viewModelScope.launch {
-            controlUseCases.setLedColorUseCase(hexColor)
+            controlUseCases.setLedColorUseCase(hexColor).onFailure {
+                _uiState.update {
+                    it.copy(
+                        ledHexColor = prevColor,
+                        ledEffectValue = prevEffect,
+                        effectPickerTxt = prevEffectTxt,
+                        infoMessage = UiText.StringResource(R.string.error_setting_led_color),
+                    )
+                }
+            }
         }
     }
 
@@ -219,6 +255,9 @@ class LedControlViewModel @Inject constructor(
     }
 
     fun setEffectCycle() {
+        val prevEffect = uiState.value.ledEffectValue
+        val prevEffectTxt = uiState.value.effectPickerTxt
+
         _uiState.update {
             it.copy(
                 ledEffectValue = EFFECT_CYCLE_VALUE,
@@ -226,7 +265,15 @@ class LedControlViewModel @Inject constructor(
             )
         }
         viewModelScope.launch {
-            controlUseCases.setEffectCycleUseCase()
+            controlUseCases.setEffectCycleUseCase().onFailure {
+                _uiState.update {
+                    it.copy(
+                        ledEffectValue = prevEffect,
+                        effectPickerTxt = prevEffectTxt,
+                        infoMessage = UiText.StringResource(R.string.error_setting_cycle),
+                    )
+                }
+            }
         }
     }
 
@@ -316,16 +363,32 @@ class LedControlViewModel @Inject constructor(
     }
 
     fun setIcModel(icModel: IcModel) {
+        val previousIcModel = uiState.value.icModel
         _uiState.update { it.copy(icModel = icModel) }
         viewModelScope.launch {
-            configUseCases.setIcModelUseCase(icModel)
+            configUseCases.setIcModelUseCase(icModel).onFailure {
+                _uiState.update {
+                    it.copy(
+                        icModel = previousIcModel,
+                        infoMessage = UiText.StringResource(R.string.error_setting_ic_model),
+                    )
+                }
+            }
         }
     }
 
     fun setRgbSequence(rgbSeq: RgbSequence) {
+        val previousRgbSeq = uiState.value.rgbSeq
         _uiState.update { it.copy(rgbSeq = rgbSeq) }
         viewModelScope.launch {
-            configUseCases.setRgbSequenceUseCase(rgbSeq)
+            configUseCases.setRgbSequenceUseCase(rgbSeq).onFailure {
+                _uiState.update {
+                    it.copy(
+                        rgbSeq = previousRgbSeq,
+                        infoMessage = UiText.StringResource(R.string.error_setting_rgb_sequence),
+                    )
+                }
+            }
         }
     }
 

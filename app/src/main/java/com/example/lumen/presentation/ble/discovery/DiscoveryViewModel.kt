@@ -182,7 +182,6 @@ class DiscoveryViewModel @Inject constructor(
                         val resId = when (result) {
                             ConnectionResult.Failure.BtDisabled -> R.string.bt_disabled
                             ConnectionResult.Failure.CannotRetry -> R.string.cannot_retry_no_device
-                            ConnectionResult.Failure.CommandFailed -> R.string.error_sending_command
                             ConnectionResult.Failure.ConnectionFailed -> R.string.connection_failed
                             ConnectionResult.Failure.DeviceNotFound -> R.string.device_not_found
                             ConnectionResult.Failure.PermsMissing ->
