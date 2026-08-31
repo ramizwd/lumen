@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -28,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.dp
 import com.example.lumen.R
 import com.example.lumen.domain.ble.model.IcModel
 import com.example.lumen.domain.ble.model.LedConstants.ACTIVE_PIXELS_RANGE
@@ -37,6 +39,7 @@ import com.example.lumen.presentation.ble.ledcontrol.components.BrightnessSlider
 import com.example.lumen.presentation.ble.ledcontrol.components.HardwareConfigDialog
 import com.example.lumen.presentation.ble.ledcontrol.components.LedToggleButton
 import com.example.lumen.presentation.ble.ledcontrol.components.SpeedSlider
+import com.example.lumen.presentation.ble.ledcontrol.components.WhiteLedBrightnessSlider
 import com.example.lumen.presentation.common.components.DigitFieldDialog
 import com.example.lumen.presentation.common.components.PlainTooltip
 import com.example.lumen.presentation.common.components.SliderOrientation
@@ -50,6 +53,7 @@ fun ControlScreen(
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     onChangeBrightness: (Float) -> Unit,
+    onChangeWhiteBrightness: (Float) -> Unit,
     onSetEffectSpeed: (Float) -> Unit,
     setLedNum: (Int) -> Unit,
     setIcModel: (IcModel) -> Unit,
@@ -58,9 +62,11 @@ fun ControlScreen(
     modifier: Modifier = Modifier,
 ) {
     val isOn = uiState.isLedOn
+    val hasWhiteLed = uiState.hasWhiteLed
     val currentLedEffect = uiState.ledEffectValue
     val totalActivePixels = uiState.totalActivePixels
     val brightnessValue = uiState.brightnessValue
+    val whiteLedBrightnessValue = uiState.whiteLedBrightnessValue
     val speedValue = uiState.speedValue
 
     val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
@@ -89,6 +95,7 @@ fun ControlScreen(
 
     if (uiState.showHardwareConfigDialog) {
         HardwareConfigDialog(
+            deviceConfig = deviceConfig,
             currentIcModel = uiState.icModel,
             currentRgbSeq = uiState.rgbSeq,
             onIcModelChange = setIcModel,
@@ -102,15 +109,18 @@ fun ControlScreen(
     ControlContent(
         deviceConfig = deviceConfig,
         isOn = isOn,
+        hasWhiteLed = hasWhiteLed,
         currentLedEffect = currentLedEffect,
         pixelCount = totalActivePixels,
         brightnessValue = brightnessValue,
+        whiteLedBrightnessValue = whiteLedBrightnessValue,
         speedValue = speedValue,
         onPixelCountClick = { onEvent(LedControlUiEvent.TogglePixelControlDialog(true)) },
         onHardwareConfigClick = { onEvent(LedControlUiEvent.ToggleHardwareConfigDialog(true)) },
         onTurnLedOnClick = onTurnLedOnClick,
         onTurnLedOffClick = onTurnLedOffClick,
         onChangeBrightness = onChangeBrightness,
+        onChangeWhiteBrightness = onChangeWhiteBrightness,
         onSetEffectSpeed = onSetEffectSpeed,
         modifier = modifier,
     )
@@ -120,18 +130,28 @@ fun ControlScreen(
 fun ControlContent(
     deviceConfig: DeviceConfiguration,
     isOn: Boolean,
+    hasWhiteLed: Boolean,
     currentLedEffect: Int,
     pixelCount: Int,
     brightnessValue: Float,
+    whiteLedBrightnessValue: Float,
     speedValue: Float,
     onPixelCountClick: () -> Unit,
     onHardwareConfigClick: () -> Unit,
     onTurnLedOnClick: () -> Unit,
     onTurnLedOffClick: () -> Unit,
     onChangeBrightness: (Float) -> Unit,
+    onChangeWhiteBrightness: (Float) -> Unit,
     onSetEffectSpeed: (Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val landscapeSliderWidth = 70.dp
+    val sliderSpacing = if (hasWhiteLed) {
+        MaterialTheme.spacing.large
+    } else {
+        MaterialTheme.spacing.largeIncreased
+    }
+
     when (deviceConfig) {
         DeviceConfiguration.TABLET_PORTRAIT,
         DeviceConfiguration.TABLET_LANDSCAPE,
@@ -161,7 +181,16 @@ fun ControlContent(
                         onChangeBrightness = onChangeBrightness,
                     )
 
-                    Spacer(modifier = Modifier.padding(MaterialTheme.spacing.largeIncreased))
+                    if (hasWhiteLed) {
+                        Spacer(modifier = Modifier.padding(sliderSpacing))
+                        WhiteLedBrightnessSlider(
+                            enabled = isOn,
+                            brightnessValue = whiteLedBrightnessValue,
+                            onChangeBrightness = onChangeWhiteBrightness,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.padding(sliderSpacing))
 
                     SpeedSlider(
                         enabled = isOn && currentLedEffect != STATIC_COLOR_VALUE,
@@ -265,17 +294,28 @@ fun ControlContent(
                             speedValue = speedValue,
                             onSetEffectSpeed = onSetEffectSpeed,
                             orientation = SliderOrientation.HORIZONTAL,
+                            modifier = Modifier.height(landscapeSliderWidth),
                         )
 
-                        Spacer(
-                            modifier = Modifier.padding(MaterialTheme.spacing.largeIncreased),
-                        )
+                        Spacer(modifier = Modifier.padding(MaterialTheme.spacing.small))
+
+                        if (hasWhiteLed) {
+                            WhiteLedBrightnessSlider(
+                                enabled = isOn,
+                                brightnessValue = whiteLedBrightnessValue,
+                                onChangeBrightness = onChangeWhiteBrightness,
+                                orientation = SliderOrientation.HORIZONTAL,
+                                modifier = Modifier.height(landscapeSliderWidth),
+                            )
+                            Spacer(modifier = Modifier.padding(MaterialTheme.spacing.small))
+                        }
 
                         BrightnessSlider(
                             enabled = isOn,
                             brightnessValue = brightnessValue,
                             onChangeBrightness = onChangeBrightness,
                             orientation = SliderOrientation.HORIZONTAL,
+                            modifier = Modifier.height(landscapeSliderWidth),
                         )
                     }
                 }
@@ -332,10 +372,39 @@ fun ControlContentPreview() {
                 pixelCount = 26,
                 brightnessValue = 180f,
                 speedValue = 100f,
+                whiteLedBrightnessValue = 100f,
                 isOn = true,
+                hasWhiteLed = false,
                 onTurnLedOnClick = {},
                 onTurnLedOffClick = {},
                 onChangeBrightness = {},
+                onChangeWhiteBrightness = {},
+                onSetEffectSpeed = {},
+                onPixelCountClick = {},
+                onHardwareConfigClick = {},
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+fun ControlContentAllSlidersPreview() {
+    LumenTheme {
+        Surface {
+            ControlContent(
+                deviceConfig = DeviceConfiguration.MOBILE_PORTRAIT,
+                currentLedEffect = STATIC_COLOR_VALUE,
+                pixelCount = 26,
+                brightnessValue = 180f,
+                speedValue = 100f,
+                whiteLedBrightnessValue = 100f,
+                isOn = true,
+                hasWhiteLed = true,
+                onTurnLedOnClick = {},
+                onTurnLedOffClick = {},
+                onChangeBrightness = {},
+                onChangeWhiteBrightness = {},
                 onSetEffectSpeed = {},
                 onPixelCountClick = {},
                 onHardwareConfigClick = {},
@@ -355,10 +424,39 @@ fun ControlContentLandscapePreview() {
                 pixelCount = 26,
                 brightnessValue = 180f,
                 speedValue = 100f,
+                whiteLedBrightnessValue = 100f,
                 isOn = true,
+                hasWhiteLed = false,
                 onTurnLedOnClick = {},
                 onTurnLedOffClick = {},
                 onChangeBrightness = {},
+                onChangeWhiteBrightness = {},
+                onSetEffectSpeed = {},
+                onPixelCountClick = {},
+                onHardwareConfigClick = {},
+            )
+        }
+    }
+}
+
+@Preview(widthDp = 640, heightDp = 360)
+@Composable
+fun ControlContentLandscapeAllSlidersPreview() {
+    LumenTheme {
+        Surface {
+            ControlContent(
+                deviceConfig = DeviceConfiguration.MOBILE_LANDSCAPE,
+                currentLedEffect = STATIC_COLOR_VALUE,
+                pixelCount = 26,
+                brightnessValue = 180f,
+                speedValue = 100f,
+                whiteLedBrightnessValue = 100f,
+                isOn = true,
+                hasWhiteLed = true,
+                onTurnLedOnClick = {},
+                onTurnLedOffClick = {},
+                onChangeBrightness = {},
+                onChangeWhiteBrightness = {},
                 onSetEffectSpeed = {},
                 onPixelCountClick = {},
                 onHardwareConfigClick = {},

@@ -28,6 +28,7 @@
     <string name="no_device_to_retry_for">No device to retry connection for</string>
     <string name="error_opening_settings">Could not open app settings. Try again</string>
     <string name="brightness">Brightness</string>
+    <string name="white_brightness">White Brightness</string>
     <string name="speed">Speed</string>
     <string name="turn_led_off">Turn LED off</string>
     <string name="turn_led_on">Turn LED on</string>
@@ -99,6 +100,7 @@
     <string name="error_turning_led_off">Error turning LED off</string>
     <string name="error_setting_led_color">Error setting LED color</string>
     <string name="error_changing_brightness">Error changing brightness</string>
+    <string name="error_changing_white_brightness">Error changing white LED brightness</string>
     <string name="error_setting_cycle">Error setting effect to auto cycle</string>
     <string name="error_setting_ic_model">Error setting IC model</string>
     <string name="error_setting_rgb_sequence">Error setting RGB sequence</string>

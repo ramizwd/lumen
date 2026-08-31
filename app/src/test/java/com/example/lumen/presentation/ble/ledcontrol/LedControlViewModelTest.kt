@@ -18,11 +18,13 @@ import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.connection.DisconnectUseCase
 import com.example.lumen.domain.ble.usecase.connection.ObserveSelectedDeviceUseCase
 import com.example.lumen.domain.ble.usecase.control.ChangeBrightnessUseCase
+import com.example.lumen.domain.ble.usecase.control.ChangeWhiteLedBrightnessUseCase
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
 import com.example.lumen.domain.ble.usecase.control.GetCustomColorsUseCase
 import com.example.lumen.domain.ble.usecase.control.ObserveBrightnessUseCase
 import com.example.lumen.domain.ble.usecase.control.ObserveControllerStateUseCase
 import com.example.lumen.domain.ble.usecase.control.ObserveEffectSpeedUseCase
+import com.example.lumen.domain.ble.usecase.control.ObserveWhiteLedBrightnessUseCase
 import com.example.lumen.domain.ble.usecase.control.SaveCustomColorUseCase
 import com.example.lumen.domain.ble.usecase.control.SetEffectCycleUseCase
 import com.example.lumen.domain.ble.usecase.control.SetEffectSpeedUseCase
@@ -74,12 +76,13 @@ class LedControlViewModelTest {
             red = "ff",
             green = "00",
             blue = "00",
-            whiteLedBrightness = 0,
+            whiteLedBrightness = 0f,
         )
 
     private val deviceFlow = MutableStateFlow<BleDevice?>(null)
     private val controllerStateFlow = MutableStateFlow<LedControllerState?>(null)
     private val brightnessFlow = MutableSharedFlow<Float>()
+    private val whiteBrightnessFlow = MutableSharedFlow<Float>()
     private val speedFlow = MutableSharedFlow<Float>()
     private val customColorsFlow = MutableStateFlow<List<CustomColorSlot>>(emptyList())
     private val effectsFlow = MutableStateFlow<Set<Int>>(emptySet())
@@ -89,12 +92,14 @@ class LedControlViewModelTest {
     private lateinit var observeSelectedDeviceUseCase: ObserveSelectedDeviceUseCase
     private lateinit var observeControllerStateUseCase: ObserveControllerStateUseCase
     private lateinit var observeBrightnessUseCase: ObserveBrightnessUseCase
+    private lateinit var observeWhiteLedBrightnessUseCase: ObserveWhiteLedBrightnessUseCase
     private lateinit var observeEffectSpeedUseCase: ObserveEffectSpeedUseCase
     private lateinit var getCustomColorsUseCase: GetCustomColorsUseCase
     private lateinit var getFavEffectsUseCase: GetFavEffectsUseCase
 
     private lateinit var turnLedOnOffUseCase: TurnLedOnOffUseCase
     private lateinit var changeBrightnessUseCase: ChangeBrightnessUseCase
+    private lateinit var changeWhiteLedBrightnessUseCase: ChangeWhiteLedBrightnessUseCase
     private lateinit var setEffectSpeedUseCase: SetEffectSpeedUseCase
     private lateinit var saveCustomColorUseCase: SaveCustomColorUseCase
     private lateinit var setLedColorUseCase: SetLedColorUseCase
@@ -120,6 +125,7 @@ class LedControlViewModelTest {
         observeSelectedDeviceUseCase = mockk()
         observeControllerStateUseCase = mockk()
         observeBrightnessUseCase = mockk()
+        observeWhiteLedBrightnessUseCase = mockk()
         observeEffectSpeedUseCase = mockk()
         getCustomColorsUseCase = mockk()
         getFavEffectsUseCase = mockk()
@@ -127,6 +133,7 @@ class LedControlViewModelTest {
         removeFavEffectUseCase = mockk(relaxed = true)
         turnLedOnOffUseCase = mockk(relaxed = true)
         changeBrightnessUseCase = mockk(relaxed = true)
+        changeWhiteLedBrightnessUseCase = mockk(relaxed = true)
         setEffectSpeedUseCase = mockk(relaxed = true)
         saveCustomColorUseCase = mockk(relaxed = true)
         setLedColorUseCase = mockk(relaxed = true)
@@ -144,6 +151,7 @@ class LedControlViewModelTest {
         every { observeSelectedDeviceUseCase() } returns deviceFlow
         every { observeControllerStateUseCase() } returns controllerStateFlow
         every { observeBrightnessUseCase(any()) } returns brightnessFlow
+        every { observeWhiteLedBrightnessUseCase(any()) } returns whiteBrightnessFlow
         every { observeEffectSpeedUseCase(any()) } returns speedFlow
         every { getCustomColorsUseCase(any()) } returns customColorsFlow
         every { getFavEffectsUseCase(any()) } returns effectsFlow
@@ -179,6 +187,8 @@ class LedControlViewModelTest {
                 setLedEffectUseCase,
                 setEffectSpeedUseCase,
                 setEffectCycleUseCase,
+                changeWhiteLedBrightnessUseCase,
+                observeWhiteLedBrightnessUseCase,
             )
 
         val configUseCases = ConfigUseCases(
@@ -222,6 +232,14 @@ class LedControlViewModelTest {
             assertEquals(
                 controllerState.brightness,
                 state.brightnessValue,
+            )
+            assertEquals(
+                controllerState.whiteLedBrightness,
+                state.whiteLedBrightnessValue,
+            )
+            assertEquals(
+                controllerState.icModel.hasWhiteLed,
+                state.hasWhiteLed,
             )
             assertEquals(
                 controllerState.totalActivePixels,
@@ -273,6 +291,19 @@ class LedControlViewModelTest {
 
             // Then
             coVerify(exactly = 1) { changeBrightnessUseCase(value) }
+        }
+
+    @Test
+    fun `init collects from white brightness flow and calls changeWhiteLedBrightnessUseCase`() =
+        runTest {
+            // Given
+            val value = 50f
+
+            // When
+            whiteBrightnessFlow.emit(value)
+
+            // Then
+            coVerify(exactly = 1) { changeWhiteLedBrightnessUseCase(value) }
         }
 
     @Test
@@ -668,10 +699,11 @@ class LedControlViewModelTest {
     @Test
     fun `setIcModel updates state and calls use case`() =
         runTest {
-            val expected = IcModel.SK6812
+            val expected = IcModel.SK6812_RGBW
             viewModel.setIcModel(expected)
 
             assertEquals(expected, viewModel.uiState.value.icModel)
+            assertTrue(viewModel.uiState.value.hasWhiteLed)
             coVerify(exactly = 1) { setIcModelUseCase(expected) }
         }
 

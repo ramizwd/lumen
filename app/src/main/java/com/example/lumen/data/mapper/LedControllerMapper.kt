@@ -24,7 +24,7 @@ fun ByteArray.toLedControllerState(): LedControllerState {
     val red = this[8].toHexString()
     val green = this[9].toHexString()
     val blue = this[10].toHexString()
-    val whiteLedBrightness = this[11]
+    val whiteLedBrightness = this[11].toUByte().toFloat()
 
     return LedControllerState(
         isOn = isOn,

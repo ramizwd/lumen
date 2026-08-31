@@ -20,11 +20,13 @@ import com.example.lumen.R
 import com.example.lumen.domain.ble.model.IcModel
 import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.presentation.common.components.WheelPicker
+import com.example.lumen.presentation.common.utils.DeviceConfiguration
 import com.example.lumen.presentation.theme.LumenTheme
 import com.example.lumen.presentation.theme.spacing
 
 @Composable
 fun HardwareConfigDialog(
+    deviceConfig: DeviceConfiguration,
     currentIcModel: IcModel,
     currentRgbSeq: RgbSequence,
     onIcModelChange: (IcModel) -> Unit,
@@ -40,6 +42,7 @@ fun HardwareConfigDialog(
         },
         text = {
             HardwareConfigDialogContent(
+                deviceConfig = deviceConfig,
                 currentIcModel = currentIcModel,
                 currentRgbSeq = currentRgbSeq,
                 onIcModelChange = onIcModelChange,
@@ -57,6 +60,7 @@ fun HardwareConfigDialog(
 
 @Composable
 private fun HardwareConfigDialogContent(
+    deviceConfig: DeviceConfiguration,
     currentIcModel: IcModel,
     currentRgbSeq: RgbSequence,
     onIcModelChange: (IcModel) -> Unit,
@@ -77,12 +81,28 @@ private fun HardwareConfigDialogContent(
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
-                WheelPicker(
-                    items = RgbSequence.entries,
-                    initialIndex = RgbSequence.entries.indexOf(currentRgbSeq),
-                    onItemSelected = onRgbSeqChange,
-                    labelExtractor = { it.name },
-                )
+                when (deviceConfig) {
+                    DeviceConfiguration.TABLET_PORTRAIT,
+                    DeviceConfiguration.TABLET_LANDSCAPE,
+                    DeviceConfiguration.MOBILE_PORTRAIT,
+                    -> {
+                        WheelPicker(
+                            items = RgbSequence.entries,
+                            initialIndex = RgbSequence.entries.indexOf(currentRgbSeq),
+                            onItemSelected = onRgbSeqChange,
+                            labelExtractor = { it.name },
+                        )
+                    }
+                    DeviceConfiguration.MOBILE_LANDSCAPE -> {
+                        WheelPicker(
+                            visibleItemsCount = 3,
+                            items = RgbSequence.entries,
+                            initialIndex = RgbSequence.entries.indexOf(currentRgbSeq),
+                            onItemSelected = onRgbSeqChange,
+                            labelExtractor = { it.name },
+                        )
+                    }
+                }
             }
 
             Column(
@@ -98,12 +118,28 @@ private fun HardwareConfigDialogContent(
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
-                WheelPicker(
-                    items = IcModel.entries,
-                    initialIndex = IcModel.entries.indexOf(currentIcModel),
-                    onItemSelected = onIcModelChange,
-                    labelExtractor = { it.name },
-                )
+                when (deviceConfig) {
+                    DeviceConfiguration.TABLET_PORTRAIT,
+                    DeviceConfiguration.TABLET_LANDSCAPE,
+                    DeviceConfiguration.MOBILE_PORTRAIT,
+                    -> {
+                        WheelPicker(
+                            items = IcModel.entries,
+                            initialIndex = IcModel.entries.indexOf(currentIcModel),
+                            onItemSelected = onIcModelChange,
+                            labelExtractor = { it.name },
+                        )
+                    }
+                    DeviceConfiguration.MOBILE_LANDSCAPE -> {
+                        WheelPicker(
+                            visibleItemsCount = 3,
+                            items = IcModel.entries,
+                            initialIndex = IcModel.entries.indexOf(currentIcModel),
+                            onItemSelected = onIcModelChange,
+                            labelExtractor = { it.name },
+                        )
+                    }
+                }
             }
         }
     }
@@ -115,6 +151,7 @@ fun HardwareConfigDialogContentPreview() {
     LumenTheme {
         Surface {
             HardwareConfigDialogContent(
+                deviceConfig = DeviceConfiguration.MOBILE_PORTRAIT,
                 currentIcModel = IcModel.SK6812_RGBW,
                 currentRgbSeq = RgbSequence.RGB,
                 onIcModelChange = { },

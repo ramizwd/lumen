@@ -26,16 +26,17 @@ You can find a comprehensive list of commands [here](https://gist.github.com/mbu
 ## Features
 The following highlights both core functionalities and new/improved features compared to the official app. 
 
-**Core Functionality:**
+**Core Functionality (all features available in the official app are here):**
 - Scan for nearby Bluetooth devices
 - Connect to SP110E controllers
 - Set LED color using the preset colors or color picker
 - Save custom colors
 - Change brightness
+- Change white LED brightness if the IC supports it
 - Turn the LED on/off
 - Rename the controller
-- Controlling specific amount of pixels on the LED strip
-- Setting RGB sequence and IC model
+- Control specific amount of pixels on the LED strip
+- Set RGB sequence and IC model
 - Apply 120 effects, change their speed, and mark them as favorite
 
 **Lumen-specific Improvements & New Features:**
@@ -48,7 +49,7 @@ The following highlights both core functionalities and new/improved features com
 - Adaptive layout supporting different screen sizes and configs
 - Cancel an ongoing connection attempt
 - Match the LED colors based on your current color theme
-- Pick random colors
+- Cycle through random colors
 
 ## Dependencies
 This project utilizes the following open source third-party libraries.
