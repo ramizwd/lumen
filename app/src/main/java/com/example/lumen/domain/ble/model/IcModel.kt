@@ -6,6 +6,7 @@ package com.example.lumen.domain.ble.model
  */
 enum class IcModel(
     val value: Byte,
+    val hasWhiteLed: Boolean = false,
 ) {
     SM16703(0x00),
     TM1804(0x01),
@@ -30,10 +31,10 @@ enum class IcModel(
     GS8206(0x14),
     GS8208(0x15),
     SK9822(0x16),
-    TM1814(0x17),
-    SK6812_RGBW(0x18),
-    P9414(0x19),
-    PG412(0x1A),
+    TM1814(0x17, true),
+    SK6812_RGBW(0x18, true),
+    P9414(0x19, true),
+    P9412(0x1A, true),
     ;
 
     companion object {

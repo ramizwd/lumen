@@ -9,7 +9,7 @@ import com.example.lumen.domain.ble.model.LedConstants.BRIGHTNESS_RANGE
  * @return the byte array representing brightness.
  */
 fun Float.toBrightnessCommandBytes(): ByteArray {
-    val brightnessInt = this.coerceIn(BRIGHTNESS_RANGE.start, BRIGHTNESS_RANGE.endInclusive).toInt()
+    val brightnessInt = this.coerceIn(BRIGHTNESS_RANGE).toInt()
 
     return byteArrayOf(
         brightnessInt.toByte(),

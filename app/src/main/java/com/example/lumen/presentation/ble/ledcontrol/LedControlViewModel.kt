@@ -57,6 +57,13 @@ class LedControlViewModel @Inject constructor(
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
 
+    private val whiteLedBrightnessChangeFlow =
+        MutableSharedFlow<Float>(
+            replay = 0,
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
+
     private val _uiState = MutableStateFlow(LedControlUiState())
     val uiState = _uiState.asStateFlow()
 
@@ -75,12 +82,14 @@ class LedControlViewModel @Inject constructor(
             _uiState.update { state ->
                 state.copy(
                     isLedOn = initState?.isOn ?: false,
+                    hasWhiteLed = initState?.icModel?.hasWhiteLed ?: false,
                     ledHexColor = initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
                     ledEffectValue = initState?.preset ?: STATIC_COLOR_VALUE,
                     effectPickerTxt = getEffectPickerText(
                         initState?.preset ?: STATIC_COLOR_VALUE,
                     ),
                     brightnessValue = initState?.brightness ?: 0f,
+                    whiteLedBrightnessValue = initState?.whiteLedBrightness ?: 0f,
                     speedValue = initState?.speed ?: 0f,
                     totalActivePixels = initState?.totalActivePixels ?: 0,
                     icModel = initState?.icModel ?: IcModel.WS2811,
@@ -131,6 +140,21 @@ class LedControlViewModel @Inject constructor(
                                 )
                             }
                         }
+                }
+        }
+
+        viewModelScope.launch {
+            controlUseCases
+                .observeWhiteLedBrightnessUseCase(whiteLedBrightnessChangeFlow)
+                .collect { value ->
+                    controlUseCases.changeWhiteLedBrightnessUseCase(value).onFailure {
+                        _uiState.update {
+                            it.copy(
+                                infoMessage =
+                                    UiText.StringResource(R.string.error_changing_white_brightness),
+                            )
+                        }
+                    }
                 }
         }
 
@@ -321,6 +345,13 @@ class LedControlViewModel @Inject constructor(
         }
     }
 
+    fun changeWhiteLedBrightness(value: Float) {
+        _uiState.update { it.copy(whiteLedBrightnessValue = value) }
+        viewModelScope.launch {
+            whiteLedBrightnessChangeFlow.emit(value)
+        }
+    }
+
     fun setDeviceName(name: String) {
         viewModelScope.launch {
             val res = configUseCases.setDeviceNameUseCase(name)
@@ -364,12 +395,19 @@ class LedControlViewModel @Inject constructor(
 
     fun setIcModel(icModel: IcModel) {
         val previousIcModel = uiState.value.icModel
-        _uiState.update { it.copy(icModel = icModel) }
+        val previousHasWhiteLed = uiState.value.hasWhiteLed
+        _uiState.update {
+            it.copy(
+                icModel = icModel,
+                hasWhiteLed = icModel.hasWhiteLed,
+            )
+        }
         viewModelScope.launch {
             configUseCases.setIcModelUseCase(icModel).onFailure {
                 _uiState.update {
                     it.copy(
                         icModel = previousIcModel,
+                        hasWhiteLed = previousHasWhiteLed,
                         infoMessage = UiText.StringResource(R.string.error_setting_ic_model),
                     )
                 }

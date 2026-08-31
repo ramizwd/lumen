@@ -36,6 +36,8 @@ object GattConstants {
 
     val BRIGHTNESS_COMMAND = byteArrayOf(0x00, 0x00, 0x2A)
 
+    val WHITE_BRIGHTNESS_COMMAND = byteArrayOf(0x00, 0x00, 0x69)
+
     // Color change command byte
     const val COLOR_SUFFIX_HEX = "1E"
 }
