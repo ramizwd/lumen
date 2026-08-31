@@ -95,6 +95,7 @@ fun ControlScreen(
 
     if (uiState.showHardwareConfigDialog) {
         HardwareConfigDialog(
+            deviceConfig = deviceConfig,
             currentIcModel = uiState.icModel,
             currentRgbSeq = uiState.rgbSeq,
             onIcModelChange = setIcModel,
@@ -296,7 +297,7 @@ fun ControlContent(
                             modifier = Modifier.height(landscapeSliderWidth),
                         )
 
-                        Spacer(modifier = Modifier.padding(MaterialTheme.spacing.medium))
+                        Spacer(modifier = Modifier.padding(MaterialTheme.spacing.small))
 
                         if (hasWhiteLed) {
                             WhiteLedBrightnessSlider(
@@ -306,7 +307,7 @@ fun ControlContent(
                                 orientation = SliderOrientation.HORIZONTAL,
                                 modifier = Modifier.height(landscapeSliderWidth),
                             )
-                            Spacer(modifier = Modifier.padding(MaterialTheme.spacing.medium))
+                            Spacer(modifier = Modifier.padding(MaterialTheme.spacing.small))
                         }
 
                         BrightnessSlider(
@@ -415,6 +416,32 @@ fun ControlContentAllSlidersPreview() {
 @Preview(widthDp = 640, heightDp = 360)
 @Composable
 fun ControlContentLandscapePreview() {
+    LumenTheme {
+        Surface {
+            ControlContent(
+                deviceConfig = DeviceConfiguration.MOBILE_LANDSCAPE,
+                currentLedEffect = STATIC_COLOR_VALUE,
+                pixelCount = 26,
+                brightnessValue = 180f,
+                speedValue = 100f,
+                whiteLedBrightnessValue = 100f,
+                isOn = true,
+                hasWhiteLed = false,
+                onTurnLedOnClick = {},
+                onTurnLedOffClick = {},
+                onChangeBrightness = {},
+                onChangeWhiteBrightness = {},
+                onSetEffectSpeed = {},
+                onPixelCountClick = {},
+                onHardwareConfigClick = {},
+            )
+        }
+    }
+}
+
+@Preview(widthDp = 640, heightDp = 360)
+@Composable
+fun ControlContentLandscapeAllSlidersPreview() {
     LumenTheme {
         Surface {
             ControlContent(
