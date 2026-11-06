@@ -15,7 +15,6 @@ import com.example.lumen.domain.ble.usecase.control.ControlUseCases
 import com.example.lumen.domain.ble.usecase.prefs.PrefsUseCases
 import com.example.lumen.presentation.common.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +29,6 @@ import javax.inject.Inject
  * ViewModel for managing UI state related to the connected device and its state,
  * also responsible for invoking control operations.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class LedControlViewModel @Inject constructor(
     private val connectionUseCases: ConnectionUseCases,
@@ -69,37 +67,38 @@ class LedControlViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val selectedDevice = connectionUseCases.observeSelectedDeviceUseCase().first()
+            val connectedDevice = connectionUseCases.observeConnectedDeviceUseCase().first()
             _uiState.update {
                 it.copy(
-                    selectedDevice = selectedDevice,
+                    connectedDevice = connectedDevice,
                 )
             }
         }
 
         viewModelScope.launch {
-            val initState = controlUseCases.observeControllerStateUseCase().first()
-            _uiState.update { state ->
-                state.copy(
-                    isLedOn = initState?.isOn ?: false,
-                    hasWhiteLed = initState?.icModel?.hasWhiteLed ?: false,
-                    ledHexColor = initState?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
-                    ledEffectValue = initState?.preset ?: STATIC_COLOR_VALUE,
-                    effectPickerTxt = getEffectPickerText(
-                        initState?.preset ?: STATIC_COLOR_VALUE,
-                    ),
-                    brightnessValue = initState?.brightness ?: 0f,
-                    whiteLedBrightnessValue = initState?.whiteLedBrightness ?: 0f,
-                    speedValue = initState?.speed ?: 0f,
-                    totalActivePixels = initState?.totalActivePixels ?: 0,
-                    icModel = initState?.icModel ?: IcModel.WS2811,
-                    rgbSeq = initState?.rgbSeq ?: RgbSequence.RGB,
-                )
+            controlUseCases.observeControllerStateUseCase().collect { state ->
+                _uiState.update { uiState ->
+                    uiState.copy(
+                        isLedOn = state?.isOn ?: false,
+                        hasWhiteLed = state?.icModel?.hasWhiteLed ?: false,
+                        ledHexColor = state?.let { "${it.red}${it.green}${it.blue}" } ?: "ffffff",
+                        ledEffectValue = state?.preset ?: STATIC_COLOR_VALUE,
+                        effectPickerTxt = getEffectPickerText(
+                            state?.preset ?: STATIC_COLOR_VALUE,
+                        ),
+                        brightnessValue = state?.brightness ?: 0f,
+                        whiteLedBrightnessValue = state?.whiteLedBrightness ?: 0f,
+                        speedValue = state?.speed ?: 0f,
+                        totalActivePixels = state?.totalActivePixels ?: 0,
+                        icModel = state?.icModel ?: IcModel.WS2811,
+                        rgbSeq = state?.rgbSeq ?: RgbSequence.RGB,
+                    )
+                }
             }
         }
 
         viewModelScope.launch {
-            uiState.value.selectedDevice?.let { device ->
+            uiState.value.connectedDevice?.let { device ->
                 controlUseCases
                     .getCustomColorsUseCase(device.address)
                     .collect { colors ->
@@ -159,7 +158,7 @@ class LedControlViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            uiState.value.selectedDevice?.let { device ->
+            uiState.value.connectedDevice?.let { device ->
                 prefsUseCases.getFavEffectsUseCase(device.address).collect { effects ->
                     _uiState.update { it.copy(favoriteEffects = effects) }
                 }
@@ -242,7 +241,7 @@ class LedControlViewModel @Inject constructor(
         hexColor: String,
     ) {
         viewModelScope.launch {
-            uiState.value.selectedDevice?.let { device ->
+            uiState.value.connectedDevice?.let { device ->
                 val colorSlot = CustomColorSlot(slotId, hexColor)
                 controlUseCases.saveCustomColorUseCase(device.address, colorSlot)
             }
@@ -305,7 +304,7 @@ class LedControlViewModel @Inject constructor(
         if (value !in LED_EFFECT_RANGE) return
 
         viewModelScope.launch {
-            uiState.value.selectedDevice?.let { device ->
+            uiState.value.connectedDevice?.let { device ->
                 val res = prefsUseCases.addFavEffectUseCase(value, device.address)
                 res.onFailure {
                     _uiState.update {
@@ -321,7 +320,7 @@ class LedControlViewModel @Inject constructor(
 
     fun removeFavEffect(value: Int) {
         viewModelScope.launch {
-            uiState.value.selectedDevice?.let { device ->
+            uiState.value.connectedDevice?.let { device ->
                 prefsUseCases
                     .removeFavEffectUseCase(value, device.address)
                     .onFailure {
@@ -448,7 +447,6 @@ class LedControlViewModel @Inject constructor(
         }
 
     override fun onCleared() {
-        // TODO here until figuring out persistent controller state
-        connectionUseCases.disconnectUseCase()
+        Timber.tag(LOG_TAG).i("cleared")
     }
 }

@@ -10,7 +10,7 @@ import com.example.lumen.presentation.common.utils.UiText
 
 /**
  * Device related UI states
- * [selectedDevice] holds the connected device info
+ * [connectedDevice] holds the connected device info
  * [customColorSlots] list of custom colors set by the user
  * [isLedOn] Boolean that indicates if the LED controller is on/off
  * [hasWhiteLed] Indicates if the IC type has white LEDs
@@ -30,7 +30,7 @@ import com.example.lumen.presentation.common.utils.UiText
  * [showHardwareConfigDialog] toggles hardware config dialog (IC model & RGB seq)
  */
 data class LedControlUiState(
-    val selectedDevice: BleDevice? = null,
+    val connectedDevice: BleDevice? = null,
     val customColorSlots: List<CustomColorSlot> = emptyList(),
     val isLedOn: Boolean = false,
     val hasWhiteLed: Boolean = false,

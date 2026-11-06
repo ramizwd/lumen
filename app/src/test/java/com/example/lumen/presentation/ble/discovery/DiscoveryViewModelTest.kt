@@ -120,7 +120,7 @@ class DiscoveryViewModelTest {
         val connectionUseCases =
             ConnectionUseCases(
                 observeConnectionStateUseCase = mockk(),
-                observeSelectedDeviceUseCase = mockk(),
+                observeConnectedDeviceUseCase = mockk(),
                 disconnectUseCase = mockk(),
                 connectToDeviceUseCase = connectToDeviceUseCase,
                 observeConnectionEventsUseCase = observeConnectionEventsUseCase,

@@ -4,6 +4,7 @@ import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SET_RGB_SEQ_COMMAND
+import com.example.lumen.domain.ble.model.LedSetting
 import com.example.lumen.domain.ble.model.RgbSequence
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,6 +32,7 @@ class SetRgbSequenceUseCase @Inject constructor(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
             commandBytes,
+            Pair(rgbSeq, LedSetting.RGB_SEQ),
         )
     }
 }

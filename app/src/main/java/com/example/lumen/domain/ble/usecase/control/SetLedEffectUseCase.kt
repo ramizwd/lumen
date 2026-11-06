@@ -5,6 +5,7 @@ import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SET_EFFECT_COMMAND
 import com.example.lumen.domain.ble.model.LedConstants.LED_EFFECT_RANGE
+import com.example.lumen.domain.ble.model.LedSetting
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -34,6 +35,7 @@ class SetLedEffectUseCase @Inject constructor(
                 SERVICE_UUID,
                 CHARACTERISTIC_UUID,
                 command,
+                Pair(value, LedSetting.PRESET),
             )
         } catch (e: Exception) {
             Timber.tag(LOG_TAG).e(e, "Failed to set LED effect")

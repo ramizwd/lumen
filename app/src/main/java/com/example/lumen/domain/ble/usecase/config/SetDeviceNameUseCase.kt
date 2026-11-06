@@ -33,6 +33,7 @@ class SetDeviceNameUseCase @Inject constructor(
                 SERVICE_UUID,
                 CHARACTERISTIC_UUID,
                 commandBytes,
+                null,
             )
 
             if (res.isSuccess) {

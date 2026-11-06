@@ -44,6 +44,7 @@ import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.DeviceListType
 import com.example.lumen.domain.ble.model.ScanState
+import com.example.lumen.presentation.ble.discovery.components.DeviceItem
 import com.example.lumen.presentation.ble.discovery.components.DeviceList
 import com.example.lumen.presentation.ble.discovery.components.DropdownMenu
 import com.example.lumen.presentation.ble.discovery.components.ScanButton
@@ -66,6 +67,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun DiscoverDevicesScreen(
     onNavigateToAbout: () -> Unit,
+    onNavigateToControl: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DiscoveryViewModel = hiltViewModel(),
 ) {
@@ -74,6 +76,7 @@ fun DiscoverDevicesScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val activity = LocalActivity.current
+    val connectedDevice = uiState.connectedDevice
 
     val currentToastRef: MutableState<Toast?> = remember { mutableStateOf(null) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -124,22 +127,20 @@ fun DiscoverDevicesScreen(
     )
 
     LaunchedEffect(key1 = Unit) {
-        launch {
-            viewModel.snackbarEvent.collect { event ->
-                val result =
-                    snackbarHostState.showSnackbar(
-                        message = event.message.asString(context),
-                        actionLabel = event.actionLabel?.asString(context),
-                        duration = event.duration,
-                    )
+        viewModel.snackbarEvent.collect { event ->
+            val result =
+                snackbarHostState.showSnackbar(
+                    message = event.message.asString(context),
+                    actionLabel = event.actionLabel?.asString(context),
+                    duration = event.duration,
+                )
 
-                when (result) {
-                    SnackbarResult.Dismissed -> {
-                        viewModel.clearErrorMessage()
-                    }
-                    SnackbarResult.ActionPerformed -> {
-                        viewModel.retryConnection()
-                    }
+            when (result) {
+                SnackbarResult.Dismissed -> {
+                    viewModel.clearErrorMessage()
+                }
+                SnackbarResult.ActionPerformed -> {
+                    viewModel.retryConnection()
                 }
             }
         }
@@ -264,6 +265,7 @@ fun DiscoverDevicesScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         DiscoverDevicesContent(
+            connectedDevice = connectedDevice,
             isScanning = uiState.scanState == ScanState.SCANNING,
             isMenuExpanded = isMenuExpanded,
             scanResults = uiState.scanResults,
@@ -273,12 +275,19 @@ fun DiscoverDevicesScreen(
             onStopScan = viewModel::stopScan,
             onFavDevice = viewModel::addFavDevice,
             onRemoveFavDevice = viewModel::removeFavDevice,
-            onConnectToDevice = viewModel::connectToDevice,
             onSelectListFilter = viewModel::selectDeviceListType,
             onToggleMenu = { expanded ->
                 isMenuExpanded = expanded
             },
             onAboutClick = { onNavigateToAbout() },
+            onDeviceClick = { selectedDevice ->
+                if (selectedDevice == connectedDevice?.device) {
+                    viewModel.stopScan()
+                    onNavigateToControl()
+                } else {
+                    viewModel.connectToDevice(selectedDevice)
+                }
+            },
             modifier = Modifier.padding(innerPadding),
         )
     }
@@ -286,6 +295,7 @@ fun DiscoverDevicesScreen(
 
 @Composable
 fun DiscoverDevicesContent(
+    connectedDevice: DeviceContent?,
     isScanning: Boolean,
     isMenuExpanded: Boolean,
     scanResults: List<DeviceContent>,
@@ -296,9 +306,9 @@ fun DiscoverDevicesContent(
     onStopScan: () -> Unit,
     onFavDevice: (String) -> Unit,
     onRemoveFavDevice: (String) -> Unit,
-    onConnectToDevice: (BleDevice) -> Unit,
     onToggleMenu: (Boolean) -> Unit,
     onAboutClick: () -> Unit,
+    onDeviceClick: (selectedDevice: BleDevice) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -342,15 +352,22 @@ fun DiscoverDevicesContent(
             }
         }
 
+        connectedDevice?.let {
+            DeviceItem(
+                deviceContent = it,
+                onDeviceClick = { device -> onDeviceClick(device) },
+                onFavDevice = onFavDevice,
+                onRemoveDevice = onRemoveFavDevice,
+            )
+        }
+
         DeviceList(
             scanResults = scanResults,
             emptyScanResultTxt = emptyScanResultTxt,
             onStartScan = onStartScan,
             onFavDevice = onFavDevice,
             onRemoveDevice = onRemoveFavDevice,
-            onDeviceClick = { device ->
-                onConnectToDevice(device)
-            },
+            onDeviceClick = { device -> onDeviceClick(device) },
         )
     }
 }
@@ -361,6 +378,7 @@ fun DiscoverDevicesContentPreview() {
     LumenTheme {
         Surface {
             DiscoverDevicesContent(
+                connectedDevice = null,
                 isScanning = false,
                 isMenuExpanded = true,
                 scanResults = emptyList(),
@@ -371,7 +389,7 @@ fun DiscoverDevicesContentPreview() {
                 onStopScan = {},
                 onFavDevice = {},
                 onRemoveFavDevice = {},
-                onConnectToDevice = {},
+                onDeviceClick = {},
                 onToggleMenu = { },
                 onAboutClick = { },
                 modifier = Modifier,
@@ -386,6 +404,7 @@ fun DiscoverDevicesContentSearchingPreview() {
     LumenTheme {
         Surface {
             DiscoverDevicesContent(
+                connectedDevice = null,
                 isScanning = true,
                 isMenuExpanded = false,
                 scanResults = emptyList(),
@@ -396,7 +415,7 @@ fun DiscoverDevicesContentSearchingPreview() {
                 onStopScan = {},
                 onFavDevice = {},
                 onRemoveFavDevice = {},
-                onConnectToDevice = {},
+                onDeviceClick = {},
                 onToggleMenu = { },
                 onAboutClick = { },
                 modifier = Modifier,
@@ -435,6 +454,7 @@ fun DiscoverDevicesContentDevicesFoundPreview() {
             )
 
             DiscoverDevicesContent(
+                connectedDevice = mockScanResults[0],
                 isScanning = true,
                 isMenuExpanded = false,
                 scanResults = mockScanResults,
@@ -445,7 +465,7 @@ fun DiscoverDevicesContentDevicesFoundPreview() {
                 onStopScan = {},
                 onFavDevice = {},
                 onRemoveFavDevice = {},
-                onConnectToDevice = {},
+                onDeviceClick = {},
                 onToggleMenu = { },
                 onAboutClick = { },
                 modifier = Modifier,
@@ -460,6 +480,7 @@ fun DiscoverDevicesContentNoDevicesFoundPreview() {
     LumenTheme {
         Surface {
             DiscoverDevicesContent(
+                connectedDevice = null,
                 isScanning = false,
                 isMenuExpanded = false,
                 scanResults = emptyList(),
@@ -470,7 +491,7 @@ fun DiscoverDevicesContentNoDevicesFoundPreview() {
                 onStopScan = {},
                 onFavDevice = {},
                 onRemoveFavDevice = {},
-                onConnectToDevice = {},
+                onDeviceClick = {},
                 onToggleMenu = { },
                 onAboutClick = { },
                 modifier = Modifier,
@@ -485,6 +506,7 @@ fun DiscoverDevicesContentFavDevicesPreview() {
     LumenTheme {
         Surface {
             DiscoverDevicesContent(
+                connectedDevice = null,
                 isScanning = false,
                 isMenuExpanded = false,
                 scanResults = emptyList(),
@@ -495,7 +517,7 @@ fun DiscoverDevicesContentFavDevicesPreview() {
                 onStopScan = {},
                 onFavDevice = {},
                 onRemoveFavDevice = {},
-                onConnectToDevice = {},
+                onDeviceClick = {},
                 onToggleMenu = { },
                 onAboutClick = { },
                 modifier = Modifier,
@@ -510,6 +532,7 @@ fun DiscoverDevicesContentSearchingFavDevicesPreview() {
     LumenTheme {
         Surface {
             DiscoverDevicesContent(
+                connectedDevice = null,
                 isScanning = true,
                 isMenuExpanded = false,
                 scanResults = emptyList(),
@@ -520,7 +543,7 @@ fun DiscoverDevicesContentSearchingFavDevicesPreview() {
                 onStopScan = {},
                 onFavDevice = {},
                 onRemoveFavDevice = {},
-                onConnectToDevice = {},
+                onDeviceClick = {},
                 onToggleMenu = { },
                 onAboutClick = { },
                 modifier = Modifier,
@@ -559,6 +582,7 @@ fun DiscoverDevicesContentFavDevicesFoundPreview() {
             )
 
             DiscoverDevicesContent(
+                connectedDevice = null,
                 isScanning = false,
                 isMenuExpanded = false,
                 scanResults = mockScanResults,
@@ -569,7 +593,7 @@ fun DiscoverDevicesContentFavDevicesFoundPreview() {
                 onStopScan = {},
                 onFavDevice = {},
                 onRemoveFavDevice = {},
-                onConnectToDevice = {},
+                onDeviceClick = {},
                 onToggleMenu = { },
                 onAboutClick = { },
                 modifier = Modifier,
@@ -584,6 +608,7 @@ fun DiscoverDevicesContentFavDevicesNoDevicesPreview() {
     LumenTheme {
         Surface {
             DiscoverDevicesContent(
+                connectedDevice = null,
                 isScanning = false,
                 isMenuExpanded = false,
                 scanResults = emptyList(),
@@ -594,7 +619,7 @@ fun DiscoverDevicesContentFavDevicesNoDevicesPreview() {
                 onStopScan = {},
                 onFavDevice = {},
                 onRemoveFavDevice = {},
-                onConnectToDevice = {},
+                onDeviceClick = {},
                 onToggleMenu = { },
                 onAboutClick = { },
                 modifier = Modifier,

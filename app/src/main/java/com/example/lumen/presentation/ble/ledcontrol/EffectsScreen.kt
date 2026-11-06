@@ -16,10 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -95,10 +91,7 @@ fun EffectsContent(
 ) {
     val hapticFeedback = LocalHapticFeedback.current
 
-    var index by remember(currentLedEffect) {
-        mutableIntStateOf(currentLedEffect)
-    }
-
+    var index = currentLedEffect
     val isAutoCycleOn = EFFECT_CYCLE_VALUE == currentLedEffect
     val isFavEffect = favoriteEffects.contains(currentLedEffect)
 

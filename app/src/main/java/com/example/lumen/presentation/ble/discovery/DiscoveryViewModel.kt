@@ -20,6 +20,7 @@ import com.example.lumen.presentation.common.model.SnackbarEvent
 import com.example.lumen.presentation.common.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * ViewModel responsible for managing scan UI state and
@@ -56,32 +58,46 @@ class DiscoveryViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(DiscoveryUiState())
 
+    val scanAndConnectionFlow = combine(
+        discoveryUseCases.observeScanResultsUseCase(),
+        connectionUseCases.observeConnectedDeviceUseCase(),
+    ) { scanResult, connectedDevice ->
+        Pair(scanResult, connectedDevice)
+    }
+
     val uiState =
         combine(
-            discoveryUseCases.observeScanResultsUseCase(),
+            scanAndConnectionFlow,
             discoveryUseCases.observeScanStateUseCase(),
             prefsUseCases.getFavoriteDeviceAddressesUseCase(),
             prefsUseCases.getDeviceListPreferenceUseCase(),
             _uiState,
-        ) { scanResults, scanState, favAddresses, listType, state ->
-            Timber.tag(LOG_TAG).d("scanResults: $scanResults")
+        ) { scanResAndConnectedDevice, scanState, favAddresses, listType, state ->
+            Timber.tag(LOG_TAG).d("scanResults: ${scanResAndConnectedDevice.first}")
 
             val devices =
-                scanResults.map { device ->
+                scanResAndConnectedDevice.first.map { device ->
                     val isFavorite = favAddresses.contains(device.address)
                     DeviceContent(device, isFavorite)
                 }
             val favDevices = devices.filter { it.isFavorite }
+
+            val connectedDevice = scanResAndConnectedDevice.second?.let {
+                DeviceContent(it, favAddresses.contains(it.address))
+            }
 
             val deviceList =
                 when (listType) {
                     DeviceListType.ALL_DEVICES -> devices
                     DeviceListType.FAVORITE_DEVICES -> favDevices
                 }
+            val deviceListFiltered = deviceList.filter { devices ->
+                devices.device.address != scanResAndConnectedDevice.second?.address
+            }
 
             val emptyScanResTxt =
                 getEmptyScanResultTxt(
-                    scanResults.isEmpty(),
+                    scanResAndConnectedDevice.first.isEmpty(),
                     favAddresses.isEmpty(),
                     favDevices.isEmpty(),
                     scanState,
@@ -89,7 +105,8 @@ class DiscoveryViewModel @Inject constructor(
                 )
 
             state.copy(
-                scanResults = deviceList,
+                scanResults = deviceListFiltered,
+                connectedDevice = connectedDevice,
                 scanState = scanState,
                 emptyScanResultTxt = emptyScanResTxt,
                 selectedListType = listType,
@@ -267,6 +284,10 @@ class DiscoveryViewModel @Inject constructor(
 
     fun connectToDevice(device: BleDevice) {
         viewModelScope.launch {
+            // TODO temp, before implementing multi-device connection
+            connectionUseCases.disconnectUseCase()
+            delay(200.milliseconds)
+
             deviceToConnect.value = device
             connectionUseCases.connectToDeviceUseCase(device)
         }

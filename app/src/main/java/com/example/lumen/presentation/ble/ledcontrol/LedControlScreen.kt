@@ -55,7 +55,7 @@ fun LedControlScreen(
     val currToastRef: MutableState<Toast?> = remember { mutableStateOf(null) }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val deviceName = uiState.selectedDevice?.name ?: stringResource(R.string.unknown)
+    val deviceName = uiState.connectedDevice?.name ?: stringResource(R.string.unknown)
 
     LaunchedEffect(key1 = uiState.infoMessage) {
         uiState.infoMessage?.let { msg ->
@@ -280,7 +280,7 @@ fun LedControlContentPreview() {
             )
 
             val uiState = LedControlUiState(
-                selectedDevice = connDevice,
+                connectedDevice = connDevice,
                 customColorSlots = customColorsList,
             )
 
@@ -334,7 +334,7 @@ fun LedControlContentLandscapePreview() {
             )
 
             val uiState = LedControlUiState(
-                selectedDevice = connDevice,
+                connectedDevice = connDevice,
                 customColorSlots = customColorsList,
             )
 
@@ -388,7 +388,7 @@ fun LedControlContentTabletLandscapePreview() {
             )
 
             val uiState = LedControlUiState(
-                selectedDevice = connDevice,
+                connectedDevice = connDevice,
                 customColorSlots = customColorsList,
             )
 

@@ -15,7 +15,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.lumen.domain.ble.model.ConnectionState
 import com.example.lumen.presentation.MainViewModel
 import com.example.lumen.presentation.ble.AboutScreen
 import com.example.lumen.presentation.ble.discovery.DiscoverDevicesScreen
@@ -30,26 +29,22 @@ fun LumenNavHost() {
     val rootNavController = rememberNavController()
 
     val mainViewModel = hiltViewModel<MainViewModel>()
-    val connectionState by mainViewModel.connectionState.collectAsStateWithLifecycle()
     val loadingInfo by mainViewModel.loadingInfo.collectAsStateWithLifecycle()
 
-    LaunchedEffect(key1 = connectionState) {
-        val currentRoute = rootNavController.currentBackStackEntry?.destination?.route
-
-        if (connectionState == ConnectionState.STATE_LOADED_AND_CONNECTED &&
-            currentRoute != LedControlScreen::class.qualifiedName &&
-            currentRoute != AboutScreen::class.qualifiedName
-        ) {
-            rootNavController.navigate(LedControlScreen) {
-                launchSingleTop = true
-            }
-        } else if (connectionState == ConnectionState.DISCONNECTED &&
-            currentRoute != DiscoverDevicesScreen::class.qualifiedName &&
-            currentRoute != AboutScreen::class.qualifiedName
-        ) {
-            rootNavController.navigate(DiscoverDevicesScreen) {
-                popUpTo(LedControlScreen) { inclusive = true }
-                launchSingleTop = true
+    LaunchedEffect(Unit) {
+        mainViewModel.screenToNavigate.collect {
+            when (it) {
+                NavigationEvent.ToControl -> {
+                    rootNavController.navigate(LedControlScreen) {
+                        launchSingleTop = true
+                    }
+                }
+                NavigationEvent.ToDiscovery -> {
+                    rootNavController.navigate(DiscoverDevicesScreen) {
+                        popUpTo(LedControlScreen) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
             }
         }
     }
@@ -65,6 +60,9 @@ fun LumenNavHost() {
             DiscoverDevicesScreen(
                 onNavigateToAbout = {
                     rootNavController.navigate(AboutScreen)
+                },
+                onNavigateToControl = {
+                    rootNavController.navigate(LedControlScreen)
                 },
             )
 

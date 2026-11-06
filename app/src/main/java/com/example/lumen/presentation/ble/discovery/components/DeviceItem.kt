@@ -1,6 +1,5 @@
 package com.example.lumen.presentation.ble.discovery.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,12 +42,7 @@ fun DeviceItem(
         color = MaterialTheme.colorScheme.surfaceContainer,
         shape = MaterialTheme.shapes.extraLarge,
         onClick = { onDeviceClick(device) },
-        modifier = modifier
-            .height(126.dp)
-            .background(
-                shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.primaryContainer,
-            ),
+        modifier = modifier.height(126.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

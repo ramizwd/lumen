@@ -5,6 +5,7 @@ import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SET_LED_NUM_COMMAND
 import com.example.lumen.domain.ble.model.LedConstants.ACTIVE_PIXELS_RANGE
+import com.example.lumen.domain.ble.model.LedSetting
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -37,6 +38,7 @@ class SetLedNumUseCase @Inject constructor(
                 SERVICE_UUID,
                 CHARACTERISTIC_UUID,
                 commandBytes,
+                Pair(pxlCount, LedSetting.TOTAL_ACTIVE_PIXELS),
             )
         } catch (e: Exception) {
             Timber.tag(LOG_TAG).e(e, "Failed to set LED count")

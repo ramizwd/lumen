@@ -5,6 +5,7 @@ import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.LED_OFF_COMMAND
 import com.example.lumen.domain.ble.model.GattConstants.LED_ON_COMMAND
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
+import com.example.lumen.domain.ble.model.LedSetting
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -29,6 +30,7 @@ class TurnLedOnOffUseCase @Inject constructor(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
             command,
+            Pair(isLedOn, LedSetting.POWER),
         )
     }
 }

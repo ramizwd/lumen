@@ -20,7 +20,11 @@ import com.example.lumen.domain.ble.model.GattConstants.CCCD_UUID
 import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.GET_INFO_COMMAND
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
+import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.LedConstants.STATIC_COLOR_VALUE
 import com.example.lumen.domain.ble.model.LedControllerState
+import com.example.lumen.domain.ble.model.LedSetting
+import com.example.lumen.domain.ble.model.RgbSequence
 import com.example.lumen.utils.hasPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +37,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.UUID
@@ -69,9 +74,15 @@ class BleGattControllerImpl(
     override val selectedDevice: StateFlow<BleDevice?>
         get() = _selectedDevice.asStateFlow()
 
+    private val _connectedDevice = MutableStateFlow<BleDevice?>(null)
+    override val connectedDevice: StateFlow<BleDevice?>
+        get() = _connectedDevice.asStateFlow()
+
     private val _ledControllerState = MutableStateFlow<LedControllerState?>(null)
     override val ledControllerState: StateFlow<LedControllerState?>
         get() = _ledControllerState.asStateFlow()
+
+    private var confirmedLedState: LedControllerState? = null
 
     private val _connectionEvents =
         MutableSharedFlow<ConnectionResult>(
@@ -161,6 +172,7 @@ class BleGattControllerImpl(
         serviceUUID: UUID,
         charaUUID: UUID,
         data: ByteArray,
+        value: Pair<Any, LedSetting>?,
     ): Result<Unit> {
         if (!context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             Timber.tag(LOG_TAG).e("BLUETOOTH_CONNECT permission missing!")
@@ -180,6 +192,31 @@ class BleGattControllerImpl(
                     Timber.tag(LOG_TAG).d("Characteristic $charaUUID not found")
                     return Result.failure(Exception("Characteristic not found"))
                 }
+
+            value?.let { (value, type) ->
+                _ledControllerState.update { state ->
+                    when (type) {
+                        LedSetting.POWER -> state?.copy(isOn = value as Boolean)
+                        LedSetting.PRESET -> state?.copy(preset = value as Int)
+                        LedSetting.SPEED -> state?.copy(speed = value as Float)
+                        LedSetting.BRIGHTNESS -> state?.copy(brightness = value as Float)
+                        LedSetting.IC_MODEL -> state?.copy(icModel = value as IcModel)
+                        LedSetting.RGB_SEQ -> state?.copy(rgbSeq = value as RgbSequence)
+                        LedSetting.TOTAL_ACTIVE_PIXELS ->
+                            state?.copy(totalActivePixels = value as Int)
+                        LedSetting.WHITE_LED_BRIGHTNESS ->
+                            state?.copy(whiteLedBrightness = value as Float)
+                        LedSetting.COLOR -> {
+                            state?.copy(
+                                preset = STATIC_COLOR_VALUE,
+                                red = (value as String).substring(0, 2),
+                                green = value.substring(2, 4),
+                                blue = value.substring(4, 6),
+                            )
+                        }
+                    }
+                }
+            }
 
             charaWriteOperation(chara, data)
         } ?: run {
@@ -460,9 +497,13 @@ class BleGattControllerImpl(
 
     private fun getControllerState(value: ByteArray) {
         if (value.size >= 12) {
-            _ledControllerState.value = value.toLedControllerState()
+            value.toLedControllerState().also {
+                _ledControllerState.value = it
+                confirmedLedState = it
+            }
             _connectionState.value = ConnectionState.STATE_LOADED_AND_CONNECTED
-            Timber.tag(LOG_TAG).i("Controller state: ${_ledControllerState.value}")
+            _connectedDevice.value = selectedDevice.value
+            Timber.tag(LOG_TAG).i("Initial controller state: ${_ledControllerState.value}")
         } else {
             Timber.tag(LOG_TAG).w("Expected length 12 bytes. Received: ${value.size}")
         }
@@ -487,11 +528,20 @@ class BleGattControllerImpl(
                 @Suppress("DEPRECATION")
                 gatt.writeCharacteristic(chara)
             }
+
+            confirmedLedState = ledControllerState.value
+            Timber.tag(LOG_TAG).i("confirmedLedState: $confirmedLedState")
             Result.success(Unit)
         } catch (e: Exception) {
             Timber.tag(LOG_TAG).e(e, "Error writing to characteristic")
+            _ledControllerState.update { confirmedLedState }
+            Timber.tag(LOG_TAG).i("_ledControllerState: ${_ledControllerState.value}")
+
             // for error requesting device state during connection
-            _connectionEvents.tryEmit(ConnectionResult.Failure.ConnectionFailed)
+            if (connectionState.value != ConnectionState.STATE_LOADED_AND_CONNECTED) {
+                _connectionEvents.tryEmit(ConnectionResult.Failure.ConnectionFailed)
+                close()
+            }
             Result.failure(e)
         }
     }
@@ -536,6 +586,7 @@ class BleGattControllerImpl(
         connRetryJob?.cancel()
         connRetryJob = null
         _connectionState.value = ConnectionState.DISCONNECTED
+        _connectedDevice.value = null
 
         Timber.tag(LOG_TAG).d("Connection closed")
     }

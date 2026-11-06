@@ -9,12 +9,15 @@ import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.presentation.common.model.LoadingInfo
 import com.example.lumen.presentation.common.utils.UiText
+import com.example.lumen.presentation.navigation.NavigationEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -31,6 +34,9 @@ class MainViewModel @Inject constructor(
     companion object {
         private const val LOG_TAG = "MainViewModel"
     }
+
+    private val _screenToNavigate = Channel<NavigationEvent>(Channel.BUFFERED)
+    val screenToNavigate = _screenToNavigate.receiveAsFlow()
 
     val connectionState = connectionUseCases
         .observeConnectionStateUseCase()
@@ -71,6 +77,19 @@ class MainViewModel @Inject constructor(
         )
 
     init {
+        connectionState
+            .onEach {
+                when (it) {
+                    ConnectionState.STATE_LOADED_AND_CONNECTED -> _screenToNavigate.send(
+                        NavigationEvent.ToControl,
+                    )
+                    ConnectionState.DISCONNECTED -> _screenToNavigate.send(
+                        NavigationEvent.ToDiscovery,
+                    )
+                    else -> {}
+                }
+            }.launchIn(viewModelScope)
+
         observeBluetoothStateUseCase()
             .onEach { btState ->
                 when (btState) {

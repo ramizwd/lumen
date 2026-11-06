@@ -21,6 +21,7 @@ import com.example.lumen.presentation.common.utils.UiText
  * [showEnableBtDialog] indicates whether to show the enable Bluetooth dialog
  * [showPermissionDialog] indicates whether to show the permission rationale dialog
  * [showOpenSettingsDialog] indicates whether to show the grant permission through settings dialog
+ * [connectedDevice] current connected device
  */
 data class DiscoveryUiState(
     val scanResults: List<DeviceContent> = emptyList(),
@@ -35,4 +36,5 @@ data class DiscoveryUiState(
     val showEnableBtDialog: Boolean = false,
     val showPermissionDialog: Boolean = false,
     val showOpenSettingsDialog: Boolean = false,
+    val connectedDevice: DeviceContent? = null,
 )

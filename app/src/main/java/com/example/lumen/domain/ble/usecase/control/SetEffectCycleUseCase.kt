@@ -4,6 +4,8 @@ import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SET_CYCLE_COMMAND
+import com.example.lumen.domain.ble.model.LedConstants
+import com.example.lumen.domain.ble.model.LedSetting
 import javax.inject.Inject
 
 class SetEffectCycleUseCase @Inject constructor(
@@ -14,5 +16,6 @@ class SetEffectCycleUseCase @Inject constructor(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
             SET_CYCLE_COMMAND,
+            Pair(LedConstants.EFFECT_CYCLE_VALUE, LedSetting.PRESET),
         )
 }
