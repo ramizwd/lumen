@@ -72,24 +72,24 @@ class DiscoveryViewModel @Inject constructor(
             prefsUseCases.getFavoriteDeviceAddressesUseCase(),
             prefsUseCases.getDeviceListPreferenceUseCase(),
             _uiState,
-        ) { scanResAndConnectedDevice, scanState, favAddresses, listType, state ->
+        ) { scanResAndConnectedDevice, scanState, savedFavAddresses, listType, state ->
             Timber.tag(LOG_TAG).d("scanResults: ${scanResAndConnectedDevice.first}")
 
             val devices =
                 scanResAndConnectedDevice.first.map { device ->
-                    val isFavorite = favAddresses.contains(device.address)
+                    val isFavorite = savedFavAddresses.contains(device.address)
                     DeviceContent(device, isFavorite)
                 }
-            val favDevices = devices.filter { it.isFavorite }
+            val scannedFavDevices = devices.filter { it.isFavorite }
 
             val connectedDevice = scanResAndConnectedDevice.second?.let {
-                DeviceContent(it, favAddresses.contains(it.address))
+                DeviceContent(it, savedFavAddresses.contains(it.address))
             }
 
             val deviceList =
                 when (listType) {
                     DeviceListType.ALL_DEVICES -> devices
-                    DeviceListType.FAVORITE_DEVICES -> favDevices
+                    DeviceListType.FAVORITE_DEVICES -> scannedFavDevices
                 }.filter { devices ->
                     devices.device.address != scanResAndConnectedDevice.second?.address
                 }
@@ -97,8 +97,8 @@ class DiscoveryViewModel @Inject constructor(
             val emptyScanResTxt =
                 getEmptyScanResultTxt(
                     scanResAndConnectedDevice.first.isEmpty(),
-                    favAddresses.isEmpty(),
-                    favDevices.isEmpty(),
+                    savedFavAddresses.isEmpty(),
+                    scannedFavDevices.isEmpty(),
                     scanState,
                     listType,
                 )
@@ -367,8 +367,8 @@ class DiscoveryViewModel @Inject constructor(
 
     private fun getEmptyScanResultTxt(
         isNoDevices: Boolean,
-        isNoFavAdded: Boolean,
-        isNoFavDevices: Boolean,
+        hasNoFavoritesSaved: Boolean,
+        hasNoVisibleFavorites: Boolean,
         scanState: ScanState,
         listType: DeviceListType,
     ): UiText? {
@@ -378,7 +378,7 @@ class DiscoveryViewModel @Inject constructor(
             ScanState.SCAN_AUTO_PAUSED -> R.string.no_devices_found
         }
 
-        val favScanStateResId = if (isNoFavAdded) {
+        val favScanStateResId = if (hasNoFavoritesSaved) {
             R.string.no_fav_added
         } else {
             when (scanState) {
@@ -393,7 +393,7 @@ class DiscoveryViewModel @Inject constructor(
                 if (isNoDevices) UiText.StringResource(scanStateResId) else null
             }
             DeviceListType.FAVORITE_DEVICES -> {
-                if (isNoFavDevices) UiText.StringResource(favScanStateResId) else null
+                if (hasNoVisibleFavorites) UiText.StringResource(favScanStateResId) else null
             }
         }
     }

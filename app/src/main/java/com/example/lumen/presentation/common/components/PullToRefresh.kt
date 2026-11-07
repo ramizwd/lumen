@@ -40,7 +40,7 @@ fun <T> PullToRefresh(
         onRefresh = onRefresh,
         modifier = modifier,
     ) {
-        if (items.isEmpty()) {
+        if (items.isEmpty() && connectedDevice == null) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -66,8 +66,10 @@ fun <T> PullToRefresh(
                         item {
                             connectedDevice()
                         }
-                        stickyHeader {
-                            ListHeader(R.string.scanned)
+                        if (items.isNotEmpty()) {
+                            stickyHeader {
+                                ListHeader(R.string.scanned)
+                            }
                         }
                     }
 
@@ -82,8 +84,10 @@ fun <T> PullToRefresh(
                         item {
                             connectedDevice()
                         }
-                        stickyHeader {
-                            ListHeader(R.string.scanned)
+                        if (items.isNotEmpty()) {
+                            stickyHeader {
+                                ListHeader(R.string.scanned)
+                            }
                         }
                     }
 
