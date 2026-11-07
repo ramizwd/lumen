@@ -27,6 +27,7 @@ class SetEffectSpeedUseCaseTest {
                     match {
                         it[0] == expectedByte
                     },
+                    any()
                 )
             }
         }

@@ -53,6 +53,7 @@ class SetDeviceNameUseCaseTest {
                     GattConstants.SERVICE_UUID,
                     GattConstants.CHARACTERISTIC_UUID,
                     expectedBytes,
+                    null
                 )
                 mockBleGattController.disconnect()
                 mockBleScanController.startScan()
@@ -73,6 +74,7 @@ class SetDeviceNameUseCaseTest {
 
             coVerify(exactly = 0) {
                 mockBleGattController.writeCharacteristic(
+                    any(),
                     any(),
                     any(),
                     any(),
@@ -101,6 +103,7 @@ class SetDeviceNameUseCaseTest {
                     any(),
                     any(),
                     any(),
+                    any()
                 )
             } throws Exception(errMsg)
 

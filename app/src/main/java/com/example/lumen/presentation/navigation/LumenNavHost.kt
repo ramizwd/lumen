@@ -32,17 +32,27 @@ fun LumenNavHost() {
     val loadingInfo by mainViewModel.loadingInfo.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
+        val currentRoute = rootNavController.currentBackStackEntry?.destination?.route
+
         mainViewModel.screenToNavigate.collect {
             when (it) {
                 NavigationEvent.ToControl -> {
-                    rootNavController.navigate(LedControlScreen) {
-                        launchSingleTop = true
+                    if (currentRoute != LedControlScreen::class.qualifiedName &&
+                        currentRoute != AboutScreen::class.qualifiedName
+                    ) {
+                        rootNavController.navigate(LedControlScreen) {
+                            launchSingleTop = true
+                        }
                     }
                 }
+
                 NavigationEvent.ToDiscovery -> {
-                    rootNavController.navigate(DiscoverDevicesScreen) {
-                        popUpTo(LedControlScreen) { inclusive = true }
-                        launchSingleTop = true
+                    if (currentRoute != DiscoverDevicesScreen::class.qualifiedName &&
+                        currentRoute != AboutScreen::class.qualifiedName) {
+                        rootNavController.navigate(DiscoverDevicesScreen) {
+                            popUpTo(LedControlScreen) { inclusive = true }
+                            launchSingleTop = true
+                        }
                     }
                 }
             }
