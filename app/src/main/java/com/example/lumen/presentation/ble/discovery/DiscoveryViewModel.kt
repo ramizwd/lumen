@@ -20,6 +20,7 @@ import com.example.lumen.presentation.common.model.SnackbarEvent
 import com.example.lumen.presentation.common.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * ViewModel responsible for managing scan UI state and
@@ -56,40 +58,54 @@ class DiscoveryViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(DiscoveryUiState())
 
+    val scanAndConnectionFlow = combine(
+        discoveryUseCases.observeScanResultsUseCase(),
+        connectionUseCases.observeConnectedDeviceUseCase(),
+    ) { scanResult, connectedDevice ->
+        Pair(scanResult, connectedDevice)
+    }
+
     val uiState =
         combine(
-            discoveryUseCases.observeScanResultsUseCase(),
+            scanAndConnectionFlow,
             discoveryUseCases.observeScanStateUseCase(),
             prefsUseCases.getFavoriteDeviceAddressesUseCase(),
             prefsUseCases.getDeviceListPreferenceUseCase(),
             _uiState,
-        ) { scanResults, scanState, favAddresses, listType, state ->
-            Timber.tag(LOG_TAG).d("scanResults: $scanResults")
+        ) { scanResAndConnectedDevice, scanState, savedFavAddresses, listType, state ->
+            Timber.tag(LOG_TAG).d("scanResults: ${scanResAndConnectedDevice.first}")
 
             val devices =
-                scanResults.map { device ->
-                    val isFavorite = favAddresses.contains(device.address)
+                scanResAndConnectedDevice.first.map { device ->
+                    val isFavorite = savedFavAddresses.contains(device.address)
                     DeviceContent(device, isFavorite)
                 }
-            val favDevices = devices.filter { it.isFavorite }
+            val scannedFavDevices = devices.filter { it.isFavorite }
+
+            val connectedDevice = scanResAndConnectedDevice.second?.let {
+                DeviceContent(it, savedFavAddresses.contains(it.address))
+            }
 
             val deviceList =
                 when (listType) {
                     DeviceListType.ALL_DEVICES -> devices
-                    DeviceListType.FAVORITE_DEVICES -> favDevices
+                    DeviceListType.FAVORITE_DEVICES -> scannedFavDevices
+                }.filter { devices ->
+                    devices.device.address != scanResAndConnectedDevice.second?.address
                 }
 
             val emptyScanResTxt =
                 getEmptyScanResultTxt(
-                    scanResults.isEmpty(),
-                    favAddresses.isEmpty(),
-                    favDevices.isEmpty(),
+                    scanResAndConnectedDevice.first.isEmpty(),
+                    savedFavAddresses.isEmpty(),
+                    scannedFavDevices.isEmpty(),
                     scanState,
                     listType,
                 )
 
             state.copy(
                 scanResults = deviceList,
+                connectedDevice = connectedDevice,
                 scanState = scanState,
                 emptyScanResultTxt = emptyScanResTxt,
                 selectedListType = listType,
@@ -267,6 +283,10 @@ class DiscoveryViewModel @Inject constructor(
 
     fun connectToDevice(device: BleDevice) {
         viewModelScope.launch {
+            // TODO temp, before implementing multi-device connection
+            connectionUseCases.disconnectUseCase()
+            delay(200.milliseconds)
+
             deviceToConnect.value = device
             connectionUseCases.connectToDeviceUseCase(device)
         }
@@ -347,8 +367,8 @@ class DiscoveryViewModel @Inject constructor(
 
     private fun getEmptyScanResultTxt(
         isNoDevices: Boolean,
-        isNoFavAdded: Boolean,
-        isNoFavDevices: Boolean,
+        hasNoFavoritesSaved: Boolean,
+        hasNoVisibleFavorites: Boolean,
         scanState: ScanState,
         listType: DeviceListType,
     ): UiText? {
@@ -358,7 +378,7 @@ class DiscoveryViewModel @Inject constructor(
             ScanState.SCAN_AUTO_PAUSED -> R.string.no_devices_found
         }
 
-        val favScanStateResId = if (isNoFavAdded) {
+        val favScanStateResId = if (hasNoFavoritesSaved) {
             R.string.no_fav_added
         } else {
             when (scanState) {
@@ -373,7 +393,7 @@ class DiscoveryViewModel @Inject constructor(
                 if (isNoDevices) UiText.StringResource(scanStateResId) else null
             }
             DeviceListType.FAVORITE_DEVICES -> {
-                if (isNoFavDevices) UiText.StringResource(favScanStateResId) else null
+                if (hasNoVisibleFavorites) UiText.StringResource(favScanStateResId) else null
             }
         }
     }

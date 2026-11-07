@@ -5,6 +5,7 @@ import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SET_IC_MODEL_COMMAND
 import com.example.lumen.domain.ble.model.IcModel
+import com.example.lumen.domain.ble.model.LedSetting
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -31,6 +32,7 @@ class SetIcModelUseCase @Inject constructor(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
             commandBytes,
+            Pair(icModel, LedSetting.IC_MODEL),
         )
     }
 }

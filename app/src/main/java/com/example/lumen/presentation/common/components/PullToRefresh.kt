@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.lumen.R
 import com.example.lumen.presentation.theme.spacing
 
 @Composable
@@ -28,6 +29,7 @@ fun <T> PullToRefresh(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
+    connectedDevice: (@Composable () -> Unit)?,
     gridCellMinSize: Dp = 300.dp,
     lazyGridState: LazyGridState = rememberLazyGridState(),
     scrollState: ScrollState = rememberScrollState(),
@@ -38,7 +40,7 @@ fun <T> PullToRefresh(
         onRefresh = onRefresh,
         modifier = modifier,
     ) {
-        if (items.isEmpty()) {
+        if (items.isEmpty() && connectedDevice == null) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -57,10 +59,38 @@ fun <T> PullToRefresh(
                 state = lazyGridState,
             ) {
                 if (keySelector != null) {
+                    connectedDevice?.let {
+                        stickyHeader {
+                            ListHeader(R.string.connected)
+                        }
+                        item {
+                            connectedDevice()
+                        }
+                        if (items.isNotEmpty()) {
+                            stickyHeader {
+                                ListHeader(R.string.scanned)
+                            }
+                        }
+                    }
+
                     items(items, key = keySelector) {
                         content(it)
                     }
                 } else {
+                    connectedDevice?.let {
+                        stickyHeader {
+                            ListHeader(R.string.connected)
+                        }
+                        item {
+                            connectedDevice()
+                        }
+                        if (items.isNotEmpty()) {
+                            stickyHeader {
+                                ListHeader(R.string.scanned)
+                            }
+                        }
+                    }
+
                     items(items) {
                         content(it)
                     }

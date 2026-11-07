@@ -31,6 +31,7 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun DeviceList(
     scanResults: List<DeviceContent>,
+    connectedDevice: DeviceContent?,
     emptyScanResultTxt: String?,
     onStartScan: () -> Unit,
     onFavDevice: (String) -> Unit,
@@ -58,6 +59,18 @@ fun DeviceList(
                             end = MaterialTheme.spacing.large,
                         ),
                     text = emptyScanResultTxt,
+                )
+            }
+        },
+        connectedDevice = connectedDevice?.let {
+            {
+                DeviceItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    onDeviceClick = onDeviceClick,
+                    deviceContent = connectedDevice,
+                    onFavDevice = onFavDevice,
+                    onRemoveDevice = onRemoveDevice,
+                    color = MaterialTheme.colorScheme.primaryContainer,
                 )
             }
         },
@@ -132,6 +145,7 @@ fun DeviceListPreview() {
 
             DeviceList(
                 scanResults = mockScanResults,
+                connectedDevice = mockScanResults.first(),
                 emptyScanResultTxt = null,
                 onStartScan = {},
                 onFavDevice = {},
@@ -149,6 +163,7 @@ fun DeviceListInitialState() {
         Surface {
             DeviceList(
                 scanResults = emptyList(),
+                connectedDevice = null,
                 emptyScanResultTxt = "Start scanning to find nearby devices.",
                 onStartScan = {},
                 onFavDevice = {},
@@ -190,6 +205,7 @@ fun DeviceListTabletLandscapePreview() {
 
             DeviceList(
                 scanResults = mockScanResults,
+                connectedDevice = mockScanResults.first(),
                 emptyScanResultTxt = null,
                 onStartScan = {},
                 onFavDevice = {},
@@ -231,6 +247,7 @@ fun DeviceListTabletPortraitPreview() {
 
             DeviceList(
                 scanResults = mockScanResults,
+                connectedDevice = mockScanResults.first(),
                 emptyScanResultTxt = null,
                 onStartScan = {},
                 onFavDevice = {},

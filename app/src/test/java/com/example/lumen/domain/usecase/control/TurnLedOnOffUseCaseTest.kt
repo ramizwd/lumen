@@ -3,6 +3,7 @@ package com.example.lumen.domain.usecase.control
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.GattConstants.LED_OFF_COMMAND
 import com.example.lumen.domain.ble.model.GattConstants.LED_ON_COMMAND
+import com.example.lumen.domain.ble.model.LedSetting
 import com.example.lumen.domain.ble.usecase.control.TurnLedOnOffUseCase
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -33,6 +34,7 @@ class TurnLedOnOffUseCaseTest {
                     any(),
                     any(),
                     LED_ON_COMMAND,
+                    Pair(true, LedSetting.POWER),
                 )
             }
         }
@@ -47,6 +49,7 @@ class TurnLedOnOffUseCaseTest {
                     any(),
                     any(),
                     LED_OFF_COMMAND,
+                    Pair(false, LedSetting.POWER),
                 )
             }
         }

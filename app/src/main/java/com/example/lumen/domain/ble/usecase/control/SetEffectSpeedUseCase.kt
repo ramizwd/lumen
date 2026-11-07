@@ -5,6 +5,7 @@ import com.example.lumen.domain.ble.model.GattConstants.CHARACTERISTIC_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SERVICE_UUID
 import com.example.lumen.domain.ble.model.GattConstants.SET_SPEED_COMMAND
 import com.example.lumen.domain.ble.model.LedConstants.EFFECT_SPEED_RANGE
+import com.example.lumen.domain.ble.model.LedSetting
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -33,6 +34,7 @@ class SetEffectSpeedUseCase @Inject constructor(
             SERVICE_UUID,
             CHARACTERISTIC_UUID,
             command,
+            Pair(coercedValue, LedSetting.SPEED),
         )
     }
 }

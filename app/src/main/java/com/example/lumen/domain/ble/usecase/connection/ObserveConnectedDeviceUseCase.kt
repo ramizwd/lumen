@@ -6,10 +6,10 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 /**
- * Use case for observing the device that is selected and successfully connected
+ * Use case for observing the device that is currently connected
  */
-class ObserveSelectedDeviceUseCase @Inject constructor(
+class ObserveConnectedDeviceUseCase @Inject constructor(
     private val bleGattController: BleGattController,
 ) {
-    operator fun invoke(): Flow<BleDevice?> = bleGattController.selectedDevice
+    operator fun invoke(): Flow<BleDevice?> = bleGattController.connectedDevice
 }

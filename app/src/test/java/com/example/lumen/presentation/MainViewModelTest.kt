@@ -58,7 +58,7 @@ class MainViewModelTest {
                 disconnectUseCase = disconnectUseCase,
                 connectToDeviceUseCase = mockk(),
                 observeConnectionEventsUseCase = mockk(),
-                observeSelectedDeviceUseCase = mockk(),
+                observeConnectedDeviceUseCase = mockk(),
             )
 
         viewModel = MainViewModel(connectionUseCases, observeBluetoothStateUseCase)

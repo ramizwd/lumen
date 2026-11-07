@@ -2,6 +2,7 @@ package com.example.lumen.domain.usecase.control
 
 import com.example.lumen.domain.ble.BleGattController
 import com.example.lumen.domain.ble.model.GattConstants
+import com.example.lumen.domain.ble.model.LedSetting
 import com.example.lumen.domain.ble.usecase.control.ChangeBrightnessUseCase
 import com.example.lumen.utils.toBrightnessCommandBytes
 import io.mockk.coVerify
@@ -36,6 +37,7 @@ class ChangeBrightnessUseCaseTest {
                     GattConstants.SERVICE_UUID,
                     GattConstants.CHARACTERISTIC_UUID,
                     expectedBytes,
+                    Pair(testBrightnessValue, LedSetting.BRIGHTNESS),
                 )
             }
         }
@@ -53,6 +55,7 @@ class ChangeBrightnessUseCaseTest {
                     GattConstants.SERVICE_UUID,
                     GattConstants.CHARACTERISTIC_UUID,
                     expectedBytes,
+                    Pair(testBrightnessValue, LedSetting.BRIGHTNESS),
                 )
             }
         }
@@ -70,6 +73,7 @@ class ChangeBrightnessUseCaseTest {
                     any(),
                     any(),
                     expectedBytes,
+                    any(),
                 )
             }
         }
@@ -87,6 +91,7 @@ class ChangeBrightnessUseCaseTest {
                     any(),
                     any(),
                     expectedBytes,
+                    Pair(255f, LedSetting.BRIGHTNESS),
                 )
             }
         }

@@ -16,7 +16,7 @@ import com.example.lumen.domain.ble.usecase.config.SetLedNumUseCase
 import com.example.lumen.domain.ble.usecase.config.SetRgbSequenceUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
 import com.example.lumen.domain.ble.usecase.connection.DisconnectUseCase
-import com.example.lumen.domain.ble.usecase.connection.ObserveSelectedDeviceUseCase
+import com.example.lumen.domain.ble.usecase.connection.ObserveConnectedDeviceUseCase
 import com.example.lumen.domain.ble.usecase.control.ChangeBrightnessUseCase
 import com.example.lumen.domain.ble.usecase.control.ChangeWhiteLedBrightnessUseCase
 import com.example.lumen.domain.ble.usecase.control.ControlUseCases
@@ -89,7 +89,7 @@ class LedControlViewModelTest {
 
     private lateinit var setDeviceNameUseCase: SetDeviceNameUseCase
     private lateinit var setLedNumUseCase: SetLedNumUseCase
-    private lateinit var observeSelectedDeviceUseCase: ObserveSelectedDeviceUseCase
+    private lateinit var observeConnectedDeviceUseCase: ObserveConnectedDeviceUseCase
     private lateinit var observeControllerStateUseCase: ObserveControllerStateUseCase
     private lateinit var observeBrightnessUseCase: ObserveBrightnessUseCase
     private lateinit var observeWhiteLedBrightnessUseCase: ObserveWhiteLedBrightnessUseCase
@@ -122,7 +122,7 @@ class LedControlViewModelTest {
         setLedNumUseCase = mockk()
         setLedEffectUseCase = mockk()
         setEffectCycleUseCase = mockk(relaxed = true)
-        observeSelectedDeviceUseCase = mockk()
+        observeConnectedDeviceUseCase = mockk()
         observeControllerStateUseCase = mockk()
         observeBrightnessUseCase = mockk()
         observeWhiteLedBrightnessUseCase = mockk()
@@ -148,7 +148,7 @@ class LedControlViewModelTest {
             Result.success(Unit)
         coEvery { removeFavEffectUseCase(any(), any()) } returns
             Result.success(Unit)
-        every { observeSelectedDeviceUseCase() } returns deviceFlow
+        every { observeConnectedDeviceUseCase() } returns deviceFlow
         every { observeControllerStateUseCase() } returns controllerStateFlow
         every { observeBrightnessUseCase(any()) } returns brightnessFlow
         every { observeWhiteLedBrightnessUseCase(any()) } returns whiteBrightnessFlow
@@ -170,7 +170,7 @@ class LedControlViewModelTest {
                 connectToDeviceUseCase = mockk(),
                 observeConnectionStateUseCase = mockk(),
                 observeConnectionEventsUseCase = mockk(),
-                observeSelectedDeviceUseCase = observeSelectedDeviceUseCase,
+                observeConnectedDeviceUseCase = observeConnectedDeviceUseCase,
                 disconnectUseCase = disconnectUseCase,
             )
 
@@ -227,7 +227,7 @@ class LedControlViewModelTest {
         runTest {
             val state = viewModel.uiState.value
 
-            assertEquals(device, state.selectedDevice)
+            assertEquals(device, state.connectedDevice)
             assertEquals(controllerState.isOn, state.isLedOn)
             assertEquals(
                 controllerState.brightness,

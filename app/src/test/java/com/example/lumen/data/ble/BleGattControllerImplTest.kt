@@ -72,7 +72,6 @@ class BleGattControllerImplTest {
         characteristic = mockk(relaxed = true)
         descriptor = mockk(relaxed = true)
 
-        every { gatt.writeCharacteristic(any()) } returns true
         every {
             gatt.writeCharacteristic(any(), any(), any())
         } returns BluetoothStatusCodes.SUCCESS
@@ -456,6 +455,7 @@ class BleGattControllerImplTest {
                 SERVICE_UUID,
                 CHARACTERISTIC_UUID,
                 commandBytes,
+                null,
             )
 
             assertTrue(result.isSuccess)
@@ -475,6 +475,7 @@ class BleGattControllerImplTest {
                     SERVICE_UUID,
                     CHARACTERISTIC_UUID,
                     commandBytes,
+                    null,
                 )
 
                 assertTrue(result.isFailure)
@@ -504,6 +505,7 @@ class BleGattControllerImplTest {
                     SERVICE_UUID,
                     CHARACTERISTIC_UUID,
                     commandBytes,
+                    null,
                 )
 
                 assertTrue(result.isFailure)

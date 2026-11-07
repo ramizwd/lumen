@@ -13,6 +13,7 @@ import com.example.lumen.domain.ble.model.ScanState
 import com.example.lumen.domain.ble.usecase.common.ObserveBluetoothStateUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectToDeviceUseCase
 import com.example.lumen.domain.ble.usecase.connection.ConnectionUseCases
+import com.example.lumen.domain.ble.usecase.connection.ObserveConnectedDeviceUseCase
 import com.example.lumen.domain.ble.usecase.connection.ObserveConnectionEventsUseCase
 import com.example.lumen.domain.ble.usecase.discovery.DiscoveryUseCases
 import com.example.lumen.domain.ble.usecase.discovery.ObserveScanErrorsUseCase
@@ -79,6 +80,8 @@ class DiscoveryViewModelTest {
     private lateinit var removeFavDeviceAddressUseCase: RemoveFavDeviceAddressUseCase
     private lateinit var saveDeviceListPreferenceUseCase: SaveDeviceListPreferenceUseCase
     private lateinit var observeBluetoothStateUseCase: ObserveBluetoothStateUseCase
+    private lateinit var observeConnectedDeviceUseCase: ObserveConnectedDeviceUseCase
+    private val connectedDeviceFlow = MutableStateFlow<BleDevice?>(null)
 
     private lateinit var viewModel: DiscoveryViewModel
 
@@ -93,6 +96,7 @@ class DiscoveryViewModelTest {
         getDeviceListPreferenceUseCase = mockk()
         observeConnectionEventsUseCase = mockk()
         observeBluetoothStateUseCase = mockk()
+        observeConnectedDeviceUseCase = mockk()
         startScanUseCase = mockk(relaxed = true)
         stopScanUseCase = mockk(relaxed = true)
         connectToDeviceUseCase = mockk(relaxed = true)
@@ -107,6 +111,7 @@ class DiscoveryViewModelTest {
         every { getDeviceListPreferenceUseCase() } returns listTypeFlow
         every { observeConnectionEventsUseCase() } returns connectionResultFlow
         every { observeBluetoothStateUseCase() } returns bluetoothStateFlow
+        every { observeConnectedDeviceUseCase() } returns connectedDeviceFlow
 
         val discoveryUseCases =
             DiscoveryUseCases(
@@ -119,9 +124,9 @@ class DiscoveryViewModelTest {
 
         val connectionUseCases =
             ConnectionUseCases(
-                observeConnectionStateUseCase = mockk(),
-                observeSelectedDeviceUseCase = mockk(),
-                disconnectUseCase = mockk(),
+                observeConnectionStateUseCase = mockk(relaxed = true),
+                observeConnectedDeviceUseCase = observeConnectedDeviceUseCase,
+                disconnectUseCase = mockk(relaxed = true),
                 connectToDeviceUseCase = connectToDeviceUseCase,
                 observeConnectionEventsUseCase = observeConnectionEventsUseCase,
             )
@@ -363,6 +368,8 @@ class DiscoveryViewModelTest {
     fun `connectToDevice calls use case`() =
         runTest {
             viewModel.connectToDevice(device)
+            // TODO temp before implementing multi-devices connection
+            testScheduler.advanceUntilIdle()
 
             coVerify(exactly = 1) { connectToDeviceUseCase(any()) }
         }
@@ -389,10 +396,13 @@ class DiscoveryViewModelTest {
     fun `retryConnection calls use case when device is available`() =
         runTest {
             viewModel.connectToDevice(device)
+            // TODO temp before implementing multi-devices connection
+            testScheduler.advanceUntilIdle()
 
             clearMocks(connectToDeviceUseCase)
 
             viewModel.retryConnection()
+            testScheduler.advanceUntilIdle()
 
             coVerify(exactly = 1) { connectToDeviceUseCase(device) }
 
