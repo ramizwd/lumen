@@ -53,7 +53,7 @@ class SetDeviceNameUseCaseTest {
                     GattConstants.SERVICE_UUID,
                     GattConstants.CHARACTERISTIC_UUID,
                     expectedBytes,
-                    null
+                    null,
                 )
                 mockBleGattController.disconnect()
                 mockBleScanController.startScan()
@@ -103,7 +103,7 @@ class SetDeviceNameUseCaseTest {
                     any(),
                     any(),
                     any(),
-                    any()
+                    any(),
                 )
             } throws Exception(errMsg)
 

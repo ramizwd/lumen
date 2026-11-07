@@ -20,6 +20,7 @@ import com.example.lumen.presentation.ble.AboutScreen
 import com.example.lumen.presentation.ble.discovery.DiscoverDevicesScreen
 import com.example.lumen.presentation.ble.ledcontrol.LedControlScreen
 import com.example.lumen.presentation.common.components.LoadingOverlay
+import timber.log.Timber
 
 /**
  * Top-level navigation graph
@@ -32,15 +33,16 @@ fun LumenNavHost() {
     val loadingInfo by mainViewModel.loadingInfo.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        val currentRoute = rootNavController.currentBackStackEntry?.destination?.route
-
         mainViewModel.screenToNavigate.collect {
+            val currentRoute = rootNavController.currentBackStackEntry?.destination?.route
+
             when (it) {
                 NavigationEvent.ToControl -> {
                     if (currentRoute != LedControlScreen::class.qualifiedName &&
                         currentRoute != AboutScreen::class.qualifiedName
                     ) {
                         rootNavController.navigate(LedControlScreen) {
+                            Timber.tag("LumenNavHost").i("navigated ToControl")
                             launchSingleTop = true
                         }
                     }
@@ -48,8 +50,10 @@ fun LumenNavHost() {
 
                 NavigationEvent.ToDiscovery -> {
                     if (currentRoute != DiscoverDevicesScreen::class.qualifiedName &&
-                        currentRoute != AboutScreen::class.qualifiedName) {
+                        currentRoute != AboutScreen::class.qualifiedName
+                    ) {
                         rootNavController.navigate(DiscoverDevicesScreen) {
+                            Timber.tag("LumenNavHost").i("navigated ToDiscovery")
                             popUpTo(LedControlScreen) { inclusive = true }
                             launchSingleTop = true
                         }

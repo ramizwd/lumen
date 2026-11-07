@@ -90,10 +90,9 @@ class DiscoveryViewModel @Inject constructor(
                 when (listType) {
                     DeviceListType.ALL_DEVICES -> devices
                     DeviceListType.FAVORITE_DEVICES -> favDevices
+                }.filter { devices ->
+                    devices.device.address != scanResAndConnectedDevice.second?.address
                 }
-            val deviceListFiltered = deviceList.filter { devices ->
-                devices.device.address != scanResAndConnectedDevice.second?.address
-            }
 
             val emptyScanResTxt =
                 getEmptyScanResultTxt(
@@ -105,7 +104,7 @@ class DiscoveryViewModel @Inject constructor(
                 )
 
             state.copy(
-                scanResults = deviceListFiltered,
+                scanResults = deviceList,
                 connectedDevice = connectedDevice,
                 scanState = scanState,
                 emptyScanResultTxt = emptyScanResTxt,

@@ -104,4 +104,6 @@
     <string name="error_setting_cycle">Error setting effect to auto cycle</string>
     <string name="error_setting_ic_model">Error setting IC model</string>
     <string name="error_setting_rgb_sequence">Error setting RGB sequence</string>
+    <string name="connected">Connected</string>
+    <string name="scanned">Scanned</string>
 </resources>

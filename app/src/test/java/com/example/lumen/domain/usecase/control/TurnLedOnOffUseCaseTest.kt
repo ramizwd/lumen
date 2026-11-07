@@ -34,7 +34,7 @@ class TurnLedOnOffUseCaseTest {
                     any(),
                     any(),
                     LED_ON_COMMAND,
-                    Pair(true, LedSetting.POWER)
+                    Pair(true, LedSetting.POWER),
                 )
             }
         }
@@ -49,7 +49,7 @@ class TurnLedOnOffUseCaseTest {
                     any(),
                     any(),
                     LED_OFF_COMMAND,
-                    Pair(false, LedSetting.POWER)
+                    Pair(false, LedSetting.POWER),
                 )
             }
         }

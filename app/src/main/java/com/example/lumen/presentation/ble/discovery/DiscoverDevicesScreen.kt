@@ -44,7 +44,6 @@ import com.example.lumen.domain.ble.model.BleDevice
 import com.example.lumen.domain.ble.model.BluetoothPermissionStatus
 import com.example.lumen.domain.ble.model.DeviceListType
 import com.example.lumen.domain.ble.model.ScanState
-import com.example.lumen.presentation.ble.discovery.components.DeviceItem
 import com.example.lumen.presentation.ble.discovery.components.DeviceList
 import com.example.lumen.presentation.ble.discovery.components.DropdownMenu
 import com.example.lumen.presentation.ble.discovery.components.ScanButton
@@ -62,7 +61,6 @@ import com.example.lumen.presentation.theme.spacing
 import com.example.lumen.utils.btPermissionArray
 import com.example.lumen.utils.hasBluetoothPermissions
 import com.example.lumen.utils.shouldShowBluetoothRationale
-import kotlinx.coroutines.launch
 
 @Composable
 fun DiscoverDevicesScreen(
@@ -352,17 +350,9 @@ fun DiscoverDevicesContent(
             }
         }
 
-        connectedDevice?.let {
-            DeviceItem(
-                deviceContent = it,
-                onDeviceClick = { device -> onDeviceClick(device) },
-                onFavDevice = onFavDevice,
-                onRemoveDevice = onRemoveFavDevice,
-            )
-        }
-
         DeviceList(
             scanResults = scanResults,
+            connectedDevice = connectedDevice,
             emptyScanResultTxt = emptyScanResultTxt,
             onStartScan = onStartScan,
             onFavDevice = onFavDevice,

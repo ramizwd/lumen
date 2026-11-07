@@ -455,7 +455,7 @@ class BleGattControllerImplTest {
                 SERVICE_UUID,
                 CHARACTERISTIC_UUID,
                 commandBytes,
-                null
+                null,
             )
 
             assertTrue(result.isSuccess)
@@ -475,7 +475,7 @@ class BleGattControllerImplTest {
                     SERVICE_UUID,
                     CHARACTERISTIC_UUID,
                     commandBytes,
-                    null
+                    null,
                 )
 
                 assertTrue(result.isFailure)
@@ -505,7 +505,7 @@ class BleGattControllerImplTest {
                     SERVICE_UUID,
                     CHARACTERISTIC_UUID,
                     commandBytes,
-                    null
+                    null,
                 )
 
                 assertTrue(result.isFailure)

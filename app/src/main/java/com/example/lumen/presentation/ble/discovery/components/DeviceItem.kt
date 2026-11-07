@@ -32,6 +32,7 @@ fun DeviceItem(
     onFavDevice: (String) -> Unit,
     onRemoveDevice: (String) -> Unit,
     modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.surfaceContainer,
 ) {
     val device = deviceContent.device
     val isFavorite = deviceContent.isFavorite
@@ -39,7 +40,7 @@ fun DeviceItem(
     val scrollState = rememberScrollState()
 
     Surface(
-        color = MaterialTheme.colorScheme.surfaceContainer,
+        color = color,
         shape = MaterialTheme.shapes.extraLarge,
         onClick = { onDeviceClick(device) },
         modifier = modifier.height(126.dp),

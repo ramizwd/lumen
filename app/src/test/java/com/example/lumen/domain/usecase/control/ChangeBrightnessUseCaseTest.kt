@@ -37,7 +37,7 @@ class ChangeBrightnessUseCaseTest {
                     GattConstants.SERVICE_UUID,
                     GattConstants.CHARACTERISTIC_UUID,
                     expectedBytes,
-                    Pair(testBrightnessValue, LedSetting.BRIGHTNESS)
+                    Pair(testBrightnessValue, LedSetting.BRIGHTNESS),
                 )
             }
         }
@@ -55,7 +55,7 @@ class ChangeBrightnessUseCaseTest {
                     GattConstants.SERVICE_UUID,
                     GattConstants.CHARACTERISTIC_UUID,
                     expectedBytes,
-                    Pair(testBrightnessValue, LedSetting.BRIGHTNESS)
+                    Pair(testBrightnessValue, LedSetting.BRIGHTNESS),
                 )
             }
         }
@@ -73,7 +73,7 @@ class ChangeBrightnessUseCaseTest {
                     any(),
                     any(),
                     expectedBytes,
-                    any()
+                    any(),
                 )
             }
         }
@@ -91,7 +91,7 @@ class ChangeBrightnessUseCaseTest {
                     any(),
                     any(),
                     expectedBytes,
-                    Pair(255f, LedSetting.BRIGHTNESS)
+                    Pair(255f, LedSetting.BRIGHTNESS),
                 )
             }
         }
